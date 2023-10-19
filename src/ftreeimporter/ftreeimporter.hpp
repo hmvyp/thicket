@@ -76,13 +76,13 @@ struct Context
 
         root_ = fs::canonical(root, err);
         if(!err){
-            report_error("ftreeimporter::Context: Invalid root path", true);
+            report_error("ftreeimporter::Context: Invalid root path", SEVERITY_PANIC);
         }
 
         scope_ =  fs::canonical(root_/scope, err);
 
         if(!err){
-            report_error("ftreeimporter::Context: Invalid scope path", true);
+            report_error("ftreeimporter::Context: Invalid scope path", SEVERITY_PANIC);
         }
     }
 

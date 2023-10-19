@@ -17,9 +17,16 @@ namespace fs = ::std::filesystem;
 
 using errcode_t = int;
 
-void report_error(std::string err, bool fatal){
+enum Severity{
+    SEVERITY_NONE = 0,
+    SEVERITY_WARNING = 20,
+    SEVERITY_ERROR = 40, // program can proceed, but the results may be incomplete
+    SEVERITY_PANIC = 100 // program can not proceed
+};
+
+void report_error(std::string err, Severity sev){
     auto errs =  std::string("Error: ") + err  + "\n";
-    if(fatal){
+    if(sev >= SEVERITY_PANIC){
        throw errs;
     }
 };
