@@ -15,6 +15,9 @@ namespace ftreeimporter {
 
 namespace fs = ::std::filesystem;
 
+using char_t = fs::path::value_type;
+using string_t = fs::path::string_type;
+
 using errcode_t = int;
 
 enum Severity{
