@@ -48,7 +48,8 @@ struct Node
     bool valid_ = false;
     bool resolved = false;
 
-    std::list<Node*>  targets;
+    std::vector<std::string>  mount_targets; // for mountpoint nodes only (sring representation of targets)
+    std::vector<Node*>  targets;
     std::map<fs::path, Node*> final_targets;
 
     fs::path path_ ; // canonical

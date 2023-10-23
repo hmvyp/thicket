@@ -4,16 +4,51 @@
 #include "node.hpp"
 #include <streambuf>
 #include <fstream>
+#include <cctype>
+#include <algorithm>
 
 namespace ftreeimporter {
 
 #define THICKET_MOUNT_SUFFIX_STR(literal_prefix) literal_prefix##".thicket_mount.txt"
 
+// string conversions:
+
+template<typename some_string_t>
+const some_string_t
+string2some_string(const std::string& s);
+
+template<>
+inline
+const std::wstring
+string2some_string<std::wstring>(const std::string& s){
+    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt;  // Deprecated?
+    return cvt.from_bytes(s);
+}
+
+template<>
+inline
+const std::string
+string2some_string<std::string>(const std::string& s){ return s;}
+
+inline
+string_t
+string2path_string(const std::string& s){ return string2some_string<string_t>(s); }
+
+
+// trim string:
+inline
+std::string
+trim(const std::string& s)
+{
+   auto wsfront=std::find_if_not(s.begin(),s.end(),[](unsigned char c){return std::isspace(c);});
+   auto wsback=std::find_if_not(s.rbegin(),s.rend(),[](unsigned char c){return std::isspace(c);}).base();
+   return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
+}
+
 
 struct Context
         : public ObjectFactory
 {
-
     template<typename CharT>
     constexpr const CharT* MNT_SUFFIX_T(){
         if constexpr (sizeof(CharT) == sizeof(char)) {
@@ -93,7 +128,6 @@ struct Context
     }
 
     Node* mountpointAt(const fs::path& p){
-
         if(p.begin() == p.end()){
             return nullptr;
         }
@@ -105,22 +139,46 @@ struct Context
         fs::file_status fstat = status(pm);
 
         if(fstat.type() != fs::file_type::regular){
-            return nullptr;
+            return nullptr; // not a mountpoint (net necessary an error)
         }
+
+        // The path represents a mountpoint.
+        // If something goes wrong it is an error
+
+        Node* nd = create<Node>(p);
+        auto& mt = nd->mount_targets;
 
         try{
             std::ifstream is(pm);
             std::stringstream buffer;
             buffer << is.rdbuf();
 
-            // ToDo parse the file
+            std::string line;
+            while(buffer >> line) {
+                auto text_path = trim(line);
+                if(text_path.empty()){
+                    continue;
+                }
 
-            // read line by line;
-            // resolve(path)
-            //
+                mt.push_back(std::move(text_path));
+            }
         }catch(...){
             report_error( std::string("can not read mount point at ") + pm.c_str(), SEVERITY_ERROR);
             return nullptr;
+        }
+
+        for(auto it = mt.begin(); it != mt.end() ; it++ ){
+
+            auto pas = string2path_string(*it);
+            fs::path p = fs::path(pas);
+
+            Node* tgn = resolve(p);
+            if(tgn == 0){
+                report_error( std::string("can not read mount point at ") + pm.c_str(), SEVERITY_ERROR);
+                continue;
+            }
+
+            nd->targets.push_back(tgn);
         }
 
         return nullptr; // duck!!!
