@@ -93,7 +93,6 @@ struct Context
         if(existingFileAt(scope_) == nullptr){
             report_error("cornus_thicket::Context: Invalid scope path", SEVERITY_PANIC);
         }
-
     }
 
     Node* existingFileAt(const fs::path& p){
@@ -127,6 +126,7 @@ struct Context
         return nd;
     }
 
+    // also resolves the reference node:
     Node* mountpointAt(const fs::path& p){
         if(p.begin() == p.end()){
             return nullptr;
@@ -143,9 +143,10 @@ struct Context
         }
 
         // The path represents a mountpoint.
-        // If something goes wrong it is an error
+        // From here, if something goes wrong, it is an error
 
         Node* nd = create<Node>(p);
+        nd->ref_type = REFERENCE_NODE;
         auto& mt = nd->mount_targets;
 
         try{ // read mountpoint description file:
@@ -163,12 +164,20 @@ struct Context
                 mt.push_back(std::move(text_path));
             }
         }catch(...){
+            nd->resolved_ = NODE_FAILED_TO_RESOLVE;
             report_error( std::string("can not read mount point at ") + pm.c_str(), SEVERITY_ERROR);
-            return nullptr;
+            return nd;
         }
+
+        // common error prefix lambda:
+        auto erprfx = [&pm](const std::string& mnt_entry) -> std::string {
+            return  std::string("mountpoint target ") + mnt_entry +
+                 " in mountpoint description file: " + pm.c_str();
+        };
 
         // run over mountpoint entries:
         for(auto it = mt.begin(); it != mt.end() ; it++ ){
+
             auto& en = *it; // entry
 
             bool from_root = (en[0] == '/') ? true : false; // path from the root ("absolute") or relative to mountpoint
@@ -181,10 +190,7 @@ struct Context
             auto prt = fs::path(pas); // the entry as fs:path
 
             if(prt.empty()){
-                report_error( std::string("mountpoint target ") + en
-                        + " in mountpoint description file: " + pm.c_str()
-                        + "results in empty path", SEVERITY_ERROR
-                );
+                report_error(erprfx(pm) + "results in empty path", SEVERITY_ERROR);
                 continue;
             }
 
@@ -199,11 +205,8 @@ struct Context
             std::error_code err;
             auto ptcn = fs::weakly_canonical(pt, err); // the tail may not exist (e.g. may point to another mountpoint)
             if(err){
-                report_error( std::string(
-                        "mountpoint target: ")
-                            + en
-                            + " in mountpoint description file: " + pm.c_str()
-                            + " can not be converted to canonical path"
+                report_error(erprfx(pm) + "mountpoint target "
+                        + pt.c_str() + " can not be converted to canonical path"
                         , SEVERITY_ERROR
                 );
                 continue;
@@ -211,23 +214,26 @@ struct Context
 
             Node* tgn = resolve(ptcn); // resolve the target
             if(tgn == 0){
-                report_error( std::string("can not read mount point at ") + pm.c_str(), SEVERITY_ERROR);
+                report_error( erprfx(pm) +
+                            + " can not resolve mountpoint target:"
+                            + ptcn.c_str()
+                        , SEVERITY_ERROR
+                );
                 continue;
             }
-
-            // ToDo: duck!!! check if target is regular file (not a directory). in this case all targets shall point to the same file
 
             nd->targets.push_back(tgn);
         }
 
         nd->ref_type = REFERENCE_NODE;
         if(!nd->targets.empty()) {
-            nd->target_type = nd->targets[0]->target_type;
+            nd->target_type = nd->targets[0]->target_type; // ToDo  in resolve: check if regular file, it shall be the same for all targets
         }
 
         nd->valid_ = true;
 
-        // ToDo: duck!!! resolve nd here by merging tagrgets?
+        // Reference node is useless being unresolved, so resolve it:
+        resolveReference(*nd);
 
         return nd;
     }
@@ -261,10 +267,15 @@ struct Context
             }else{
                 return it->second;
             }
+        }else if(
+                parn->ref_type == REFERENCE_NODE
+                && parn->resolved_ == NODE_FAILED_TO_RESOLVE
+        ){
+            return nullptr;
         }
 
-        // ... else try as mountpoint and resolve it; if no, try filesystem files under parent.
-        // Mountpoint has priority since filesystem folder can be a generated one.
+        // ... else try as mountpoint. If failed, try as filesystem object under the parent.
+        // Mountpoint has priority over filesystem since filesystem object can be a generated one.
         Node* nd = mountpointAt(p);
 
         if(nd) {
@@ -284,10 +295,10 @@ struct Context
         try{
             switch(nd->ref_type){
             case FINAL_NODE:
-                resolveFinal(*nd);
+                resolveFinal(*nd);  // resolve as filesystem object
                 return nd;
             case REFERENCE_NODE:
-                resolveReference(*nd);
+                resolveReference(*nd);  // resolve as mountpoint or its descendants
                 return nd;
             default:
                 return nd; // unresolved
@@ -303,7 +314,8 @@ struct Context
 
 };
 
-
 } // namespace
+
+#include "context_ref_resolve.hpp"
 
 #endif
