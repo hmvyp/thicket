@@ -1,9 +1,9 @@
-#ifndef ftreeimporter_filter_hpp
-#define ftreeimporter_filter_hpp
+#ifndef cornus_thicket_filter_hpp
+#define cornus_thicket_filter_hpp
 
 #include "base.hpp"
 
-namespace ftreeimporter {
+namespace cornus_thicket {
 
 
 struct Filter

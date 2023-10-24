@@ -1,5 +1,5 @@
-#ifndef ftreeimporter_context_hpp
-#define ftreeimporter_context_hpp
+#ifndef cornus_thicket_context_hpp
+#define cornus_thicket_context_hpp
 
 #include "node.hpp"
 #include <streambuf>
@@ -7,7 +7,7 @@
 #include <cctype>
 #include <algorithm>
 
-namespace ftreeimporter {
+namespace cornus_thicket {
 
 #define THICKET_MOUNT_SUFFIX_STR(literal_prefix) literal_prefix##".thicket_mount.txt"
 
@@ -75,23 +75,23 @@ struct Context
 
         root_ = fs::canonical(root, err);
         if(!err){
-            report_error("ftreeimporter::Context: Invalid root path", SEVERITY_PANIC);
+            report_error("cornus_thicket::Context: Invalid root path", SEVERITY_PANIC);
         }
 
         scope_ =  fs::canonical(root_/scope, err);
 
         if(!err){
-            report_error("ftreeimporter::Context: Invalid scope path", SEVERITY_PANIC);
+            report_error("cornus_thicket::Context: Invalid scope path", SEVERITY_PANIC);
         }
 
         // ToDo: make root and scope nodes
 
         if(existingFileAt(root_) == nullptr){
-            report_error("ftreeimporter::Context: Invalid root path", SEVERITY_PANIC);
+            report_error("cornus_thicket::Context: Invalid root path", SEVERITY_PANIC);
         }
 
         if(existingFileAt(scope_) == nullptr){
-            report_error("ftreeimporter::Context: Invalid scope path", SEVERITY_PANIC);
+            report_error("cornus_thicket::Context: Invalid scope path", SEVERITY_PANIC);
         }
 
     }
@@ -116,7 +116,7 @@ struct Context
             nd->target_type = DIR_NODE;
             break;
         default:
-            // report_error(std::string("ftreeimporter: file does not exist: ") + p.string(), SEVERITY_ERROR);
+            // report_error(std::string("cornus_thicket: file does not exist: ") + p.string(), SEVERITY_ERROR);
             return nullptr;
         }
 
@@ -148,7 +148,7 @@ struct Context
         Node* nd = create<Node>(p);
         auto& mt = nd->mount_targets;
 
-        try{
+        try{ // read mountpoint description file:
             std::ifstream is(pm);
             std::stringstream buffer;
             buffer << is.rdbuf();
@@ -167,43 +167,91 @@ struct Context
             return nullptr;
         }
 
+        // run over mountpoint entries:
         for(auto it = mt.begin(); it != mt.end() ; it++ ){
+            auto& en = *it; // entry
 
-            auto pas = string2path_string(*it);
-            fs::path p = fs::path(pas);
+            bool from_root = (en[0] == '/') ? true : false; // path from the root ("absolute") or relative to mountpoint
 
-            Node* tgn = resolve(p);
+            if(from_root){
+                en.erase(0,1); // remove "absolute" mark
+            }
+
+            auto pas = string2path_string(en); // entry as relative native string
+            auto prt = fs::path(pas); // the entry as fs:path
+
+            if(prt.empty()){
+                report_error( std::string("mountpoint target ") + en
+                        + " in mountpoint description file: " + pm.c_str()
+                        + "results in empty path", SEVERITY_ERROR
+                );
+                continue;
+            }
+
+            fs::path pt;  // target path
+
+            if(from_root) {
+                pt = this->root_ / prt;
+            }else{
+                pt = p.parent_path() / prt;
+            }
+
+            std::error_code err;
+            auto ptcn = fs::weakly_canonical(pt, err); // the tail may not exist (e.g. may point to another mountpoint)
+            if(err){
+                report_error( std::string(
+                        "mountpoint target: ")
+                            + en
+                            + " in mountpoint description file: " + pm.c_str()
+                            + " can not be converted to canonical path"
+                        , SEVERITY_ERROR
+                );
+                continue;
+            }
+
+            Node* tgn = resolve(ptcn); // resolve the target
             if(tgn == 0){
                 report_error( std::string("can not read mount point at ") + pm.c_str(), SEVERITY_ERROR);
                 continue;
             }
 
+            // ToDo: duck!!! check if target is regular file (not a directory). in this case all targets shall point to the same file
+
             nd->targets.push_back(tgn);
         }
 
-        return nullptr; // duck!!!
+        nd->ref_type = REFERENCE_NODE;
+        if(!nd->targets.empty()) {
+            nd->target_type = nd->targets[0]->target_type;
+        }
+
+        nd->valid_ = true;
+
+        // ToDo: duck!!! resolve nd here by merging tagrgets?
+
+        return nd;
     }
 
 
-    Node* nodeAt(const fs::path& p){ // assume p canonical
+    Node* nodeAt(const fs::path& p){ // assume p is canonical
         auto it = nodes.find(p);
         if(it != nodes.end()){
-            return it->second;
+            return it->second; // node already exists
         }
 
         auto parp = p.parent_path();
         if(p.empty() || p.begin() == p.end() || parp.empty() || parp == p){
-            report_error(std::string("ftreeimporter: nodeAt() ::Parent path unavailable for ") + p.string(), SEVERITY_ERROR);
+            report_error(std::string("cornus_thicket: nodeAt() ::Parent path unavailable for ") + p.string(), SEVERITY_ERROR);
             return nullptr;
         }
 
         Node* parn = nodeAt(parp);
         if(!parn){
-            return nullptr;
+            return nullptr; // no parent
             // ToDo: report error?
         }
 
-        if(parn->resolved){
+        if(parn->resolved_ == NODE_RESOLVED){
             auto last = -- p.end();  // (p.begin() != p.end() already checked )
             auto& c =  parn->children;
             auto it = c.find(*last);
@@ -215,8 +263,8 @@ struct Context
             }
         }
 
-        // else try as mountpoint and resolve it; if no, try filesystem files under parent
-        // mountpoint has priority since filesystem folder can be a generated one.
+        // ... else try as mountpoint and resolve it; if no, try filesystem files under parent.
+        // Mountpoint has priority since filesystem folder can be a generated one.
         Node* nd = mountpointAt(p);
 
         if(nd) {
@@ -227,34 +275,32 @@ struct Context
     }
 
     Node* resolve(const fs::path& p){
-        Node* nd = nullptr;
-        auto it = nodes.find(p);
+        Node* nd = nodeAt(p);
 
-        if(it == nodes.end()){
-            nd = create<Node>(p);
-            nodes[p] = nd;
-        }else{
-            nd = it->second;
-        }
-
-        if(nd->resolved){
+        if(nd == nullptr || nd->resolved_ >= NODE_RESOLVED){
             return nd;
         }
 
-        fs::file_status fstat = status(p);
-
-        if(nd->ref_type == UNKNOWN_REFTYPE) {
-            auto mnt_description_path = p / MNT_SUFFIX();
-            //auto stat =
-            // ToDo: ...
-
+        try{
+            switch(nd->ref_type){
+            case FINAL_NODE:
+                resolveFinal(*nd);
+                return nd;
+            case REFERENCE_NODE:
+                resolveReference(*nd);
+                return nd;
+            default:
+                return nd; // unresolved
+            }
+        }catch(...){
+            return nd;
         }
-
-        return nullptr; // ToDo: ...
-
-        //....
-
     }
+
+    void resolveFinal(Node& n);
+
+    void resolveReference(Node& n);
+
 };
 
 

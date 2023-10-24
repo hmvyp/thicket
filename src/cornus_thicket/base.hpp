@@ -1,5 +1,5 @@
-#ifndef ftreeimporter_base_hpp
-#define ftreeimporter_base_hpp
+#ifndef cornus_thicket_base_hpp
+#define cornus_thicket_base_hpp
 
 #include <string>
 #include <list>
@@ -11,7 +11,7 @@
 #include <memory>
 #include <iostream>
 
-namespace ftreeimporter {
+namespace cornus_thicket {
 
 namespace fs = ::std::filesystem;
 
@@ -80,7 +80,7 @@ private:
 
 struct Node; // forward
 
-} //namespace ftreeimporter
+} //namespace cornus_thicket
 
 
 #endif
