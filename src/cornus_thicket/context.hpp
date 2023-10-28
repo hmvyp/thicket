@@ -132,14 +132,14 @@ struct Context
             return nullptr;
         }
 
-        auto pm = p;
+        auto pm = p;  // will be path to mountpoint description file
 
         pm.replace_filename( (string_t)p.filename() + MNT_SUFFIX() );
 
         fs::file_status fstat = status(pm);
 
         if(fstat.type() != fs::file_type::regular){
-            return nullptr; // not a mountpoint (net necessary an error)
+            return nullptr; // not a mountpoint (not necessary an error)
         }
 
         // The path represents a mountpoint.
@@ -212,7 +212,7 @@ struct Context
                 continue;
             }
 
-            Node* tgn = resolve(ptcn); // resolve the target
+            Node* tgn = resolveAt(ptcn); // resolve the target
             if(tgn == 0){
                 report_error( erprfx(pm) +
                             + " can not resolve mountpoint target:"
@@ -285,26 +285,34 @@ struct Context
         return existingFileAt(p);
     }
 
-    Node* resolve(const fs::path& p){
+    Node* resolveAt(const fs::path& p){
         Node* nd = nodeAt(p);
 
         if(nd == nullptr || nd->resolved_ >= NODE_RESOLVED){
             return nd;
         }
 
+        resolve(*nd);
+        return nd;
+    }
+
+    void resolve(Node& n){ // assuming reference type is set for n
+        if(n.resolved_ >= NODE_RESOLVED){
+            return;
+        }
+
         try{
-            switch(nd->ref_type){
+            switch(n.ref_type){
             case FINAL_NODE:
-                resolveFinal(*nd);  // resolve as filesystem object
-                return nd;
+                resolveFinal(n);  // resolve as filesystem object
+                return;
             case REFERENCE_NODE:
-                resolveReference(*nd);  // resolve as mountpoint or its descendants
-                return nd;
+                resolveReference(n);  // resolve as mountpoint or its descendants
+                return;
             default:
-                return nd; // unresolved
+                return; // unresolved
             }
         }catch(...){
-            return nd;
         }
     }
 
@@ -312,10 +320,13 @@ struct Context
 
     void resolveReference(Node& n);
 
+private:
+    void collectRefnodeChildren(Node& n);
+
 };
 
 } // namespace
 
-#include "context_ref_resolve.hpp"
+#include "context_resolve_ref.hpp"
 
 #endif

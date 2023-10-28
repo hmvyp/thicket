@@ -32,7 +32,7 @@ enum ReferenceType {
 
 
 enum ResolveStatus{
-    NODE_UNRESOLVED,
+    NODE_UNRESOLVED,  // ToDo: NODE_RESOLVING (to detect cycles)
     NODE_RESOLVED,
     NODE_FAILED_TO_RESOLVE
 };
