@@ -2,6 +2,7 @@
 #define cornus_thicket_base_hpp
 
 #include <string>
+#include <cstring>
 #include <list>
 #include <vector>
 #include <map>

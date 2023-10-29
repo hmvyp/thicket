@@ -107,9 +107,14 @@ Context::collectRefnodeChildren(Node& n){
             Node* tch_node = itg_ch->second;
 
             auto my_child_entry = n.children.find(tch_name);
-            Node* my_child = (my_child_entry != n.children.end()) // child already exists?
-                    ? my_child_entry->second
-                    : create<Node>(n.path_/tch_name);
+            Node* my_child = nullptr;
+
+            if (my_child_entry != n.children.end()){ // child already exists?
+                my_child = my_child_entry->second;
+            }else{
+                my_child = create<Node>(n.path_/tch_name);
+                n.children[tch_name] = my_child;
+            }
 
             my_child->ref_type = REFERENCE_NODE;
             my_child->targets.push_back(tch_node);
@@ -122,8 +127,8 @@ void
 Context:: resolveReference(Node& n){ // assuming targets are resolved
     collectFinalTargets(n);
     collectRefnodeChildren(n);
-    for(auto it = n.children.begin(); it != n.children.end(); it++){
-        resolve(*(it->second));  // resolve children
+    for(auto& pair: n.children){
+        resolve(*(pair.second));  // resolve children
     }
 }
 

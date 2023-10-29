@@ -60,6 +60,8 @@ struct Context
 
     constexpr const char_t* MNT_SUFFIX(){return MNT_SUFFIX_T<char_t>();}
 
+    static inline size_t MNT_SUFFIX_LENGTH = std::strlen(THICKET_MOUNT_SUFFIX_STR());
+
 
     fs::path root_;  // converted to canonical
     fs::path scope_; // converted to canonical
@@ -96,33 +98,38 @@ struct Context
     }
 
     Node* existingFileAt(const fs::path& p){
-        auto it = nodes.find(p);
-        if(it != nodes.end()){
-            return it->second;
-        }
-
-        Node* nd = nullptr;
-
         fs::file_status fstat = status(p);
 
-        switch(fstat.type()){
+        auto ft = fstat.type();
+        if(ft == fs::file_type::not_found) {
+            return nullptr; // not a filesystem node at all
+        }
+
+        // The path represents a filesystem object.
+        // From here, if something goes wrong, it is an error
+        // and we shall return erroneous node instead of nullptr
+
+        Node* nd = this->create<Node>(p);
+        nd->ref_type = FINAL_NODE;
+        nodes[p] = nd;
+
+        switch(ft){
         case fs::file_type::regular:
-            nd = this->create<Node>(p);
+        case fs::file_type::symlink:
             nd->target_type = FILE_NODE;
             break;
         case fs::file_type::directory:
-            nd = this->create<Node>(p);
             nd->target_type = DIR_NODE;
             break;
         default:
-            // report_error(std::string("cornus_thicket: file does not exist: ") + p.string(), SEVERITY_ERROR);
-            return nullptr;
+            report_error(std::string("cornus_thicket: file type unsupported (shall be regular, symlink or directory) ")
+                    + p.string()
+                    , SEVERITY_ERROR
+            );
+            return nd; // return invalid node
         }
 
-        nd->ref_type = FINAL_NODE;
         nd->valid_= true;
-
-        nodes[p] = nd;
         return nd;
     }
 
@@ -144,9 +151,12 @@ struct Context
 
         // The path represents a mountpoint.
         // From here, if something goes wrong, it is an error
+        // and we shall return erroneous node instead of nullptr
 
         Node* nd = create<Node>(p);
         nd->ref_type = REFERENCE_NODE;
+        nodes[p] = nd;
+
         auto& mt = nd->mount_targets;
 
         try{ // read mountpoint description file:
@@ -175,11 +185,8 @@ struct Context
                  " in mountpoint description file: " + pm.c_str();
         };
 
-        // run over mountpoint entries:
-        for(auto it = mt.begin(); it != mt.end() ; it++ ){
-
-            auto& en = *it; // entry
-
+        // run over mountpoint entries to calculate and resolve targets:
+        for(auto& en : mt){
             bool from_root = (en[0] == '/') ? true : false; // path from the root ("absolute") or relative to mountpoint
 
             if(from_root){
@@ -190,6 +197,7 @@ struct Context
             auto prt = fs::path(pas); // the entry as fs:path
 
             if(prt.empty()){
+                nd->resolved_ = NODE_FAILED_TO_RESOLVE;
                 report_error(erprfx(pm) + "results in empty path", SEVERITY_ERROR);
                 continue;
             }
@@ -205,6 +213,7 @@ struct Context
             std::error_code err;
             auto ptcn = fs::weakly_canonical(pt, err); // the tail may not exist (e.g. may point to another mountpoint)
             if(err){
+                nd->resolved_ = NODE_FAILED_TO_RESOLVE;
                 report_error(erprfx(pm) + "mountpoint target "
                         + pt.c_str() + " can not be converted to canonical path"
                         , SEVERITY_ERROR
@@ -214,6 +223,7 @@ struct Context
 
             Node* tgn = resolveAt(ptcn); // resolve the target
             if(tgn == 0){
+                nd->resolved_ = NODE_FAILED_TO_RESOLVE;
                 report_error( erprfx(pm) +
                             + " can not resolve mountpoint target:"
                             + ptcn.c_str()
@@ -223,11 +233,6 @@ struct Context
             }
 
             nd->targets.push_back(tgn);
-        }
-
-        nd->ref_type = REFERENCE_NODE;
-        if(!nd->targets.empty()) {
-            nd->target_type = nd->targets[0]->target_type; // ToDo  in resolve: check if regular file, it shall be the same for all targets
         }
 
         nd->valid_ = true;
@@ -288,7 +293,7 @@ struct Context
     Node* resolveAt(const fs::path& p){
         Node* nd = nodeAt(p);
 
-        if(nd == nullptr || nd->resolved_ >= NODE_RESOLVED){
+        if(nd != nullptr || nd->resolved_ >= NODE_RESOLVED){
             return nd;
         }
 
@@ -322,11 +327,13 @@ struct Context
 
 private:
     void collectRefnodeChildren(Node& n);
+    bool is_cornus_thicket_mountpoint_description(fs::path p, fs::path* mountpoint_path);
 
 };
 
 } // namespace
 
+#include "context_resolve_fin.hpp"
 #include "context_resolve_ref.hpp"
 
 #endif
