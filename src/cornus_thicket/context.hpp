@@ -76,13 +76,13 @@ struct Context
         std::error_code err;
 
         root_ = fs::canonical(root, err);
-        if(!err){
+        if(err){
             report_error("cornus_thicket::Context: Invalid root path", SEVERITY_PANIC);
         }
 
         scope_ =  fs::canonical(root_/scope, err);
 
-        if(!err){
+        if(err){
             report_error("cornus_thicket::Context: Invalid scope path", SEVERITY_PANIC);
         }
 
@@ -290,10 +290,14 @@ struct Context
         return existingFileAt(p);
     }
 
+    Node* resolve(){
+        return resolveAt(this->scope_);
+    }
+
     Node* resolveAt(const fs::path& p){
         Node* nd = nodeAt(p);
 
-        if(nd != nullptr || nd->resolved_ >= NODE_RESOLVED){
+        if(nd != nullptr && nd->resolved_ >= NODE_RESOLVED){
             return nd;
         }
 

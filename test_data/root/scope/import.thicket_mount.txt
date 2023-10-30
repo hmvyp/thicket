@@ -1,0 +1,3 @@
+../importedB/export
+a
+b
