@@ -17,12 +17,6 @@ enum TargetType {
     ,SYMLINK_NODE // ?? we do not follow symlinks but maybe we need to respect them as files?
 };
 
-/*
-struct MountEntry {
-    Filter* filter;
-    fs::path import_from;
-};
-*/
 
 enum ReferenceType {
     UNKNOWN_REFTYPE,
@@ -32,8 +26,9 @@ enum ReferenceType {
 
 
 enum ResolveStatus{
-    NODE_UNRESOLVED,  // ToDo: NODE_RESOLVING (to detect cycles)
-    NODE_RESOLVED,
+    NODE_UNRESOLVED,
+    // ToDo: add NODE_RESOLVING (to detect cycles)
+    NODE_RESOLVED,  // The whole subtree of all node descendants is built
     NODE_FAILED_TO_RESOLVE
 };
 
@@ -42,29 +37,34 @@ struct Node
         : public ObjectBase
 {
     TargetType target_type = UNKNOWN_TARGET_TYPE;
-
     ReferenceType ref_type = UNKNOWN_REFTYPE;
 
     Node(Node&&) = delete; // do not move/copy
 
     explicit Node(
-            fs::path p // assumed canonical
+            fs::path p // assuming canonical
     )
         : path_(p)
     {}
 
     const fs::path& get_path() {return path_;}
 
-    bool valid_ = false;
+    bool valid_ = false;  // remains false if:
+        // 1) reference type detection fails
+        // 2) the node is final, but the corresponding filesystem object is unaccessible for any reason
+        // 3) the node is reference, but it is impossible to collect immediate targets (referents)
+        // Other error cases may lead to (valid == true) but (resolved_ == NODE_FAILED_TO_RESOLVE)
+
     ResolveStatus resolved_ = NODE_UNRESOLVED;
 
-    std::vector<std::string>  mount_targets; // for mountpoint nodes only (string representation of targets)
-    std::vector<Node*>  targets;
-    std::map<fs::path, Node*> final_targets;
-
     fs::path path_ ; // canonical
-
     std::map<string_t, Node*> children;
+
+    // the following fields are used for reference nodes only:
+
+    std::vector<std::string>  mount_targets; // for mountpoint nodes only (string representation of targets)
+    std::vector<Node*>  targets; // immediate targets (referents) of the reference node
+    std::map<fs::path, Node*> final_targets; // final nodes only (union of targets of targets... of targets)
 };
 
 

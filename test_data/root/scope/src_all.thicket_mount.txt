@@ -1,0 +1,3 @@
+src
+../importedA/src
+../importedB/src_all

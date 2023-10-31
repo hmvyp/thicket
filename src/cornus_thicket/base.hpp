@@ -33,6 +33,7 @@ void report_error(std::string err, Severity sev){
     if(sev >= SEVERITY_PANIC){
        throw errs;
     }
+    std::cout << errs;
 };
 
 struct ObjectFactory;

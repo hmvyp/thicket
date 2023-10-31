@@ -50,7 +50,7 @@ struct Context
         : public ObjectFactory
 {
     template<typename CharT>
-    constexpr const CharT* MNT_SUFFIX_T(){
+    static constexpr const CharT* MNT_SUFFIX_T(){
         if constexpr (sizeof(CharT) == sizeof(char)) {
             return THICKET_MOUNT_SUFFIX_STR();
         }else{
@@ -58,7 +58,7 @@ struct Context
         }
     };
 
-    constexpr const char_t* MNT_SUFFIX(){return MNT_SUFFIX_T<char_t>();}
+    static constexpr const char_t* MNT_SUFFIX(){return MNT_SUFFIX_T<char_t>();}
 
     static inline size_t MNT_SUFFIX_LENGTH = std::strlen(THICKET_MOUNT_SUFFIX_STR());
 
@@ -175,7 +175,7 @@ struct Context
             }
         }catch(...){
             nd->resolved_ = NODE_FAILED_TO_RESOLVE;
-            report_error( std::string("can not read mount point at ") + pm.c_str(), SEVERITY_ERROR);
+            report_error( std::string("can not read mount point description at ") + pm.c_str(), SEVERITY_ERROR);
             return nd;
         }
 
@@ -329,15 +329,22 @@ struct Context
 
     void resolveReference(Node& n);
 
+    // materialization methods:
+    void clean(); // cleans all under scope
+    void materializeAsSymlinks(); // materializes all under scope
+
 private:
     void collectRefnodeChildren(Node& n);
-    bool is_cornus_thicket_mountpoint_description(fs::path p, fs::path* mountpoint_path);
+    static bool is_thicket_mountpoint_description(const fs::path& p, fs::path* mountpoint_path);
 
+    static void clean(const fs::path& p, std::map<fs::path, bool>& to_delete);
+    void materializeAsSymlinks(Node& n);
 };
 
 } // namespace
 
 #include "context_resolve_fin.hpp"
 #include "context_resolve_ref.hpp"
+#include "context_materialize_symlinks.hpp"
 
 #endif

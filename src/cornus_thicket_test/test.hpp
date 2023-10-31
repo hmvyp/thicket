@@ -13,7 +13,9 @@ inline void print_tree(ct::Node* nd){
         std::cout << "\n Error  NULL Node \n";
     }
 
-    std::cout << "\n" << nd->path_ << " final targets:";
+    std::cout << "\n Node resolve status: " + std::to_string(nd->resolved_);
+
+    std::cout << nd->path_ << " final targets:";
     for(auto& pair : nd->final_targets){
         std::cout << "\n        " << pair.second->path_;
     }
@@ -29,6 +31,8 @@ int test1(fs::path root, fs::path scope){
     ct::Context ctx(root, scope);
     ctx.resolve();
     print_tree(ctx.nodeAt(ctx.scope_));
+    ctx.clean();
+    ctx.materializeAsSymlinks();
     return 0;
 }
 

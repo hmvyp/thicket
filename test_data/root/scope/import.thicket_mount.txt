@@ -1,3 +1,0 @@
-../importedB/export
-a
-b

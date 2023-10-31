@@ -7,8 +7,8 @@ namespace cornus_thicket {
 
 bool
 Context::
-is_cornus_thicket_mountpoint_description(
-        fs::path p, // input parameter (path to mountpoint description file)
+is_thicket_mountpoint_description(
+        const fs::path& p, // input parameter (path to mountpoint description file)
         fs::path* mountpoint_path // output parameter (path to mountpoint itself)
 ){
     auto fn = p.filename();
@@ -58,7 +58,7 @@ Context::resolveFinal(Node& n){
         }
 
         fs::path mountpoint_path;
-        if(de.is_regular_file() && is_cornus_thicket_mountpoint_description(p, &mountpoint_path)){
+        if(de.is_regular_file() && is_thicket_mountpoint_description(p, &mountpoint_path)){
             Node* cn = mountpointAt(mountpoint_path);
             if(cn != nullptr){
                 resolveReference(*cn);
@@ -67,7 +67,7 @@ Context::resolveFinal(Node& n){
             continue;
         }
 
-        if(is_cornus_thicket_mountpoint_description(p/MNT_SUFFIX(), nullptr)){
+        if(is_thicket_mountpoint_description(p/MNT_SUFFIX(), nullptr)){
             continue; // skip possibly generated materialization of a mountpoint
         }
 
@@ -80,6 +80,8 @@ Context::resolveFinal(Node& n){
         resolveFinal(*cn);
         n.children[p.filename()] = cn; // append existing final node as child
     }
+
+    n.resolved_ = NODE_RESOLVED;
 }
 
 

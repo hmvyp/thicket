@@ -11,8 +11,8 @@ detectRefnodeTargetType(Node& n){ // assuming final targets already collected
 
     auto& ftgs = n.final_targets;
 
-    for(auto i = ftgs.begin(); i != ftgs.end(); i++){
-        Node* tn = i->second;
+    for(auto& pair : ftgs){ // over final targets
+        Node* tn = pair.second;
         TargetType tt = tn->target_type;
         if(tt == UNKNOWN_TARGET_TYPE){
             report_error(
@@ -74,21 +74,21 @@ collectFinalTargets(Node& n){
         }
     };
 
-    for(auto itg = tgs.begin(); itg != tgs.end(); itg++){ // over targets
-        // collect final targets:
-        Node* tn = *itg; // current immediate target
+    for(auto& tn : tgs){ // over immediate targets
         if(tn->ref_type == FINAL_NODE){
             add_final_target(tn->path_, tn);
         }else if(tn->ref_type == REFERENCE_NODE){
+            // then collect final targets for every immediate target:
             auto& curtg_ftgs = tn->final_targets;
-            // loop over final targets of targets:
-            for(auto iftg = curtg_ftgs.begin();  iftg != curtg_ftgs.end(); iftg++){
-                const auto& key = iftg->first;
-                Node* ft = iftg->second;
+
+            for(auto& ftg_entry : curtg_ftgs){ // loop over final targets of targets
+                const auto& key = ftg_entry.first;
+                Node* ft = ftg_entry.second;
                 add_final_target(key, ft);
             }
         }else{
-            // report error? (undefined ref type)
+            // report error? (undefined ref type found) or continue silently
+            // as the error shall be already reported somewhere
         }
     }
 
@@ -99,8 +99,8 @@ inline void
 Context::collectRefnodeChildren(Node& n){
     auto& tgs = n.targets;
 
-    for(auto itg = tgs.begin(); itg != tgs.end(); itg++){ // over targets
-        Node& tn = **itg;
+    for(auto& tg : tgs){ // over targets
+        Node& tn = *tg;
         auto& tnch = tn.children;
         for(auto itg_ch = tnch.begin(); itg_ch != tnch.end(); itg_ch++){ // over target's children
             const string_t& tch_name = itg_ch->first;
@@ -130,6 +130,8 @@ Context:: resolveReference(Node& n){ // assuming targets are resolved
     for(auto& pair: n.children){
         resolve(*(pair.second));  // resolve children
     }
+
+    n.resolved_ = NODE_RESOLVED;
 }
 
 } // namespace
