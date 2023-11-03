@@ -16,8 +16,8 @@ detectRefnodeTargetType(Node& n){ // assuming final targets already collected
         TargetType tt = tn->target_type;
         if(tt == UNKNOWN_TARGET_TYPE){
             report_error(
-                    std::string("Node ") + n.path_.c_str()
-                    + " target type undefined for target " + tn->path_.c_str()
+                    std::string("Node ") + p2s(n.path_)
+                    + " target type undefined for target " + p2s(tn->path_)
                     , SEVERITY_ERROR
             );
         }else{
@@ -26,9 +26,9 @@ detectRefnodeTargetType(Node& n){ // assuming final targets already collected
             }else{
                 if(first_detected_final->target_type != tt){
                     report_error(
-                            std::string("Node ") + n.path_.c_str()
-                            + " ambiguous target types: 1-st target " + first_detected_final->path_.c_str()
-                            + " 2-nd target :  " + tn->path_.c_str()
+                            std::string("Node ") + p2s(n.path_)
+                            + " ambiguous target types: 1-st target " + p2s(first_detected_final->path_)
+                            + " 2-nd target :  " + p2s(tn->path_)
                             , SEVERITY_ERROR
                     );
                 }
@@ -42,7 +42,7 @@ detectRefnodeTargetType(Node& n){ // assuming final targets already collected
 
     if(n.target_type == UNKNOWN_TARGET_TYPE) {
         report_error(
-                std::string("Reference Node ") + n.path_.c_str()
+                std::string("Reference Node ") + p2s(n.path_)
                 + " target type undefined (node has " + std::to_string(n.final_targets.size()) + " final targets )"
                 , SEVERITY_ERROR
         );
@@ -50,7 +50,7 @@ detectRefnodeTargetType(Node& n){ // assuming final targets already collected
 
     if(n.target_type == FILE_NODE && n.final_targets.size() > 1){
         report_error(
-                std::string("Reference Node ") + n.path_.c_str()
+                std::string("Reference Node ") + p2s(n.path_)
                 + " has regular file target but has more than one final target nodes"
                 , SEVERITY_ERROR
         );

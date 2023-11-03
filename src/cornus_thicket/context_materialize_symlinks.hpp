@@ -60,9 +60,9 @@ Context::materializeAsSymlinks(Node& n){
             if(er){
                 report_error(
                         std::string("Failed to create symlink \n    from: ")
-                        + n.path_.c_str()
+                        + p2s(n.path_)
                         + "\n    to: "
-                        + link_target_canon.c_str()
+                        + p2s(link_target_canon)
                         , SEVERITY_ERROR
                 );
             }
@@ -90,7 +90,7 @@ void Context::clean(){ // cleans all under scope
     if(to_delete.size() > 0){
         std::cout << " \n Deleting generated files and directories: \n ";
         for(auto& pair : to_delete){
-            std::cout << pair.first.c_str();
+            std::cout << p2s(pair.first);
         }
 
         char yn = 0;
@@ -107,7 +107,7 @@ void Context::clean(){ // cleans all under scope
                 auto& p = pair.first;
                 remove_all(p, er );
                 if(er){
-                    std::cout << " \n Error while deleting " << p.c_str();
+                    std::cout << " \n Error while deleting " << p2s(p);
                 }
             }
         }

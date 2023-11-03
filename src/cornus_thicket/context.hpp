@@ -6,6 +6,7 @@
 #include <fstream>
 #include <cctype>
 #include <algorithm>
+#include <codecvt>
 
 namespace cornus_thicket {
 
@@ -14,25 +15,59 @@ namespace cornus_thicket {
 // string conversions:
 
 template<typename some_string_t>
-const some_string_t
+some_string_t
 string2some_string(const std::string& s);
 
 template<>
-inline
-const std::wstring
+std::wstring
 string2some_string<std::wstring>(const std::string& s){
     static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt;  // Deprecated?
     return cvt.from_bytes(s);
 }
 
 template<>
-inline
-const std::string
+std::string
 string2some_string<std::string>(const std::string& s){ return s;}
 
 inline
 string_t
 string2path_string(const std::string& s){ return string2some_string<string_t>(s); }
+
+
+inline
+std::wstring
+test_s2w(const std::string& s){ return string2some_string<std::wstring>(s);}
+
+//..................................................................................
+
+
+template<typename some_string_t>
+std::string
+some_string2string(const some_string_t& s);
+
+
+template<>
+std::string
+some_string2string<std::wstring>(const std::wstring& s){
+    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt;   // Deprecated?
+    return cvt.to_bytes(s);
+}
+
+template<>
+std::string
+some_string2string<std::string>(const std::string& s){ return s;}
+
+
+inline
+string_t
+p2s(const string_t& s){ return some_string2string<string_t>(s); }
+
+
+inline
+std::string
+test_w2s(const std::wstring& s){ return some_string2string<std::wstring>(s);}
+
+//........................................................
 
 
 // trim string:
@@ -175,14 +210,14 @@ struct Context
             }
         }catch(...){
             nd->resolved_ = NODE_FAILED_TO_RESOLVE;
-            report_error( std::string("can not read mount point description at ") + pm.c_str(), SEVERITY_ERROR);
+            report_error( std::string("can not read mount point description at ") + p2s(pm), SEVERITY_ERROR);
             return nd;
         }
 
         // common error prefix lambda:
         auto erprfx = [&pm](const std::string& mnt_entry) -> std::string {
             return  std::string("mountpoint target ") + mnt_entry +
-                 " in mountpoint description file: " + pm.c_str();
+                 " in mountpoint description file: " + p2s(pm);
         };
 
         // run over mountpoint entries to calculate and resolve targets:
@@ -215,7 +250,7 @@ struct Context
             if(err){
                 nd->resolved_ = NODE_FAILED_TO_RESOLVE;
                 report_error(erprfx(pm) + "mountpoint target "
-                        + pt.c_str() + " can not be converted to canonical path"
+                        + p2s(pt) + " can not be converted to canonical path"
                         , SEVERITY_ERROR
                 );
                 continue;
@@ -226,7 +261,7 @@ struct Context
                 nd->resolved_ = NODE_FAILED_TO_RESOLVE;
                 report_error( erprfx(pm) +
                             + " can not resolve mountpoint target:"
-                            + ptcn.c_str()
+                            + p2s(ptcn)
                         , SEVERITY_ERROR
                 );
                 continue;

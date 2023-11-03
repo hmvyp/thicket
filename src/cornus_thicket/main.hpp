@@ -2,7 +2,6 @@
 #define cornus_thicket_main_hpp
 
 #include "context.hpp"
-#include <unistd.h>
 
 namespace cornus_thicket {
 
@@ -51,6 +50,7 @@ typedef std::array<Option*, N> = {
     ....
 }
 */
+
 
 int main(int nargs, char** args){
 
