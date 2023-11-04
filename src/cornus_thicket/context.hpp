@@ -59,7 +59,7 @@ some_string2string<std::string>(const std::string& s){ return s;}
 
 
 inline
-string_t
+std::string
 p2s(const string_t& s){ return some_string2string<string_t>(s); }
 
 
@@ -221,7 +221,9 @@ struct Context
         };
 
         // run over mountpoint entries to calculate and resolve targets:
-        for(auto& en : mt){
+        for(auto& eno : mt){
+			std::string en = eno; // copy as en may be changed (leave original untouched)
+			
             bool from_root = (en[0] == '/') ? true : false; // path from the root ("absolute") or relative to mountpoint
 
             if(from_root){
@@ -233,7 +235,7 @@ struct Context
 
             if(prt.empty()){
                 nd->resolved_ = NODE_FAILED_TO_RESOLVE;
-                report_error(erprfx(pm) + "results in empty path", SEVERITY_ERROR);
+                report_error(erprfx(eno) + "results in empty path", SEVERITY_ERROR);
                 continue;
             }
 
@@ -249,7 +251,7 @@ struct Context
             auto ptcn = fs::weakly_canonical(pt, err); // the tail may not exist (e.g. may point to another mountpoint)
             if(err){
                 nd->resolved_ = NODE_FAILED_TO_RESOLVE;
-                report_error(erprfx(pm) + "mountpoint target "
+                report_error(erprfx(eno) + "mountpoint target "
                         + p2s(pt) + " can not be converted to canonical path"
                         , SEVERITY_ERROR
                 );
@@ -259,7 +261,7 @@ struct Context
             Node* tgn = resolveAt(ptcn); // resolve the target
             if(tgn == 0){
                 nd->resolved_ = NODE_FAILED_TO_RESOLVE;
-                report_error( erprfx(pm) +
+                report_error( erprfx(eno) +
                             + " can not resolve mountpoint target:"
                             + p2s(ptcn)
                         , SEVERITY_ERROR
@@ -332,7 +334,7 @@ struct Context
     Node* resolveAt(const fs::path& p){
         Node* nd = nodeAt(p);
 
-        if(nd != nullptr && nd->resolved_ >= NODE_RESOLVED){
+        if(nd == nullptr || nd->resolved_ >= NODE_RESOLVED){
             return nd;
         }
 

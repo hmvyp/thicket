@@ -13,9 +13,9 @@ inline void print_tree(Node* nd){
 
     std::cout << "\n Node resolve status: " + std::to_string(nd->resolved_);
 
-    std::cout << nd->path_ << " final targets:";
+    std::cout << p2s(nd->path_) << " final targets:";
     for(auto& pair : nd->final_targets){
-        std::cout << "\n        " << pair.second->path_;
+        std::cout << "\n        " << p2s(pair.second->path_);
     }
 
     for(auto& pair : nd->children){

@@ -63,7 +63,7 @@ collectFinalTargets(Node& n){
     auto& tgs = n.targets;
     auto& ftgs = n.final_targets;
 
-    auto add_final_target = [&](const std::string& key,  Node* ftn){
+    auto add_final_target = [&](const fs::path& key,  Node* ftn){
         auto alredy_found = ftgs.find(key);
         if(alredy_found != ftgs.end()){
             if(alredy_found->second != ftn){

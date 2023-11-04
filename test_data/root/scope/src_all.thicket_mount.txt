@@ -1,3 +1,4 @@
 src
+blabla/provoke/erroor
 ../importedA/src
 ../importedB/src_all
