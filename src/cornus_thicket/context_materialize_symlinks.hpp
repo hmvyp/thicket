@@ -88,21 +88,27 @@ void Context::clean(){ // cleans all under scope
     std::map<fs::path, bool> to_delete;
     clean(this->scope_, to_delete);
     if(to_delete.size() > 0){
-        std::cout << " \n Deleting generated files and directories: \n ";
+        if(!silent_){
+            std::cout << " \n Deleting generated files and directories: \n ";
+        }
+
         for(auto& pair : to_delete){
             std::cout << p2s(pair.first);
         }
 
         char yn = 0;
-        do
-        {
-            std::cout << "\n delete? [y/n]\n";
-            std::cin >> yn;
+
+        if(!silent_){
+            do
+            {
+                std::cout << "\n delete? [y/n]\n";
+                std::cin >> yn;
+            }
+            while( !std::cin.fail() && yn!='y' && yn!='n' );
         }
-        while( !std::cin.fail() && yn!='y' && yn!='n' );
 
         std::error_code er;
-        if(yn == 'y'){
+        if(silent_ || yn == 'y'){
             for(auto& pair : to_delete){
                 auto& p = pair.first;
                 remove_all(p, er );

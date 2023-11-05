@@ -1,13 +1,15 @@
-#include <iostream>
-#include "cornus_thicket/main.hpp"
+
+#include "config.hpp"
+
+
+#ifndef CORNUS_THICKET_NO_MAIN_CPP // (define the macro to use thicket as headers-only library)
+
+#include "main.hpp"
 
 #ifdef _WIN32 
 #include <windows.h>
 #endif
 
-
-volatile std::wstring x = cornus_thicket::test_s2w("");
-volatile std::string y = cornus_thicket::test_w2s(L"");
 
 int main(int nargs, char** args){
 #   ifdef _WIN32 
@@ -27,3 +29,5 @@ int main(int nargs, char** args){
 
     return res;
 }
+
+#endif

@@ -1,84 +1,23 @@
 #ifndef cornus_thicket_context_hpp
 #define cornus_thicket_context_hpp
 
+#include "base.hpp"
+#include "utils.hpp"
+
 #include "node.hpp"
 #include <streambuf>
 #include <fstream>
+
 #include <cctype>
-#include <algorithm>
-#include <codecvt>
+//#include <algorithm>
+//#include <codecvt>
+
 
 namespace cornus_thicket {
 
-#define THICKET_MOUNT_SUFFIX_STR(literal_prefix) literal_prefix##".thicket_mount.txt"
+// #define THICKET_MOUNT_SUFFIX_STR(literal_prefix) literal_prefix##".thicket_mount.txt"
+#define THICKET_MOUNT_SUFFIX_STR(literal_prefix) CORNUS_THICKET_CONCAT(literal_prefix,CORNUS_THICKET_MOUNTPOINT_SUFFIX)
 
-// string conversions:
-
-template<typename some_string_t>
-some_string_t
-string2some_string(const std::string& s);
-
-template<>
-std::wstring
-string2some_string<std::wstring>(const std::string& s){
-    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt;  // Deprecated?
-    return cvt.from_bytes(s);
-}
-
-template<>
-std::string
-string2some_string<std::string>(const std::string& s){ return s;}
-
-inline
-string_t
-string2path_string(const std::string& s){ return string2some_string<string_t>(s); }
-
-
-inline
-std::wstring
-test_s2w(const std::string& s){ return string2some_string<std::wstring>(s);}
-
-//..................................................................................
-
-
-template<typename some_string_t>
-std::string
-some_string2string(const some_string_t& s);
-
-
-template<>
-std::string
-some_string2string<std::wstring>(const std::wstring& s){
-    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt;   // Deprecated?
-    return cvt.to_bytes(s);
-}
-
-template<>
-std::string
-some_string2string<std::string>(const std::string& s){ return s;}
-
-
-inline
-std::string
-p2s(const string_t& s){ return some_string2string<string_t>(s); }
-
-
-inline
-std::string
-test_w2s(const std::wstring& s){ return some_string2string<std::wstring>(s);}
-
-//........................................................
-
-
-// trim string:
-inline
-std::string
-trim(const std::string& s)
-{
-   auto wsfront=std::find_if_not(s.begin(),s.end(),[](unsigned char c){return std::isspace(c);});
-   auto wsback=std::find_if_not(s.rbegin(),s.rend(),[](unsigned char c){return std::isspace(c);}).base();
-   return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
-}
 
 
 struct Context
@@ -369,6 +308,8 @@ struct Context
     // materialization methods:
     void clean(); // cleans all under scope
     void materializeAsSymlinks(); // materializes all under scope
+
+    bool silent_ = false;
 
 private:
     void collectRefnodeChildren(Node& n);

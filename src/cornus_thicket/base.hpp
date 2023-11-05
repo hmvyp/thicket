@@ -1,6 +1,8 @@
 #ifndef cornus_thicket_base_hpp
 #define cornus_thicket_base_hpp
 
+#include "config.hpp"
+
 #include <string>
 #include <cstring>
 #include <sstream>
