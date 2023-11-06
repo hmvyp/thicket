@@ -155,8 +155,10 @@ struct Context
 
         // common error prefix lambda:
         auto erprfx = [&pm](const std::string& mnt_entry) -> std::string {
-            return  std::string("mountpoint target ") + mnt_entry +
-                 " in mountpoint description file: " + p2s(pm);
+            return
+                 std::string("\n    in mountpoint description file:\n    ") + p2s(pm)
+                 + "\n    mountpoint target:\n    " + mnt_entry
+                 + "\n    ";
         };
 
         // run over mountpoint entries to calculate and resolve targets:
@@ -190,8 +192,8 @@ struct Context
             auto ptcn = fs::weakly_canonical(pt, err); // the tail may not exist (e.g. may point to another mountpoint)
             if(err){
                 nd->resolved_ = NODE_FAILED_TO_RESOLVE;
-                report_error(erprfx(eno) + "mountpoint target "
-                        + p2s(pt) + " can not be converted to canonical path"
+                report_error(erprfx(eno) + "mountpoint target\n    "
+                        + p2s(pt) + "\n    can not be converted to canonical path"
                         , SEVERITY_ERROR
                 );
                 continue;
@@ -201,7 +203,7 @@ struct Context
             if(tgn == 0){
                 nd->resolved_ = NODE_FAILED_TO_RESOLVE;
                 report_error( erprfx(eno) +
-                            + " can not resolve mountpoint target:"
+                            + "can not resolve mountpoint target:\n    "
                             + p2s(ptcn)
                         , SEVERITY_ERROR
                 );
@@ -310,6 +312,7 @@ struct Context
     void materializeAsSymlinks(); // materializes all under scope
 
     bool silent_ = false;
+    bool force_ = false;
 
 private:
     void collectRefnodeChildren(Node& n);

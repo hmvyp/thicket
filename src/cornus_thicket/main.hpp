@@ -2,7 +2,8 @@
 #define cornus_thicket_main_hpp
 
 #include "context.hpp"
-#include "string.h"
+#include <string.h>
+#include <array>
 
 namespace cornus_thicket {
 
@@ -37,6 +38,7 @@ struct Option
 
 inline Option opt_clean_only("-c");
 inline Option opt_quiet("-q");
+inline Option opt_force("-f"); // do not ask anything
 inline Option opt_method("-m", "symlinks");
 inline Option opt_print_tree("-p");
 inline Option opt_dry_run("-d");
@@ -49,37 +51,50 @@ int run_thicket(fs::path root, fs::path scope){
     if(opt_quiet.is_set){
         ctx.silent_ = true;
     }
+    if(opt_force.is_set){
+        ctx.force_ = true;
+    }
+    
+    bool q = opt_quiet.is_set;
 
+    if(!q){std::cout << "\nresolving tree nodes...";};
     ctx.resolve();
 
     if(opt_print_tree.is_set){
         print_tree(ctx.nodeAt(ctx.scope_));
     }
 
+
+    if(!q){std::cout << "\ncleaning up previous artefacts...\n";};
     ctx.clean();
 
     if(!opt_clean_only.is_set){
         if(strcmp(opt_method.val, "symlinks") == 0){
+            if(!q){std::cout << "\nstarting materialization process...\n";};
+            
             ctx.materializeAsSymlinks(); // ToDo: return result ???
+            
+			if(!q){std::cout << "\n...something is done";};
         }else{
-            std::cout << "\nError:unrecognized materialization method: " << opt_method.val;
+            std::cout << "\nError:unrecognized materialization method: " << opt_method.val << "\n";
             return 1;
         }
     }
 
+    std::cout << "\n";
+
     return 0;
 }
 
-
-
-inline std::array all_options{
+inline std::array<Option*, 7> all_options{{
     &opt_clean_only,
     &opt_quiet,
+    &opt_force,
     &opt_method,
     &opt_print_tree,
     &opt_dry_run,
     &opt_end_of_options
-};
+}};
 
 inline bool parse_option(char* s, bool& err){
     if(opt_end_of_options.is_set){

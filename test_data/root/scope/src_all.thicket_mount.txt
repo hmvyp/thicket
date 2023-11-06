@@ -1,4 +1,6 @@
 src
-blabla/provoke/erroor
+blabla/provoke/error
+.blabla/provoke/another/error
 ../importedA/src
 ../importedB/src_all
+../../../src

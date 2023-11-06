@@ -32,7 +32,7 @@ enum Severity{
 };
 
 void report_error(std::string err, Severity sev){
-    auto errs =  std::string("Error: ") + err  + "\n";
+    auto errs =  std::string("\nError: ") + err  + "\n";
     if(sev >= SEVERITY_PANIC){
        throw errs;
     }

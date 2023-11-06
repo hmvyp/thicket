@@ -84,21 +84,21 @@ Context::materializeAsSymlinks(Node& n){
     }
 }
 
-void Context::clean(){ // cleans all under scope
+void Context::clean(){ // cleans all under the scope
     std::map<fs::path, bool> to_delete;
     clean(this->scope_, to_delete);
     if(to_delete.size() > 0){
         if(!silent_){
-            std::cout << " \n Deleting generated files and directories: \n ";
-        }
+            std::cout << " \n Deleting generated files and directories: \n";
 
-        for(auto& pair : to_delete){
-            std::cout << p2s(pair.first);
+            for(auto& pair : to_delete){
+                std::cout << p2s(pair.first) << "\n";
+            }
         }
 
         char yn = 0;
 
-        if(!silent_){
+        if(!silent_  && !force_){ // then ask before deleting
             do
             {
                 std::cout << "\n delete? [y/n]\n";
@@ -108,8 +108,8 @@ void Context::clean(){ // cleans all under scope
         }
 
         std::error_code er;
-        if(silent_ || yn == 'y'){
-            for(auto& pair : to_delete){
+        if(silent_ || force_ || yn == 'y'){
+            for(auto& pair : to_delete){ // then delete
                 auto& p = pair.first;
                 remove_all(p, er );
                 if(er){
