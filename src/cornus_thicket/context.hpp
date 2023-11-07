@@ -141,7 +141,7 @@ struct Context
             std::string line;
             while(buffer >> line) {
                 auto text_path = trim(line);
-                if(text_path.empty()){
+                if(text_path.empty() || text_path[0] == '#'){ // emty or comment
                     continue;
                 }
 
