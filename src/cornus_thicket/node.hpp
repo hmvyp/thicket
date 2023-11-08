@@ -56,6 +56,7 @@ struct Node
         // Other error cases may lead to (valid == true) but (resolved_ == NODE_FAILED_TO_RESOLVE)
 
     ResolveStatus resolved_ = NODE_UNRESOLVED;
+    bool has_ref_descendants_ = false; // for final nodes (if there are mountpoints among descendants)
 
     fs::path path_ ; // canonical
     std::map<string_t, Node*> children;

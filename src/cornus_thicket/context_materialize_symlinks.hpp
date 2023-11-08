@@ -7,7 +7,7 @@ namespace cornus_thicket {
 
 inline void
 Context::clean(const fs::path& p, std::map<fs::path, bool>& to_delete){
-    if(fs::status(p).type() != fs::file_type::directory){
+    if(fs::symlink_status(p).type() != fs::file_type::directory){
         return;
     }
 
@@ -21,7 +21,7 @@ Context::clean(const fs::path& p, std::map<fs::path, bool>& to_delete){
          if(
                  is_thicket_mountpoint_description(p, &mountpoint_path)
                  && !mountpoint_path.empty() // hope impossible
-                 && fs::status(mountpoint_path).type() != fs::file_type::not_found
+                 && fs::symlink_status(mountpoint_path).type() != fs::file_type::not_found
          ){
              to_delete[mountpoint_path] = true;
          }
@@ -43,38 +43,51 @@ Context::clean(const fs::path& p, std::map<fs::path, bool>& to_delete){
 inline void
 Context::materializeAsSymlinks(Node& n){
     if(n.ref_type == REFERENCE_NODE){
-        if(n.final_targets.size() == 1){ // exactly one final target
-            // create symlink:
-            fs::path base = n.path_.parent_path();
-            fs::path link_target_canon = n.final_targets.begin()->second->path_;
-            fs::path link_target = fs::relative(link_target_canon, base);
+        if(n.final_targets.size() == 1) {// if exactly one final target
+            Node* ft =  n.final_targets.begin()->second;
 
-            std::error_code er;
+            // is the target complete (fully final) or located inside materialization scope?
+            if(!ft->has_ref_descendants_ || path_in_scope(ft->path_))
+            {
+                // then it can be symlinked
 
-            if(n.target_type == DIR_NODE) {
-                create_directory_symlink(link_target, n.path_, er);
-            }else if(n.target_type == FILE_NODE) {
-                create_symlink(link_target, n.path_, er);
+                // create symlink:
+                fs::path base = n.path_.parent_path();
+                fs::path link_target_canon = ft->path_ ; // n.final_targets.begin()->second->path_;
+                fs::path link_target = fs::relative(link_target_canon, base);
+
+                std::error_code er;
+
+                if(n.target_type == DIR_NODE) {
+                    create_directory_symlink(link_target, n.path_, er);
+                }else if(n.target_type == FILE_NODE) {
+                    create_symlink(link_target, n.path_, er);
+                }
+
+                if(er){
+                    report_error(
+                            std::string("Failed to create symlink \n    from: ")
+                            + p2s(n.path_)
+                            + "\n    to: "
+                            + p2s(link_target_canon)
+                            , SEVERITY_ERROR
+                    );
+                }
+
+                return; // do not recurse further, link is enough
             }
 
-            if(er){
-                report_error(
-                        std::string("Failed to create symlink \n    from: ")
-                        + p2s(n.path_)
-                        + "\n    to: "
-                        + p2s(link_target_canon)
-                        , SEVERITY_ERROR
-                );
-            }
-
-            return; // do not recurse further, link is enough
-
-        }else if(n.final_targets.size() > 1) { // if more than one target
-            if(n.target_type == DIR_NODE){
-                // materialize node as directory:
-                fs::create_directory(n.path_); // ToDo: catch ???
-            }
+            // else (in case of "foreign" target containing mountpoints)
+            // the target can not be symlinked and shall be materialized here
         }
+
+        // if node can not be symlinked:
+
+        if(n.target_type == DIR_NODE){
+            // materialize node as directory:
+            fs::create_directory(n.path_); // ToDo: catch ???
+        }
+
     }
 
 

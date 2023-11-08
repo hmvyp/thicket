@@ -71,13 +71,22 @@ struct Context
         }
     }
 
-    Node* existingFileAt(const fs::path& p){
-        fs::file_status fstat = status(p);
+    bool path_in_scope(const fs::path& p_canon){
+       const char_t* ss = scope_.c_str();
+       const char_t* ps = p_canon.c_str();
 
-        auto ft = fstat.type();
-        if(ft == fs::file_type::not_found) {
-            return nullptr; // not a filesystem node at all
-        }
+       for(int i = 0;; ++i){
+           if(ss[i] == 0){
+               return true;
+           }else if(ss[i] != ps[i]){
+               break;
+           }
+       }
+       return false;
+    }
+
+    Node* existingFileAt(const fs::path& p){
+        fs::file_status fstat = fs::symlink_status(p);
 
         // The path represents a filesystem object.
         // From here, if something goes wrong, it is an error
@@ -87,15 +96,11 @@ struct Context
         nd->ref_type = FINAL_NODE;
         nodes[p] = nd;
 
-        switch(ft){
-        case fs::file_type::regular:
-        case fs::file_type::symlink:
+        if(fs::is_symlink(fstat) || fs::is_regular_file(fstat)){
             nd->target_type = FILE_NODE;
-            break;
-        case fs::file_type::directory:
+        }else if(fs::is_directory(fstat)){
             nd->target_type = DIR_NODE;
-            break;
-        default:
+        }else{
             report_error(std::string("cornus_thicket: file type unsupported (shall be regular, symlink or directory) ")
                     + p.string()
                     , SEVERITY_ERROR
@@ -117,7 +122,7 @@ struct Context
 
         pm.replace_filename( (string_t)p.filename() + MNT_SUFFIX() );
 
-        fs::file_status fstat = status(pm);
+        fs::file_status fstat = symlink_status(pm);
 
         if(fstat.type() != fs::file_type::regular){
             return nullptr; // not a mountpoint (not necessary an error)

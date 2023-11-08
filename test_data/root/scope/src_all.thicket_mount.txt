@@ -1,8 +1,5 @@
 src
-
-# blabla/provoke/error
-# blabla/provoke/another/error
-
+#blabla/provoke/error
+#blabla/provoke/another/error
 ../importedA/src
 ../importedB/src_all
-
