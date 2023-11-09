@@ -144,7 +144,7 @@ struct Context
             buffer << is.rdbuf();
 
             std::string line;
-            while(buffer >> line) {
+            while(std::getline(buffer, line)) {
                 auto text_path = trim(line);
                 if(text_path.empty() || text_path[0] == '#'){ // emty or comment
                     continue;
