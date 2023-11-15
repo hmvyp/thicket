@@ -54,7 +54,6 @@ detectRefnodeTargetType(Node& n){ // assuming final targets already collected
                 + " has regular file target but has more than one final target nodes"
                 , SEVERITY_ERROR
         );
-
     }
 }
 

@@ -1,18 +1,19 @@
-#ifndef context_materialize_symlinks_hpp
-#define context_materialize_symlinks_hpp
+#ifndef context_materialize_as_copy_hpp
+#define context_materialize_as_copy_hpp
 
 #include "context.hpp" // not necessary, just help IDE to resolve symbols
 
 namespace cornus_thicket {
 
+
 inline void
-Context::materializeAsSymlinks(Node& n){
+Context::materializeAsCopy(Node& n, bool symlinks_inside){
     if(n.ref_type == REFERENCE_NODE){
         if(n.final_targets.size() == 1) {// if exactly one final target
             Node* ft =  n.final_targets.begin()->second;
 
-            // is the target complete (fully final) or located inside materialization scope?
-            if(!ft->has_ref_descendants_ || path_in_scope(ft->path_))
+            // is the target located inside materialization scope?
+            if(symlinks_inside && path_in_scope(ft->path_))
             {
                 // then it can be symlinked
 
@@ -51,18 +52,41 @@ Context::materializeAsSymlinks(Node& n){
         if(n.target_type == DIR_NODE){
             // materialize node as directory:
             fs::create_directory(n.path_); // ToDo: catch ???
-        }
+        }else if (n.target_type == FILE_NODE){
+            if(n.final_targets.size() == 1){
+                Node* ft =  n.final_targets.begin()->second;
+                std::error_code er;
+                // copy file:
+                fs::copy(
+                       ft->path_,
+                       n.path_,
+                       fs::copy_options::copy_symlinks,
+                       er
+                );
 
+                if(er){
+                    report_error(
+                            std::string("Failed to copy a file from: ")
+                            + p2s(n.path_)
+                            + "\n    to: "
+                            + p2s(ft->path_)
+                            , SEVERITY_ERROR
+                    );
+                }
+            } // else: hope the error has been already reported (more than one target for regular file)
+        }
     }
 
-    // for final (filesystem) nodes or references with more than one target:
+
+    // for final (filesystem) nodes or references which can not be symlinked:
     for(auto& pair : n.children){
-        materializeAsSymlinks(*pair.second);
+        materializeAsCopy(*pair.second, symlinks_inside);
     }
 }
 
-void Context::materializeAsSymlinks(){ // materializes all under the scope
-  materializeAsSymlinks(*nodeAt(scope_));
+
+void Context::materializeAsCopy(bool symlinks_inside){ // materializes all under scope
+  materializeAsCopy(*nodeAt(scope_), symlinks_inside);
 }
 
 

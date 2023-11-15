@@ -75,7 +75,13 @@ int run_thicket(fs::path root, fs::path scope){
             ctx.materializeAsSymlinks(); // ToDo: return result ???
             
 			if(!q){std::cout << "\n...something is done";};
-        }else{
+        }else if(strcmp(opt_method.val, "copy") == 0 || strcmp(opt_method.val, "mixed") == 0){
+            if(!q){std::cout << "\nstarting materialization process...\n";};
+
+            ctx.materializeAsCopy(strcmp(opt_method.val, "mixed") == 0);
+
+            if(!q){std::cout << "\n...something is done";};
+       }else{
             std::cout << "\nError:unrecognized materialization method: " << opt_method.val << "\n";
             return 1;
         }
@@ -96,6 +102,24 @@ inline std::array<Option*, 7> all_options{{
     &opt_end_of_options
 }};
 
+inline void show_help(){
+    std::cout << "\nThicket dependencies resolver. Command line: \n\n"
+            "<thicket_executable> <options> [--] root scope\n\n"
+            "Parameters:\n"
+            "    root - the universe where dependency targets may be found\n"
+            "    scope - a path relative(!) to the root \n"
+            "            where dependencies shall be resolved (materialized)\n"
+            "\nAvailable options:\n"
+            "-c  clean only\n"
+            "-f force (do not ask before cleaning previous thicket artifacts)\n"
+            "-q  quiet (implies -f), suppress console i/o except of error reporting\n"
+            "-m=method  materialization method: symlinks (default), copy, mixed\n"
+            "    symlinks - simlinks whereever possible\n"
+            "    mixed - copy from the outside of the materialization scope, symlink inside\n"
+            "    copy - always copy\n"
+            ;
+}
+
 inline bool parse_option(char* s, bool& err){
     if(opt_end_of_options.is_set){
         return false;
@@ -114,7 +138,7 @@ inline bool parse_option(char* s, bool& err){
                 err = true;
                 std::cout << "\nError: extra characters in option " << opt->key << " Found: " << s;
                 return false;
-            }else if(s[klen != '=']){
+            }else if(s[klen] != '='){
                 err = true;
                 std::cout << "\nError: no = before value in option " << opt->key << " Found: " << s;
                 return false;
@@ -144,15 +168,8 @@ main(int nargs, char** args){
 
     size_t nparams = 0;
 
-    /*
-    if(nargs != 3){
-        std::cout << "2 parameters required: root, scope \n (scope shall be relative to root)";
-        return 1;
-    }
-    */
-
-    char* root = args[1];
-    char* scope = args[2];
+    char* root = nullptr;
+    char* scope = nullptr;
 
     bool err = false;
     for(int i = 1; i < nargs; ++i){
@@ -180,6 +197,11 @@ main(int nargs, char** args){
             std::cout << "\nError: extra parameter found:  "  << arg;
             return 1;
         }
+    }
+
+    if(scope == nullptr){
+        show_help();
+        return 1;
     }
 
 

@@ -2,7 +2,6 @@
 #define cornus_thicket_node_hpp
 
 #include "base.hpp"
-#include "filter.hpp"
 
 #include <set>
 #include <unordered_set>

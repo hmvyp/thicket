@@ -314,7 +314,8 @@ struct Context
 
     // materialization methods:
     void clean(); // cleans all under scope
-    void materializeAsSymlinks(); // materializes all under scope
+    void materializeAsSymlinks(); // materializes all under the scope
+    void materializeAsCopy(bool symlinks_inside); // materializes all under the scope
 
     bool silent_ = false;
     bool force_ = false;
@@ -325,12 +326,15 @@ private:
 
     static void clean(const fs::path& p, std::map<fs::path, bool>& to_delete);
     void materializeAsSymlinks(Node& n);
+    void materializeAsCopy(Node& n, bool symlinks_inside);
 };
 
 } // namespace
 
 #include "context_resolve_fin.hpp"
 #include "context_resolve_ref.hpp"
+#include "context_clean.hpp"
 #include "context_materialize_symlinks.hpp"
+#include "context_materialize_as_copy.hpp"
 
 #endif
