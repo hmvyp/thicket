@@ -2,6 +2,8 @@
 #define context_materialize_as_copy_hpp
 
 #include "context.hpp" // not necessary, just help IDE to resolve symbols
+#include "context_materialize_symlinks.hpp" // mk_symlink()
+
 
 namespace cornus_thicket {
 
@@ -9,42 +11,21 @@ namespace cornus_thicket {
 inline void
 Context::materializeAsCopy(Node& n, bool symlinks_inside){
     if(n.ref_type == REFERENCE_NODE){
-        if(n.final_targets.size() == 1) {// if exactly one final target
-            Node* ft =  n.final_targets.begin()->second;
-
-            // is the target located inside materialization scope?
-            if(symlinks_inside && path_in_scope(ft->path_))
-            {
-                // then it can be symlinked
-
-                // create symlink:
-                fs::path base = n.path_.parent_path();
-                fs::path link_target_canon = ft->path_ ; // n.final_targets.begin()->second->path_;
-                fs::path link_target = fs::relative(link_target_canon, base);
-
-                std::error_code er;
-
-                if(n.target_type == DIR_NODE) {
-                    create_directory_symlink(link_target, n.path_, er);
-                }else if(n.target_type == FILE_NODE) {
-                    create_symlink(link_target, n.path_, er);
-                }
-
-                if(er){
-                    report_error(
-                            std::string("Failed to create symlink \n    from: ")
-                            + p2s(n.path_)
-                            + "\n    to: "
-                            + p2s(link_target_canon)
-                            , SEVERITY_ERROR
-                    );
-                }
-
+        if(symlinks_inside) {  // (may return from the inside)
+            if(n.targets.size() == 1 && path_in_scope(n.targets[0]->path_)){ // if a single immediate target is in scope
+                mk_symlink(n, *n.targets[0]); // the target shall be resolved, so just make symlink to it
                 return; // do not recurse further, link is enough
+            }else if(n.final_targets.size() == 1) {// if exactly one final target
+                Node* ft =  n.final_targets.begin()->second;
+                if(path_in_scope(ft->path_))
+                {
+                    mk_symlink(n, *ft);
+                    return; // do not recurse further, link is enough
+                }
             }
 
-            // else (in case of "foreign" target containing mountpoints)
-            // the target can not be symlinked and shall be materialized here
+            // We ignore exotic cases if some intermediate target is in the scope
+            // while immediate and final targets are not.
         }
 
         // if node can not be symlinked:
