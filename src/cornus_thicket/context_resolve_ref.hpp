@@ -124,6 +124,17 @@ Context::collectRefnodeChildren(Node& n){
 
 void
 Context:: resolveReference(Node& n){ // assuming targets are resolved
+    if(n.resolved_ == NODE_RESOLVING){
+        report_error(std::string(
+                "Circular dependency encountered while resolving reference node at ")
+                    + p2s(n.path_),
+                    SEVERITY_ERROR
+        );
+        return;
+    }
+
+    n.resolved_ = NODE_RESOLVING;
+
     collectFinalTargets(n);
     collectRefnodeChildren(n);
     for(auto& pair: n.children){

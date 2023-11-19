@@ -88,25 +88,22 @@ struct Context
     Node* existingFileAt(const fs::path& p){
         fs::file_status fstat = fs::symlink_status(p);
 
-        // The path represents a filesystem object.
-        // From here, if something goes wrong, it is an error
-        // and we shall return erroneous node instead of nullptr
+        TargetType tt = UNKNOWN_TARGET_TYPE;
+
+        if(fs::is_symlink(fstat) || fs::is_regular_file(fstat)){
+            tt = FILE_NODE;
+        }else if(fs::is_directory(fstat)){
+            tt = DIR_NODE;
+        }else{
+
+            return nullptr;  // silently skip exotic filesystem objects
+        }
 
         Node* nd = this->create<Node>(p);
         nd->ref_type = FINAL_NODE;
         nodes[p] = nd;
+        nd->target_type = tt;
 
-        if(fs::is_symlink(fstat) || fs::is_regular_file(fstat)){
-            nd->target_type = FILE_NODE;
-        }else if(fs::is_directory(fstat)){
-            nd->target_type = DIR_NODE;
-        }else{
-            report_error(std::string("cornus_thicket: file type unsupported (shall be regular, symlink or directory) ")
-                    + p.string()
-                    , SEVERITY_ERROR
-            );
-            return nd; // return invalid node
-        }
 
         nd->valid_= true;
         return nd;
@@ -255,10 +252,17 @@ struct Context
             }else{
                 return it->second;
             }
-        }else if(
-                parn->ref_type == REFERENCE_NODE
-                && parn->resolved_ == NODE_FAILED_TO_RESOLVE
-        ){
+        }else if(parn->ref_type == REFERENCE_NODE){
+
+            if(parn->resolved_ == NODE_RESOLVING){
+                report_error(std::string(
+                        "Circular dependency encountered while accessing node at ")
+                            + p2s(parn->path_),
+                            SEVERITY_ERROR
+                );
+            }
+
+            // reference node shall be resolved here, so just return null:
             return nullptr;
         }
 
@@ -284,6 +288,16 @@ struct Context
             return nd;
         }
 
+        if(nd->resolved_ == NODE_RESOLVING){
+            report_error(std::string(
+                    "Circular dependency encountered while resolving node at ")
+                        + p2s(nd->path_),
+                        SEVERITY_ERROR
+            );
+            return nullptr;
+        }
+
+
         resolve(*nd);
         return nd;
     }
@@ -292,6 +306,16 @@ struct Context
         if(n.resolved_ >= NODE_RESOLVED){
             return;
         }
+
+        if(n.resolved_ == NODE_RESOLVING){
+            report_error(std::string(
+                    "Circular dependency encountered while resolving final node at ")
+                        + p2s(n.path_),
+                        SEVERITY_ERROR
+            );
+            return;
+        }
+
 
         try{
             switch(n.ref_type){

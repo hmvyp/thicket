@@ -34,7 +34,16 @@ is_thicket_mountpoint_description(
 void
 Context::resolveFinal(Node& n){
 
-    if(!n.valid_ || n.resolved_ > NODE_UNRESOLVED){
+    if(!n.valid_ || n.resolved_ >= NODE_RESOLVED){
+        return;
+    }
+
+    if(n.resolved_ == NODE_RESOLVING){
+        report_error(std::string(
+                "Circular dependency encountered while resolving final node at ")
+                    + p2s(n.path_),
+                    SEVERITY_ERROR
+        );
         return;
     }
 
@@ -47,6 +56,8 @@ Context::resolveFinal(Node& n){
     default:
         return; // shall be unreachable (n.valid_ == false)
     }
+
+    n.resolved_ = NODE_RESOLVING;
 
     // resolve directory:
 

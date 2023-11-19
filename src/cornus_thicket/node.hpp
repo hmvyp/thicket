@@ -26,7 +26,7 @@ enum ReferenceType {
 
 enum ResolveStatus{
     NODE_UNRESOLVED,
-    // ToDo: add NODE_RESOLVING (to detect cycles)
+    NODE_RESOLVING, //  (to detect cycles)
     NODE_RESOLVED,  // The whole subtree of all node descendants is built
     NODE_FAILED_TO_RESOLVE
 };

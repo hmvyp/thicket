@@ -1,0 +1,2 @@
+src
+  ../importedB/src_super/src
