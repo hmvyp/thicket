@@ -1,14 +1,3 @@
-Detect circular references (up to now Thicket gets stuck in a cycle)
-
-
-Test data must cover the following cases:
-    a referent is final but located above a mountpoint
-    a referent itself is a reference and located below a mountpoint
-every case from the above shall, in turn, cover 2 subcases of referent location:
-    1) inside 
-    2) outside
-the materialization scope
-
 
 Maybe introduce thicket_ignore.txt files containing relative paths where Thicket
 must stop diving deeper while analyzing the file tree.

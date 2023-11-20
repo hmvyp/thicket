@@ -46,8 +46,12 @@ Available options:
 -c clean only (delete all artefacts from previous merging)
 -f force (do not ask before artefacts deletion)
 -q quiet (implies force; does not not output anything to console except of errors)
+-m=method materialization method. Available methods: 
+    symlinks (default)
+    copy
+    mixed - copy from the outside of materialization scope, symlinks inside.
 
-Parameters:
+Parameters (both are required):
 
 root_path   — points to the whole «universe» where all paths are resolved
 scope_path  — a path relative (!) to root_path that points to root subtree 
