@@ -37,6 +37,7 @@ struct Node
 {
     TargetType target_type = UNKNOWN_TARGET_TYPE;
     ReferenceType ref_type = UNKNOWN_REFTYPE;
+    bool is_mountpoint = false;
 
     Node(Node&&) = delete; // do not move/copy
 
@@ -44,7 +45,8 @@ struct Node
             fs::path p // assuming canonical
     )
         : path_(p)
-    {}
+    {
+    }
 
     const fs::path& get_path() {return path_;}
 

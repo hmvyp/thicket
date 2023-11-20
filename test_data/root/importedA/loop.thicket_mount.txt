@@ -1,0 +1,4 @@
+../scope/src_all
+
+# provoke circular dependency error:
+# ../scope/looop

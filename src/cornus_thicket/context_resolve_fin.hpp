@@ -80,31 +80,40 @@ Context::resolveFinal(Node& n){
             // mountpoint case:
             Node* cn = mountpointAt(mountpoint_path);
             if(cn != nullptr){
-                resolveReference(*cn);
+                // resolveReference(*cn, true);  // redundant? mountpointAt() have already resolved the node
                 n.children[mountpoint_path.filename()] = cn;
                 has_ref_descendants = true;
-            }// else  report error?
+            }else{
+                report_error(std::string(
+                        "Can not create mountpoint at ")
+                            + p2s(mountpoint_path),
+                            SEVERITY_ERROR
+                );
+            }
+
             continue;
         }
 
         //skip possible thicket artifact:
 
-        if(is_thicket_mountpoint_description(p/MNT_SUFFIX(), nullptr)){
+        if(fs::exists(fs::symlink_status(fs::path(p.native() + MNT_SUFFIX())))){
             continue; // skip possibly generated materialization of a mountpoint
         }
 
         // final (filesystem) case:
 
-        Node* cn = existingFileAt(p);
-        if(cn == nullptr){
-            // ToDo: report error???
-            continue;
-        }
+        {
+            Node* cn = existingFileAt(p);
+            if(cn == nullptr){
+                // ToDo: report error???
+                continue;
+            }
 
-        if(cn->valid_) {
-            resolveFinal(*cn);
-            n.children[p.filename()] = cn; // append existing final node as child
-            has_ref_descendants = has_ref_descendants || cn->has_ref_descendants_;
+            if(cn->valid_) {
+                resolveFinal(*cn);
+                n.children[p.filename()] = cn; // append existing final node as child
+                has_ref_descendants = has_ref_descendants || cn->has_ref_descendants_;
+            }
         }
     }
 

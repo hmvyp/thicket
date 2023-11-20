@@ -99,6 +99,15 @@ struct Context
             return nullptr;  // silently skip exotic filesystem objects
         }
 
+        // from here it seems that it is final node
+        // (we hope the caller previously checks if it is a mountpoint)
+
+        auto it = nodes.find(p);
+        if(it != nodes.end()){
+            Node* ret = it->second; // node already exists
+            return ret; // maybe check if node is final and report an internal error otherwise?
+        }
+
         Node* nd = this->create<Node>(p);
         nd->ref_type = FINAL_NODE;
         nodes[p] = nd;
@@ -112,26 +121,55 @@ struct Context
     // also resolves the reference node:
     Node* mountpointAt(const fs::path& p){
         if(p.begin() == p.end()){
-            return nullptr;
+            return nullptr; // empty path is not a mountpoint
         }
 
-        auto pm = p;  // will be path to mountpoint description file
+        fs::path pm = p;  // will be path to mountpoint description file
 
         pm.replace_filename( (string_t)p.filename() + MNT_SUFFIX() );
 
         fs::file_status fstat = symlink_status(pm);
 
-        if(fstat.type() != fs::file_type::regular){
-            return nullptr; // not a mountpoint (not necessary an error)
+        if(!fs::exists(fstat)) { // if mountpoint description does not exist
+            return nullptr; // it is not a mountpoint (not necessary an error)
         }
 
         // The path represents a mountpoint.
         // From here, if something goes wrong, it is an error
         // and we shall return erroneous node instead of nullptr
 
+        auto it = nodes.find(p);
+        if(it != nodes.end()){
+            Node* ret = it->second; // node already exists
+            if(!ret->is_mountpoint){
+                report_error(
+                        std::string("Internal Thicket error: existing node is not a mountpoint but must be : ")
+                        + p2s(p), SEVERITY_ERROR
+                );
+                //  ToDo: maybe SEVERITY_PANIC? (now the node type and validity is changed)
+                ret->ref_type = REFERENCE_NODE;
+                ret->is_mountpoint = true;
+                ret->valid_ = false;
+                ret->resolved_ = NODE_FAILED_TO_RESOLVE;
+            }
+
+            return ret;  // return existing node
+        }
+
         Node* nd = create<Node>(p);
         nd->ref_type = REFERENCE_NODE;
+        nd->is_mountpoint = true;
         nodes[p] = nd;
+
+        if(!fs::is_regular_file(fstat)) {
+            report_error(
+                    std::string("A mountpoint description is not a regular file: ")
+                    + p2s(pm), SEVERITY_ERROR
+            );
+
+            nd->resolved_ = NODE_FAILED_TO_RESOLVE; // (also valid == false)
+            return nd;
+        }
 
         auto& mt = nd->mount_targets;
 
@@ -162,6 +200,8 @@ struct Context
                  + "\n    mountpoint target:\n    " + mnt_entry
                  + "\n    ";
         };
+
+        nd->resolved_ = NODE_RESOLVING; // to catch circular dependencies
 
         // run over mountpoint entries to calculate and resolve targets:
         for(auto& eno : mt){
@@ -202,7 +242,7 @@ struct Context
             }
 
             Node* tgn = resolveAt(ptcn); // resolve the target
-            if(tgn == 0){
+            if(tgn == 0 || !tgn->valid_ || tgn->resolved_ != NODE_RESOLVED){
                 nd->resolved_ = NODE_FAILED_TO_RESOLVE;
                 report_error( erprfx(eno) +
                             + "can not resolve mountpoint target:\n    "
@@ -218,7 +258,7 @@ struct Context
         nd->valid_ = true;
 
         // Reference node is useless being unresolved, so resolve it:
-        resolveReference(*nd);
+        resolveReference(*nd, false); // NODE_RESOLVING is already set
 
         return nd;
     }
@@ -263,7 +303,7 @@ struct Context
             }
 
             // reference node shall be resolved here, so just return null:
-            return nullptr;
+            return nullptr;  // may be report error?
         }
 
         // ... else try as mountpoint. If failed, try as filesystem object under the parent.
@@ -323,7 +363,7 @@ struct Context
                 resolveFinal(n);  // resolve as filesystem object
                 return;
             case REFERENCE_NODE:
-                resolveReference(n);  // resolve as mountpoint or its descendants
+                resolveReference(n, true);  // resolve as mountpoint or its descendants
                 return;
             default:
                 return; // unresolved
@@ -334,7 +374,7 @@ struct Context
 
     void resolveFinal(Node& n);
 
-    void resolveReference(Node& n);
+    void resolveReference(Node& n, bool check_resolving);
 
     // materialization methods:
     void clean(); // cleans all under scope

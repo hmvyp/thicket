@@ -123,8 +123,12 @@ Context::collectRefnodeChildren(Node& n){
 
 
 void
-Context:: resolveReference(Node& n){ // assuming targets are resolved
-    if(n.resolved_ == NODE_RESOLVING){
+Context:: resolveReference(Node& n, bool check_resolving){ // assuming targets are resolved
+    if(n.resolved_ >= NODE_RESOLVED){
+        return;
+    }
+
+    if(check_resolving && n.resolved_ == NODE_RESOLVING){
         report_error(std::string(
                 "Circular dependency encountered while resolving reference node at ")
                     + p2s(n.path_),
