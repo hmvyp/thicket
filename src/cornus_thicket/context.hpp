@@ -193,6 +193,10 @@ struct Context
             return nd;
         }
 
+
+        nd->valid_ = true; // (from here only partial fails are possible)
+
+
         // common error prefix lambda:
         auto erprfx = [&pm](const std::string& mnt_entry) -> std::string {
             return
@@ -242,8 +246,15 @@ struct Context
             }
 
             Node* tgn = resolveAt(ptcn); // resolve the target
-            if(tgn == 0 || !tgn->valid_ || tgn->resolved_ != NODE_RESOLVED){
-                nd->resolved_ = NODE_FAILED_TO_RESOLVE;
+            if(
+                    tgn == nullptr
+                    //|| !tgn->valid_ // (removed; seems redundant since tgn->resolved_ is stronger)
+                                      //  (maybe  valid_ makes sense for final nodes only?)
+                    || tgn->resolved_ != NODE_RESOLVED
+            ){
+                // nd->resolved_ = NODE_FAILED_TO_RESOLVE; // removed because:
+                                                           // 1) it is only partial failure
+                                                           // 2) it will be overwritten by resolveReference()
                 report_error( erprfx(eno) +
                             + "can not resolve mountpoint target:\n    "
                             + p2s(ptcn)
@@ -255,10 +266,8 @@ struct Context
             nd->targets.push_back(tgn);
         }
 
-        nd->valid_ = true;
-
         // Reference node is useless being unresolved, so resolve it:
-        resolveReference(*nd, false); // NODE_RESOLVING is already set
+        resolveReference(*nd, false); // NODE_RESOLVING is already set, so pass false as 2nd arg
 
         return nd;
     }

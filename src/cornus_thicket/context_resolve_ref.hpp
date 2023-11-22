@@ -116,6 +116,7 @@ Context::collectRefnodeChildren(Node& n){
             }
 
             my_child->ref_type = REFERENCE_NODE;
+            my_child->valid_ = true;
             my_child->targets.push_back(tch_node);
         }
     }
@@ -137,6 +138,7 @@ Context:: resolveReference(Node& n, bool check_resolving){ // assuming targets a
         return;
     }
 
+    n.valid_ = true;
     n.resolved_ = NODE_RESOLVING;
 
     collectFinalTargets(n);
