@@ -42,12 +42,11 @@ inline Option opt_force("-f"); // do not ask anything
 inline Option opt_method("-m", "symlinks");
 inline Option opt_print_tree("-p");
 inline Option opt_dry_run("-d");
+inline Option opt_root_lev("-rl", true);
 inline Option opt_end_of_options("--");
 
 
-int run_thicket(fs::path root, fs::path scope){
-    Context ctx(root, scope);
-
+int run_thicket(Context& ctx){
     if(opt_quiet.is_set){
         ctx.silent_ = true;
     }
@@ -92,13 +91,14 @@ int run_thicket(fs::path root, fs::path scope){
     return 0;
 }
 
-inline std::array<Option*, 7> all_options{{
+inline std::array<Option*, 8> all_options{{
     &opt_clean_only,
     &opt_quiet,
     &opt_force,
     &opt_method,
     &opt_print_tree,
     &opt_dry_run,
+    &opt_root_lev,
     &opt_end_of_options
 }};
 
@@ -170,6 +170,7 @@ main(int nargs, char** args){
 
     char* root = nullptr;
     char* scope = nullptr;
+    int root_lev = -1; // root_lev option value (if any, negative otherwise)
 
     bool err = false;
     for(int i = 1; i < nargs; ++i){
@@ -184,15 +185,40 @@ main(int nargs, char** args){
             continue;
         }
 
+
+        // root_lev option changes positional parameters meaning, so try to process the option:
+        if(root_lev < 0 && opt_root_lev.val[0] != 0 ){
+            try{
+                auto lev = std::stoul(opt_root_lev.val, nullptr, 10);
+                if(lev > 100){
+                    std::cout << "\nError: root_lev option too large:  \n";
+                    return 1;
+                }
+
+                root_lev = lev;
+
+            }catch(...) {
+                std::cout << "\nError: root_lev option is not a number:  \n";
+                return 1;
+            }
+        }
+
         ++nparams;
 
         switch(nparams){
         case 1:
-            root = arg;
+            if(root_lev < 0){ // if root_lev not set
+                root = arg;
+            }else{
+                scope = arg;
+            }
             break;
         case 2:
-            scope = arg;
-            break;
+            if(root_lev < 0){
+                scope = arg;
+                break;
+            }
+            //no break
         default:
             std::cout << "\nError: extra parameter found:  "  << arg;
             return 1;
@@ -204,9 +230,13 @@ main(int nargs, char** args){
         return 1;
     }
 
-
-    return run_thicket(root, scope);
-
+    if(root_lev < 0){
+        Context ctx(root, scope);
+        return run_thicket(ctx);
+    }else{
+        Context ctx(root_lev, scope);
+        return run_thicket(ctx);
+    }
 }
 
 }

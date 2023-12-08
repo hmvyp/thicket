@@ -60,8 +60,35 @@ struct Context
             report_error("cornus_thicket::Context: Invalid scope path", SEVERITY_PANIC);
         }
 
-        // ToDo: make root and scope nodes
+        mkRootAndScopeNodes();
+    }
 
+    Context(
+            unsigned root_level, // number of levels above the scope
+            fs::path scope  // in this case: absolute or relative to the current directory
+    ){
+
+        std::error_code err;
+
+        scope_ =  fs::canonical(scope, err);
+
+        if(err){
+            report_error("cornus_thicket::Context: Invalid scope path", SEVERITY_PANIC);
+        }
+
+        fs::path root = scope_;
+
+        for(unsigned i =  root_level; i != 0; i--){
+            root = root.parent_path();
+        }
+
+        root_ = root;
+
+        mkRootAndScopeNodes();
+    }
+
+private:
+    void mkRootAndScopeNodes(){ // this is actually just a part of ctors
         if(existingFileAt(root_) == nullptr){
             report_error("cornus_thicket::Context: Invalid root path", SEVERITY_PANIC);
         }
@@ -71,6 +98,7 @@ struct Context
         }
     }
 
+public:
     bool path_in_scope(const fs::path& p_canon){
        const char_t* ss = scope_.c_str();
        const char_t* ps = p_canon.c_str();
