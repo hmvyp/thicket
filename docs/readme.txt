@@ -33,15 +33,43 @@ The mountpoint description file says that <mountpoint_node_name> virtual node is
 
 Note that we use the term «target» as a shortcut for «reference target» (i.e. referent). At the same time, the «target" may also be  treated as one of the «sources» used while building (merging) the resulting «big» tree. Interchangeable use of terms «target» and «source» may be confusing, but in the current context, the two terms just represent different aspects of the same thing.
 
-Thicket is command line utility, the invokation syntax is:
+Thicket is command line utility, the invokation syntax has two forms:
 
-<thicket executable> <options> root_path scope_path
 
-i.e. something like this:
+1) The first form:
+
+<thicket executable> <options>  [--] root_path scope_path
+
+Parameters (both are required):
+
+root_path   — points to the whole «universe» where all paths are resolved
+scope_path  — a path relative to root_path (!) that points to root subtree 
+              where materialization shall be done.
+
+Example:
 
 thicket -q /absolute/path/to/my/universe relative/path/where/materialization/needed
 
-Available options:
+
+2) The second form:
+
+<thicket_executable> -root_lev=N <other_options> [--] scope_path
+
+N specifies the root as parent (N=1), grandparent(N=2), etc., of the scope_path directory
+
+Parameters:
+
+scope_path - a path, either absolute or relative to the current(!) working directory,
+             where materialization shall be done.
+
+Example: 
+
+thicket root_lev=2 .
+
+In this example Thicket materializes dependencies found in the current working directory with root specified as grandfather of the current working directory 
+
+
+Available options (for both forms):
 
 -c clean only (delete all artefacts from previous merging)
 -f force (do not ask before artefacts deletion)
@@ -51,11 +79,6 @@ Available options:
     copy
     mixed - copy from the outside of materialization scope, symlinks inside.
 
-Parameters (both are required):
-
-root_path   — points to the whole «universe» where all paths are resolved
-scope_path  — a path relative (!) to root_path that points to root subtree 
-              where materialization shall be done.
 
 
 
@@ -147,7 +170,7 @@ After invokation of thicket with scope parameter pointed to «scope» subdirecto
 
 
 Note that almost all subdirectories in scope/src_all are materialized as symlinks except of 
-scope/src_all/x that is materialized as «real» directory. That happened because the «x» directory
+scope/src_all/x that is materialized as «real» directory. That happens because the «x» directory
 is itself merged from two targets (sources) and, therefore, can not be symlinked.
 
 
@@ -155,7 +178,7 @@ Building Thicket
 ----------------
 
 Thicket is written in C++ using std::filesystem, so at least C++17 is needed.
-gcc for Linux and clang for Windows are both ok (at least clang as it bundled with Microsoft command line toolset aka «Build Tools for Visual Studio»)
+gcc or clang for Linux and clang for Windows are both ok (at least clang as it bundled with Microsoft command line toolset aka «Build Tools for Visual Studio»)
 
 To build Thicket just compile the single file: src/cornus_thicket/main.cpp
  (it is the only .cpp file in the Thicket sources, all others are just headers).

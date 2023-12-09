@@ -33,10 +33,11 @@ enum Severity{
 
 void report_error(std::string err, Severity sev){
     auto errs =  std::string("\nError: ") + err  + "\n";
+    std::cout << errs;
+
     if(sev >= SEVERITY_PANIC){
        throw errs;
     }
-    std::cout << errs;
 };
 
 struct ObjectFactory;

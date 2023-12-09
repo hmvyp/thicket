@@ -51,13 +51,19 @@ struct Context
 
         root_ = fs::canonical(root, err);
         if(err){
-            report_error("cornus_thicket::Context: Invalid root path", SEVERITY_PANIC);
+            report_error(
+                    std::string("cornus_thicket::Context: Invalid root path")+ p2s(root),
+                    SEVERITY_PANIC
+            );
         }
 
         scope_ =  fs::canonical(root_/scope, err);
 
         if(err){
-            report_error("cornus_thicket::Context: Invalid scope path", SEVERITY_PANIC);
+            report_error(
+                    std::string("cornus_thicket::Context: Invalid scope path") + p2s(scope),
+                    SEVERITY_PANIC
+            );
         }
 
         mkRootAndScopeNodes();
@@ -73,7 +79,10 @@ struct Context
         scope_ =  fs::canonical(scope, err);
 
         if(err){
-            report_error("cornus_thicket::Context: Invalid scope path", SEVERITY_PANIC);
+            report_error(
+                    std::string("cornus_thicket::Context: Invalid scope path") + p2s(scope),
+                    SEVERITY_PANIC
+            );
         }
 
         fs::path root = scope_;
@@ -307,16 +316,24 @@ public:
             return it->second; // node already exists
         }
 
+        if(
+            std::mismatch(p.begin(), p.end(), root_.begin(), root_.end())
+            .second !=  root_.end()
+        ){
+            report_error(std::string("cornus_thicket: nodeAt() ::path out of root ") + p2s(p), SEVERITY_ERROR);
+            return nullptr;
+        }
+
         auto parp = p.parent_path();
         if(p.empty() || p.begin() == p.end() || parp.empty() || parp == p){
-            report_error(std::string("cornus_thicket: nodeAt() ::Parent path unavailable for ") + p.string(), SEVERITY_ERROR);
+            report_error(std::string("cornus_thicket: nodeAt() ::Parent path unavailable for ") + p2s(p), SEVERITY_ERROR);
             return nullptr;
         }
 
         Node* parn = nodeAt(parp);
         if(!parn){
             return nullptr; // no parent
-            // ToDo: report error?
+            // do not report error (seems redundant)
         }
 
         if(parn->resolved_ == NODE_RESOLVED){

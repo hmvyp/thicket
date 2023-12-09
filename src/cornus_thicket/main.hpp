@@ -42,7 +42,7 @@ inline Option opt_force("-f"); // do not ask anything
 inline Option opt_method("-m", "symlinks");
 inline Option opt_print_tree("-p");
 inline Option opt_dry_run("-d");
-inline Option opt_root_lev("-rl", true);
+inline Option opt_root_lev("-root_lev", true);
 inline Option opt_end_of_options("--");
 
 
@@ -103,15 +103,26 @@ inline std::array<Option*, 8> all_options{{
 }};
 
 inline void show_help(){
-    std::cout << "\nThicket dependencies resolver. Command line: \n\n"
+    std::cout << "\nThicket dependencies resolver. Command line: \n"
+            "\n1st form:\n"
+            "---------\n\n"
             "<thicket_executable> <options> [--] root scope\n\n"
             "Parameters:\n"
             "    root - the universe where dependency targets may be found\n"
-            "    scope - a path relative(!) to the root \n"
+            "    scope - a path relative to the root (!)\n"
             "            where dependencies shall be resolved (materialized)\n"
-            "\nAvailable options:\n"
+            "\n2nd form:\n"
+            "---------\n\n"
+            "<thicket_executable> -root_lev=N <other_options> [--] scope\n\n"
+            "    N specifies the root as parent (N=1), grandparent(N=2), etc., of the scope directory\n"
+            "Parameters:\n"
+            "    scope - a path (either absolute or relative to the current directory) \n"
+            "            where dependencies shall be resolved (materialized)\n"
+            "Example: thicket root_lev=3 .\n"
+            "\n\nAvailable options:\n"
+            "------------------\n\n"
             "-c  clean only\n"
-            "-f force (do not ask before cleaning previous thicket artifacts)\n"
+            "-f  force (do not ask before cleaning previous thicket artifacts)\n"
             "-q  quiet (implies -f), suppress console i/o except of error reporting\n"
             "-m=method  materialization method: symlinks (default), copy, mixed\n"
             "    symlinks - simlinks whereever possible\n"
@@ -198,7 +209,7 @@ main(int nargs, char** args){
                 root_lev = lev;
 
             }catch(...) {
-                std::cout << "\nError: root_lev option is not a number:  \n";
+                std::cout << "\nError: root_lev option is not a number  \n";
                 return 1;
             }
         }
