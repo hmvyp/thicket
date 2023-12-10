@@ -56,7 +56,7 @@ int run_thicket(Context& ctx){
     
     bool q = opt_quiet.is_set;
 
-    if(!q){std::cout << "\nresolving tree nodes...";};
+    if(!q){std::cout << "\nresolving tree nodes...\n";};
     ctx.resolve();
 
     if(opt_print_tree.is_set){
@@ -115,10 +115,12 @@ inline void show_help(){
             "---------\n\n"
             "<thicket_executable> -root_lev=N <other_options> [--] scope\n\n"
             "    N specifies the root as parent (N=1), grandparent(N=2), etc., of the scope directory\n"
-            "Parameters:\n"
-            "    scope - a path (either absolute or relative to the current directory) \n"
+            "\nParameters:\n"
+            "    scope - a path (either absolute or relative to the current working(!) directory) \n"
             "            where dependencies shall be resolved (materialized)\n"
-            "Example: thicket root_lev=3 .\n"
+            "\nExample: thicket -root_lev=2 .\n"
+            "\n  The example materializes dependencies in the current directory (dot passed as a parameter)"
+            "\n  searching for them in the grandfather of the current directory\n"
             "\n\nAvailable options:\n"
             "------------------\n\n"
             "-c  clean only\n"
