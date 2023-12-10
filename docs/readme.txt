@@ -71,8 +71,8 @@ In this example Thicket materializes dependencies found in the current working d
 
 Available options (for both forms):
 
--c clean only (delete all artefacts from previous merging)
--f force (do not ask before artefacts deletion)
+-c clean only (delete all artifacts from previous merging)
+-f force (do not ask before artifacts deletion)
 -q quiet (implies force; does not not output anything to console except of errors)
 -m=method materialization method. Available methods: 
     symlinks (default)
