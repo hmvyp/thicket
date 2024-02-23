@@ -66,7 +66,6 @@ Context::resolveFinal(Node& n){
 
     for (auto const& de : fs::directory_iterator{n.path_}){
         auto& p = de.path();
-        auto pcan = fs::canonical(p);
 
         if(p.empty()){
             continue; //

@@ -403,7 +403,7 @@ public:
 
         if(n.resolved_ == NODE_RESOLVING){
             report_error(std::string(
-                    "Circular dependency encountered while resolving final node at ")
+                    "Circular dependency encountered while resolving a node at ")
                         + p2s(n.path_),
                         SEVERITY_ERROR
             );
@@ -423,6 +423,11 @@ public:
                 return; // unresolved
             }
         }catch(...){
+            report_error(std::string(
+                    "Internal Thicket error: exception while resolving a node at ")
+                        + p2s(n.path_),
+                        SEVERITY_ERROR
+            );
         }
     }
 
