@@ -1,3 +1,6 @@
+# fix the sorting order:
+export LC_ALL=C
+
 find root | sort | while read -r line
 do
     if [[ -L "$line" ]]
