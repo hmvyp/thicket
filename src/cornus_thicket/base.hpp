@@ -84,8 +84,6 @@ private:
 };
 
 
-struct Node; // forward
-
 } //namespace cornus_thicket
 
 

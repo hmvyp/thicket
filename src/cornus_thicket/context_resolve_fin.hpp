@@ -47,7 +47,7 @@ Context::resolveFinal(Node& n){
         return;
     }
 
-    switch(n.target_type){
+    switch(n.node_type){
     case FILE_NODE:
         n.resolved_ = NODE_RESOLVED;
         return;

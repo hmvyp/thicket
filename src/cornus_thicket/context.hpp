@@ -15,9 +15,7 @@
 
 namespace cornus_thicket {
 
-// #define THICKET_MOUNT_SUFFIX_STR(literal_prefix) literal_prefix##".thicket_mount.txt"
 #define THICKET_MOUNT_SUFFIX_STR(literal_prefix) CORNUS_THICKET_CONCAT(literal_prefix,CORNUS_THICKET_MOUNTPOINT_SUFFIX)
-
 
 
 struct Context
@@ -125,7 +123,7 @@ public:
     Node* existingFileAt(const fs::path& p){
         fs::file_status fstat = fs::symlink_status(p);
 
-        TargetType tt = UNKNOWN_TARGET_TYPE;
+        NodeType tt = UNKNOWN_NODE_TYPE;
 
         if(fs::is_symlink(fstat) || fs::is_regular_file(fstat)){
             tt = FILE_NODE;
@@ -148,7 +146,7 @@ public:
         Node* nd = this->create<Node>(p);
         nd->ref_type = FINAL_NODE;
         nodes[p] = nd;
-        nd->target_type = tt;
+        nd->node_type = tt;
 
 
         nd->valid_= true;
@@ -300,7 +298,7 @@ public:
                 continue;
             }
 
-            nd->targets.push_back(tgn);
+            nd->targets.push_back(tgn);  // --T v2 todo: sometimes push as "mountpath" target
         }
 
         // Reference node is useless being unresolved, so resolve it:

@@ -30,10 +30,10 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
 
         // if node can not be symlinked:
 
-        if(n.target_type == DIR_NODE){
+        if(n.node_type == DIR_NODE){
             // materialize node as directory:
             fs::create_directory(n.path_); // ToDo: catch ???
-        }else if (n.target_type == FILE_NODE){
+        }else if (n.node_type == FILE_NODE){
             if(n.final_targets.size() == 1){
                 Node* ft =  n.final_targets.begin()->second;
                 std::error_code er;

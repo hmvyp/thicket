@@ -14,9 +14,9 @@ inline void mk_symlink(Node& n, const Node& to){
 
     std::error_code er;
 
-    if(n.target_type == DIR_NODE) {
+    if(n.node_type == DIR_NODE) {
         create_directory_symlink(link_target, n.path_, er);
-    }else if(n.target_type == FILE_NODE) {
+    }else if(n.node_type == FILE_NODE) {
         create_symlink(link_target, n.path_, er);
     }
 
@@ -55,7 +55,7 @@ Context::materializeAsSymlinks(Node& n){
 
         // if node can not be symlinked:
 
-        if(n.target_type == DIR_NODE){
+        if(n.node_type == DIR_NODE){
             // materialize node as directory:
             fs::create_directory(n.path_); // ToDo: catch ???
         }

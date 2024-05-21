@@ -6,28 +6,30 @@
 namespace cornus_thicket {
 
 inline void
-detectRefnodeTargetType(Node& n){ // assuming final targets already collected
-    Node* first_detected_final = NULL;
+detectRefnodeType(Node& n){ // assuming targets already collected and resolved
+    if(n.node_type != UNKNOWN_NODE_TYPE) {  // --T v2
+        return; // if already assigned (mount path elements inside mountpoint may not have targets at all)
+    }
 
-    auto& ftgs = n.final_targets;
+    Node* first_detected_target = NULL;
 
-    for(auto& pair : ftgs){ // over final targets
-        Node* tn = pair.second;
-        TargetType tt = tn->target_type;
-        if(tt == UNKNOWN_TARGET_TYPE){
+    for(Node* tn : n.targets){ // over targets
+        NodeType tt = tn->node_type;
+
+        if(tt == UNKNOWN_NODE_TYPE){
             report_error(
                     std::string("Node ") + p2s(n.path_)
                     + " target type undefined for target " + p2s(tn->path_)
                     , SEVERITY_ERROR
             );
         }else{
-            if(first_detected_final == nullptr){
-                first_detected_final = tn;
+            if(first_detected_target == nullptr){
+                first_detected_target = tn;
             }else{
-                if(first_detected_final->target_type != tt){
+                if(first_detected_target->node_type != tt){
                     report_error(
                             std::string("Node ") + p2s(n.path_)
-                            + " ambiguous target types: 1-st target " + p2s(first_detected_final->path_)
+                            + " ambiguous target types: 1-st target " + p2s(first_detected_target->path_)
                             + " 2-nd target :  " + p2s(tn->path_)
                             , SEVERITY_ERROR
                     );
@@ -36,11 +38,11 @@ detectRefnodeTargetType(Node& n){ // assuming final targets already collected
         }
     }
 
-    if(first_detected_final){
-        n.target_type = first_detected_final->target_type;
+    if(first_detected_target){
+        n.node_type = first_detected_target->node_type;
     }
 
-    if(n.target_type == UNKNOWN_TARGET_TYPE) {
+    if(n.node_type == UNKNOWN_NODE_TYPE) {
         report_error(
                 std::string("Reference Node ") + p2s(n.path_)
                 + " target type undefined (node has " + std::to_string(n.final_targets.size()) + " final targets )"
@@ -48,7 +50,7 @@ detectRefnodeTargetType(Node& n){ // assuming final targets already collected
         );
     }
 
-    if(n.target_type == FILE_NODE && n.final_targets.size() > 1){
+    if(n.node_type == FILE_NODE && n.final_targets.size() > 1){
         report_error(
                 std::string("Reference Node ") + p2s(n.path_)
                 + " has regular file target but has more than one final target nodes"
@@ -90,8 +92,6 @@ collectFinalTargets(Node& n){
             // as the error shall be already reported somewhere
         }
     }
-
-    detectRefnodeTargetType(n);
 }
 
 inline void
@@ -141,8 +141,11 @@ Context:: resolveReference(Node& n, bool check_resolving){ // assuming targets a
     n.valid_ = true;
     n.resolved_ = NODE_RESOLVING;
 
+    detectRefnodeType(n);
+
     collectFinalTargets(n);
     collectRefnodeChildren(n);
+
     for(auto& pair: n.children){
         resolve(*(pair.second));  // resolve children
     }

@@ -9,11 +9,10 @@
 
 namespace cornus_thicket {
 
-enum TargetType {
-    UNKNOWN_TARGET_TYPE
+enum NodeType {
+    UNKNOWN_NODE_TYPE
     ,FILE_NODE
     ,DIR_NODE
-    ,SYMLINK_NODE // ?? we do not follow symlinks but maybe we need to respect them as files?
 };
 
 
@@ -35,7 +34,7 @@ enum ResolveStatus{
 struct Node
         : public ObjectBase
 {
-    TargetType target_type = UNKNOWN_TARGET_TYPE;
+    NodeType node_type = UNKNOWN_NODE_TYPE;
     ReferenceType ref_type = UNKNOWN_REFTYPE;
     bool is_mountpoint = false;
 
