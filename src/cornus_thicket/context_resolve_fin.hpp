@@ -49,6 +49,7 @@ Context::resolveFinal(Node& n){
 
     switch(n.node_type){
     case FILE_NODE:
+        n.has_refernces_ = false; // --T v2
         n.resolved_ = NODE_RESOLVED;
         return;
     case DIR_NODE:
@@ -70,6 +71,8 @@ Context::resolveFinal(Node& n){
         if(p.empty()){
             continue; //
         }
+
+        //bool child_has_ref_descendants = false;
 
         fs::path mountpoint_path;
         if(
@@ -97,6 +100,7 @@ Context::resolveFinal(Node& n){
 
         if(fs::exists(fs::symlink_status(fs::path(p.native() + MNT_SUFFIX())))){
             continue; // skip possibly generated materialization of a mountpoint
+            // --T v2 todo: skip also possible template instantiations
         }
 
         // final (filesystem) case:
@@ -111,12 +115,12 @@ Context::resolveFinal(Node& n){
             if(cn->valid_) {
                 resolveFinal(*cn);
                 n.children[p.filename()] = cn; // append existing final node as child
-                has_ref_descendants = has_ref_descendants || cn->has_ref_descendants_;
+                has_ref_descendants = has_ref_descendants || cn->has_refernces_;
             }
         }
     }
 
-    n.has_ref_descendants_ = has_ref_descendants;
+    n.has_refernces_ = has_ref_descendants;
     n.resolved_ = NODE_RESOLVED;
 }
 

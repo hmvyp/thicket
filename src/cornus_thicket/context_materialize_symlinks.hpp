@@ -42,7 +42,7 @@ Context::materializeAsSymlinks(Node& n){
             Node* ft =  n.final_targets.begin()->second;
 
             // is the target complete (fully final) or located inside materialization scope?
-            if(!ft->has_ref_descendants_ || path_in_scope(ft->path_))
+            if(!ft->has_refernces_ || path_in_scope(ft->path_))
             {
                 // then it can be symlinked
                 mk_symlink(n, *ft);
