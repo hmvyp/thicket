@@ -76,9 +76,9 @@ collectFinalTargets(Node& n){
     };
 
     for(auto& tn : tgs){ // over immediate targets
-        if(tn->ref_type == FINAL_NODE){
+        if(tn->has_own_content_){ // --T v2  old code: tn->ref_type == FS_NODE){
             add_final_target(tn->path_, tn);
-        }else if(tn->ref_type == REFERENCE_NODE){
+        }else if(tn->ref_type == REFERENCE_NODE){ // (and has no own content)
             // then collect final targets for every immediate target:
             auto& curtg_ftgs = tn->final_targets;
 
@@ -88,8 +88,7 @@ collectFinalTargets(Node& n){
                 add_final_target(key, ft);
             }
         }else{
-            // report error? (undefined ref type found) or continue silently
-            // as the error shall be already reported somewhere
+            // report panic ?
         }
     }
 }
@@ -124,7 +123,7 @@ Context::collectRefnodeChildren(Node& n){
 
 
 void
-Context:: resolveReference(Node& n, bool check_resolving){ // assuming targets are resolved
+Context:: resolveReferenceNode(Node& n, bool check_resolving){ // assuming targets are resolved
     if(n.resolved_ >= NODE_RESOLVED){
         return;
     }

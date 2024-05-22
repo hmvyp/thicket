@@ -32,7 +32,7 @@ is_thicket_mountpoint_description(
 
 
 void
-Context::resolveFinal(Node& n){
+Context::resolveFilesystemNode(Node& n){
 
     if(!n.valid_ || n.resolved_ >= NODE_RESOLVED){
         return;
@@ -46,6 +46,8 @@ Context::resolveFinal(Node& n){
         );
         return;
     }
+
+    n.has_own_content_ = true;
 
     switch(n.node_type){
     case FILE_NODE:
@@ -82,7 +84,7 @@ Context::resolveFinal(Node& n){
             // mountpoint case:
             Node* cn = mountpointAt(mountpoint_path);
             if(cn != nullptr){
-                // resolveReference(*cn, true);  // redundant? mountpointAt() have already resolved the node
+                // resolveReferenceNode(*cn, true);  // redundant? mountpointAt() have already resolved the node
                 n.children[mountpoint_path.filename()] = cn;
                 has_ref_descendants = true;
             }else{
@@ -113,7 +115,7 @@ Context::resolveFinal(Node& n){
             }
 
             if(cn->valid_) {
-                resolveFinal(*cn);
+                resolveFilesystemNode(*cn);
                 n.children[p.filename()] = cn; // append existing final node as child
                 has_ref_descendants = has_ref_descendants || cn->has_refernces_;
             }

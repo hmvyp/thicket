@@ -18,7 +18,7 @@ enum NodeType {
 
 enum ReferenceType {
     UNKNOWN_REFTYPE,
-    FINAL_NODE,  // original file system object (file or directory) pre-existed before processing.
+    FS_NODE,  // original file system object (file or directory) pre-existed before processing.
     REFERENCE_NODE, // refer to other nodes as content sources (may be materialized as directory or link)
 };
 
@@ -56,6 +56,8 @@ struct Node
         // Other error cases may lead to (valid == true) but (resolved_ == NODE_FAILED_TO_RESOLVE)
 
     ResolveStatus resolved_ = NODE_UNRESOLVED;
+
+    bool has_own_content_ = false; // -T v2  true for filesystem nodes and rarely for reference  nodes (in case of mountpaths present)
     bool has_refernces_ = true; // --T v2  false-->true (for reference nodes or if there are references among descendants)
 
     fs::path path_ ; // canonical

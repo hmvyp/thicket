@@ -144,7 +144,7 @@ public:
         }
 
         Node* nd = this->create<Node>(p);
-        nd->ref_type = FINAL_NODE;
+        nd->ref_type = FS_NODE;
         nodes[p] = nd;
         nd->node_type = tt;
 
@@ -289,7 +289,7 @@ public:
             ){
                 // nd->resolved_ = NODE_FAILED_TO_RESOLVE; // removed because:
                                                            // 1) it is only partial failure
-                                                           // 2) it will be overwritten by resolveReference()
+                                                           // 2) it will be overwritten by resolveReferenceNode()
                 report_error( erprfx(eno) +
                             + "can not resolve mountpoint target:\n    "
                             + p2s(ptcn)
@@ -302,7 +302,7 @@ public:
         }
 
         // Reference node is useless being unresolved, so resolve it:
-        resolveReference(*nd, false); // NODE_RESOLVING is already set, so pass false as 2nd arg
+        resolveReferenceNode(*nd, false); // NODE_RESOLVING is already set, so pass false as 2nd arg
 
         return nd;
     }
@@ -411,11 +411,11 @@ public:
 
         try{
             switch(n.ref_type){
-            case FINAL_NODE:
-                resolveFinal(n);  // resolve as filesystem object
+            case FS_NODE:
+                resolveFilesystemNode(n);  // resolve as filesystem object
                 return;
             case REFERENCE_NODE:
-                resolveReference(n, true);  // resolve as mountpoint or its descendants
+                resolveReferenceNode(n, true);  // resolve as mountpoint or its descendants
                 return;
             default:
                 return; // unresolved
@@ -429,9 +429,9 @@ public:
         }
     }
 
-    void resolveFinal(Node& n);
+    void resolveFilesystemNode(Node& n);
 
-    void resolveReference(Node& n, bool check_resolving);
+    void resolveReferenceNode(Node& n, bool check_resolving);
 
     // materialization methods:
     void clean(); // cleans all under scope
