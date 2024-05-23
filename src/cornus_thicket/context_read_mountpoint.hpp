@@ -17,21 +17,24 @@ struct MountRecord {
 
     static std::string parseRecord( // returns error string (emty on success)
             const std::string& src,
-            std::vector<MountRecord> push_here
+            MountRecord& put_here
     ){
+
+        // std::cout<< "parsing path " << src;
         size_t part_start_pos = 0;
         std::vector<std::string> parts;
 
         for(
-                size_t pos = src.find_first_not_of(" \t", 0);
+                size_t pos = src.find_first_of(" \t", 0);
                 pos != std::string::npos;
-                pos = src.find_first_not_of(" \t", part_start_pos)
+                pos = src.find_first_of(" \t", part_start_pos)
         ){
             if(part_start_pos == pos){
                 part_start_pos = pos + 1;
                 continue; // skip multiple spaces
             }
 
+            //std::cout << "\n pos: " << pos << " part_start pos: "  << part_start_pos; // duck
             parts.push_back(src.substr(part_start_pos, pos - part_start_pos));
             part_start_pos = pos + 1;
         }
@@ -40,22 +43,25 @@ struct MountRecord {
 
         size_t sz = parts.size();
 
-        MountRecord rec;
+        MountRecord& rec = put_here;
 
         if(sz == 1){ // old syntax: target path only
             rec.target = parts[0];
             rec.filter = FILTER_UNIVERSAL;
+            //std::cout << "old syntax detected, target: " + rec.target ;  // duck!!!
         }else if ( (sz ==3 || sz == 4) && parts[0] == CORNUS_THICKET_ADD_CLAUSE){
             rec.target = parts[1];
             rec.filter = parts[2];
             if(sz == 4) {
                 rec.mount_path = parts[3];
             }
+            //std::cout << "\n new syntax detected, target: " + rec.target ;  // duck!!!
+            //std::cout << "\no 1 2 3 : " + parts[0] + " " + parts[1] + " " + parts[2] + " ";  // duck!!!
         }else{
             return std::string("Syntax error in mountpoint record: ") + src;
         }
 
-        push_here.push_back(rec);
+        return std::string();
     }
 };
 
@@ -68,6 +74,8 @@ Context::resolveMountpointTarget(
         std::string& errstr
 ){
     std::string en = target_path; // copy as en may be changed (leave original untouched)
+
+    // std::cout<< "target path passed: " + target_path;
 
     bool from_root = (en[0] == '/') ? true : false; // path from the root ("absolute") or relative to mountpoint
 
@@ -166,61 +174,22 @@ Context::readMountpoint(
 
     // run over mountpoint entries to calculate and resolve targets:
     for(auto& eno : mt){
-        std::string en = eno; // copy as en may be changed (leave original untouched)
 
-        bool from_root = (en[0] == '/') ? true : false; // path from the root ("absolute") or relative to mountpoint
+        MountRecord mount_record;
+        auto errstr = MountRecord::parseRecord(eno, mount_record);
 
-        if(from_root){
-            en.erase(0,1); // remove "absolute" mark
-        }
-
-        auto pas = string2path_string(en); // entry as relative native string
-        auto prt = fs::path(pas); // the entry as fs:path
-
-        if(prt.empty()){
-            nd->resolved_ = NODE_FAILED_TO_RESOLVE;
-            report_error(erprfx(eno) + "results in empty path", SEVERITY_ERROR);
+        if(!errstr.empty()){
+            report_error(erprfx(eno) + errstr, SEVERITY_ERROR);
             continue;
         }
 
-        fs::path pt;  // target path
-
-        if(from_root) {
-            pt = this->root_ / prt;
-        }else{
-            pt = p.parent_path() / prt;
-        }
-
-        std::error_code err;
-        auto ptcn = fs::weakly_canonical(pt, err); // the tail may not exist (e.g. may point to another mountpoint)
-        if(err){
-            nd->resolved_ = NODE_FAILED_TO_RESOLVE;
-            report_error(erprfx(eno) + "mountpoint target\n    "
-                    + p2s(pt) + "\n    can not be converted to canonical path"
-                    , SEVERITY_ERROR
-            );
+        Node* tgn = resolveMountpointTarget(p, mount_record.target, errstr);
+        if(tgn == nullptr || !errstr.empty()){
+            report_error(erprfx(eno) + errstr, SEVERITY_ERROR);
             continue;
         }
 
-        Node* tgn = resolveAt(ptcn); // resolve the target
-        if(
-                tgn == nullptr
-                //|| !tgn->valid_ // (removed; seems redundant since tgn->resolved_ is stronger)
-                                  //  (maybe  valid_ makes sense for final nodes only?)
-                || tgn->resolved_ != NODE_RESOLVED
-        ){
-            // nd->resolved_ = NODE_FAILED_TO_RESOLVE; // removed because:
-                                                       // 1) it is only partial failure
-                                                       // 2) it will be overwritten by resolveReferenceNode()
-            report_error( erprfx(eno) +
-                        + "can not resolve mountpoint target:\n    "
-                        + p2s(ptcn)
-                    , SEVERITY_ERROR
-            );
-            continue;
-        }
-
-        nd->targets.push_back(tgn);  // --T v2 todo: sometimes push as "mountpath" target
+        nd->targets.push_back(tgn);  // --T v2 todo: consider also filter and mountpath from the record!
     }
 
     // Reference node is useless being unresolved, so resolve it:

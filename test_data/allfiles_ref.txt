@@ -43,7 +43,7 @@ file: root/scope/src/a/a_tx.txt md5: d41d8cd98f00b204e9800998ecf8427e
 dir: root/scope/src/b
 file: root/scope/src/b/A_b_sometext.txt md5: d41d8cd98f00b204e9800998ecf8427e
 dir: root/scope/src_all
-file: root/scope/src_all.thicket_mount.txt md5: 16aaf80896ba159ea4f3cb9ff7286c75
+file: root/scope/src_all.thicket_mount.txt md5: dacf89fa8843fca0d190945cd6af5d1a
 symlink: ../src/a
 symlink: ../src/b
 dir: root/scope/src_all/x

@@ -4,4 +4,4 @@ src
 #   blabla/provoke/another/error
 
 ../importedA/src
-  ../importedB/src_all
+add:   ../importedB/src_all **/*
