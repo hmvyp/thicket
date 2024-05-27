@@ -34,7 +34,7 @@ struct MountRecord {
                 continue; // skip multiple spaces
             }
 
-            //std::cout << "\n pos: " << pos << " part_start pos: "  << part_start_pos; // duck
+            //std::cout << "\n pos: " << pos << " part_start pos: "  << part_start_pos;
             parts.push_back(src.substr(part_start_pos, pos - part_start_pos));
             part_start_pos = pos + 1;
         }
@@ -48,15 +48,15 @@ struct MountRecord {
         if(sz == 1){ // old syntax: target path only
             rec.target = parts[0];
             rec.filter = FILTER_UNIVERSAL;
-            //std::cout << "old syntax detected, target: " + rec.target ;  // duck!!!
+            //std::cout << "old syntax detected, target: " + rec.target ;
         }else if ( (sz ==3 || sz == 4) && parts[0] == CORNUS_THICKET_ADD_CLAUSE){
             rec.target = parts[1];
             rec.filter = parts[2];
             if(sz == 4) {
                 rec.mount_path = parts[3];
             }
-            //std::cout << "\n new syntax detected, target: " + rec.target ;  // duck!!!
-            //std::cout << "\no 1 2 3 : " + parts[0] + " " + parts[1] + " " + parts[2] + " ";  // duck!!!
+            //std::cout << "\n new syntax detected, target: " + rec.target ;
+            //std::cout << "\no 1 2 3 : " + parts[0] + " " + parts[1] + " " + parts[2] + " ";
         }else{
             return std::string("Syntax error in mountpoint record: ") + src;
         }
