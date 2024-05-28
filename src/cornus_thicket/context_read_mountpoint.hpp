@@ -10,10 +10,10 @@ struct MountRecord {
     std::string target;
     std::string filter; // "**/*" - uiniversal filter, "path/to/file_or_dir" - singular filter
                         // (path/to... is relative to target)
-    std::string mount_path; // "." denotes the mountpoint itself
+    std::string mount_path; // "" or  "." denotes the mountpoint itself
 
 
-    static constexpr auto&  FILTER_UNIVERSAL = "**.*";
+    static constexpr auto&  FILTER_UNIVERSAL = "**/*";
 
     static std::string parseRecord( // returns error string (emty on success)
             const std::string& src,
@@ -128,14 +128,68 @@ Context::resolveMountpointTarget(
     return tgn;
 }
 
+
+inline
+std::string // error
+Context::processMountRecord(
+        Node* nd,  // mountpoint node
+        MountRecord& mrec
+){
+    using std::string;
+
+    string errstr;
+    Node* tgn = resolveMountpointTarget(nd->get_path() , mrec.target, errstr);
+    if(tgn == nullptr || !errstr.empty()){
+        return errstr;
+    }
+
+    // analyze the filter:
+
+    bool has_wcard = false;
+
+    size_t wcard_pos = mrec.filter.find("*");
+
+    string filter_path = mrec.filter.substr(0, wcard_pos); // wcard_pos == string::npos is also  ok
+
+    if(wcard_pos != string::npos){
+        string wcard = mrec.filter.substr(wcard_pos);
+        if(wcard == MountRecord::FILTER_UNIVERSAL){
+            has_wcard = true;
+        }else{
+            return string("Only universal wildcard */** at the end of a filter is suhpported ");
+        }
+    }
+
+    Node* tgn_to_push = tgn;  // A node the filter path points to (inside the whole target node)
+    Node* nd_push_here = nd;
+
+    if(!mrec.mount_path.empty()) {
+        // !!! ToDo: create descendants with (has_own_content_ == true) and w/o targets
+        // then point nd_push_here to the last one
+    }
+
+    if(!filter_path.empty()) {
+        tgn_to_push = resolveAt(tgn->get_path() / fs::path(string2path_string(filter_path)));
+        if(tgn == nullptr){
+            return string("Can not resolve filter path ") + filter_path + " inside mountpoint target" ;
+        }
+
+        // !!! ToDo: create descendants with (has_own_content_ == true) along filter_path
+        // from the nd_push_here and point nd_push_here to the last one
+    }
+
+    nd_push_here->targets.push_back(tgn_to_push); // old case
+
+    return errstr;
+}
+
+
 inline
 void
 Context::readMountpoint(
         Node* nd,
-        const fs::path& p, // mountpoint path
         const fs::path& pm // description file path
 ){
-
     auto& mt = nd->mount_targets;
 
     try{ // read mountpoint description file:
@@ -183,13 +237,10 @@ Context::readMountpoint(
             continue;
         }
 
-        Node* tgn = resolveMountpointTarget(p, mount_record.target, errstr);
-        if(tgn == nullptr || !errstr.empty()){
+        if(!(errstr = processMountRecord(nd, mount_record)).empty()) {
             report_error(erprfx(eno) + errstr, SEVERITY_ERROR);
             continue;
         }
-
-        nd->targets.push_back(tgn);  // --T v2 todo: consider also filter and mountpath from the record!
     }
 
     // Reference node is useless being unresolved, so resolve it:

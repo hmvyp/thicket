@@ -18,6 +18,8 @@ namespace cornus_thicket {
 #define THICKET_MOUNT_SUFFIX_STR(literal_prefix) CORNUS_THICKET_CONCAT(literal_prefix,CORNUS_THICKET_MOUNTPOINT_SUFFIX)
 
 
+struct MountRecord; //forward
+
 struct Context
         : public ObjectFactory
 {
@@ -206,7 +208,7 @@ public:
             return nd;
         }
 
-        this->readMountpoint(nd, p, pm);
+        this->readMountpoint(nd, pm);
 
         return nd;
     }
@@ -333,17 +335,6 @@ public:
         }
     }
 
-    void readMountpoint(
-            Node* nd,
-            const fs::path& p, // path to mountpoint
-            const fs::path& pm // path to mountpoint description file
-    );
-
-    Node* resolveMountpointTarget(const fs::path& mountpoint_path, std::string target_path, std::string& errstr);
-
-    void resolveFilesystemNode(Node& n);
-    void resolveReferenceNode(Node& n, bool check_resolving);
-
     // materialization methods:
     void clean(); // cleans all under scope
     void materializeAsSymlinks(); // materializes all under the scope
@@ -353,6 +344,23 @@ public:
     bool force_ = false;
 
 private:
+    std::string // error
+    processMountRecord(
+            Node* nd,  // mountpoint node
+            MountRecord& mount_record
+    );
+
+    void readMountpoint(
+            Node* nd,
+            const fs::path& pm // path to mountpoint description file
+    );
+
+    Node* resolveMountpointTarget(const fs::path& mountpoint_path, std::string target_path, std::string& errstr);
+
+    void resolveFilesystemNode(Node& n);
+    void resolveReferenceNode(Node& n, bool check_resolving);
+
+
     void collectRefnodeChildren(Node& n);
     static bool is_thicket_mountpoint_description(const fs::path& p, fs::path* mountpoint_path);
 
