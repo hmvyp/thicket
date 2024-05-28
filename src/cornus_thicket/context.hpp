@@ -344,6 +344,21 @@ public:
     bool force_ = false;
 
 private:
+
+    Node* ensureChild(Node* parent, string_t chname){
+        auto my_child_entry = parent->children.find(chname);
+        Node* my_child = nullptr;
+
+        if (my_child_entry != parent->children.end()){ // child already exists?
+            my_child = my_child_entry->second;
+        }else{
+            my_child = create<Node>(parent->path_/chname);
+            parent->children[chname] = my_child;
+        }
+
+        return my_child;
+    }
+
     std::string // error
     processMountRecord(
             Node* nd,  // mountpoint node

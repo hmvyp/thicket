@@ -20,9 +20,11 @@ file: root/scope/looop.thicket_mount.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
 symlink: ../../importedA/.gitignore
 symlink: ../src/a
 symlink: ../src/b
+symlink: ../src_all/hide
 dir: root/scope/looop/loop
 symlink: ../../src/a
 symlink: ../../src/b
+symlink: ../../src_all/hide
 dir: root/scope/looop/loop/x
 symlink: ../../../../importedA/src/x/importedA_x_tx.txt
 symlink: ../../../../importedB/src/x/importedB_x_tx.txt
@@ -43,9 +45,19 @@ file: root/scope/src/a/a_tx.txt md5: d41d8cd98f00b204e9800998ecf8427e
 dir: root/scope/src/b
 file: root/scope/src/b/A_b_sometext.txt md5: d41d8cd98f00b204e9800998ecf8427e
 dir: root/scope/src_all
-file: root/scope/src_all.thicket_mount.txt md5: dacf89fa8843fca0d190945cd6af5d1a
+file: root/scope/src_all.thicket_mount.txt md5: 3c444bb4d1238a3a74a1d7d256e43fa6
 symlink: ../src/a
 symlink: ../src/b
+dir: root/scope/src_all/hide
+dir: root/scope/src_all/hide/here
+dir: root/scope/src_all/hide/here/x
+symlink: ../../../../../importedA/src/x/importedA_x_tx.txt
+symlink: ../../../../../importedB/src/x/importedB_x_tx.txt
+symlink: ../../../../importedB/src/y
+dir: root/scope/src_all/hide/there
+symlink: ../../../../importedA/src/x/importedA_x_tx.txt
+symlink: ../../../../importedA/src/x
+symlink: ../../../../importedB/src/y
 dir: root/scope/src_all/x
 symlink: ../../../importedA/src/x/importedA_x_tx.txt
 symlink: ../../../importedB/src/x/importedB_x_tx.txt

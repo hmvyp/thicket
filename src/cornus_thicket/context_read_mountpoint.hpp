@@ -145,40 +145,78 @@ Context::processMountRecord(
 
     // analyze the filter:
 
-    bool has_wcard = false;
+    // bool has_wcard = false;
 
     size_t wcard_pos = mrec.filter.find("*");
 
     string filter_path = mrec.filter.substr(0, wcard_pos); // wcard_pos == string::npos is also  ok
 
+    auto slash_pred = [](unsigned char c){
+        return c == '/';
+    };
+
+    filter_path = trim(filter_path, slash_pred); // hmmm... avoid segmentation fault in "/" fs::path operator...
+
     if(wcard_pos != string::npos){
         string wcard = mrec.filter.substr(wcard_pos);
         if(wcard == MountRecord::FILTER_UNIVERSAL){
-            has_wcard = true;
+            // has_wcard = true;
         }else{
-            return string("Only universal wildcard */** at the end of a filter is suhpported ");
+            return string("Only universal wildcard */** at the end of a filter is supported ");
         }
     }
 
     Node* tgn_to_push = tgn;  // A node the filter path points to (inside the whole target node)
     Node* nd_push_here = nd;
 
-    if(!mrec.mount_path.empty()) {
-        // !!! ToDo: create descendants with (has_own_content_ == true) and w/o targets
+    auto createDescendants = [&](const string& path_as_string) -> void {
+        // create descendants with (has_own_content_ == true) and w/o targets
         // then point nd_push_here to the last one
+        for(size_t pos = 0; pos != string::npos; ){
+            size_t pos_slash = path_as_string.find("/", pos);
+            string pathelem = path_as_string.substr(pos, pos_slash); // pos_slash may be npos
+
+            if(!pathelem.empty()){
+                Node* child = ensureChild(nd_push_here, string2path_string(pathelem));
+                child->has_own_content_ = true; // stop following  references
+                child->ref_type = REFERENCE_NODE;
+                child->node_type = DIR_NODE; // may be overridden
+                child->valid_ = true;
+
+                nd_push_here = child;
+            }
+
+            if(pos_slash == string::npos) {
+                break;
+            }else{
+                pos = pos_slash + 1;
+            }
+        }
+    };
+
+
+    if(!mrec.mount_path.empty()) {
+        // create mountpath as Nodes graph, i.e.
+        createDescendants(mrec.mount_path); // moves nd_push_here to the farthest descendant
     }
 
     if(!filter_path.empty()) {
+        // std::cout << "\n filter path: " << filter_path;
         tgn_to_push = resolveAt(tgn->get_path() / fs::path(string2path_string(filter_path)));
+        // std::cout << "\n filter path (after): " << filter_path;
         if(tgn == nullptr){
             return string("Can not resolve filter path ") + filter_path + " inside mountpoint target" ;
         }
 
-        // !!! ToDo: create descendants with (has_own_content_ == true) along filter_path
-        // from the nd_push_here and point nd_push_here to the last one
+        // create descendants with (has_own_content_ == true) along filter_path
+        // from the nd_push_here and point nd_push_here to the last one:
+
+        createDescendants(filter_path); // moves nd_push_here to the farthest descendant
+
     }
 
-    nd_push_here->targets.push_back(tgn_to_push); // old case
+    nd_push_here->node_type = tgn_to_push->node_type;
+    nd_push_here->targets.push_back(tgn_to_push);
 
     return errstr;
 }

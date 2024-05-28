@@ -105,6 +105,7 @@ Context::collectRefnodeChildren(Node& n){
             const string_t& tch_name = itg_ch->first;
             Node* tch_node = itg_ch->second;
 
+            /*
             auto my_child_entry = n.children.find(tch_name);
             Node* my_child = nullptr;
 
@@ -114,6 +115,9 @@ Context::collectRefnodeChildren(Node& n){
                 my_child = create<Node>(n.path_/tch_name);
                 n.children[tch_name] = my_child;
             }
+            */
+
+            Node* my_child = this->ensureChild(&n, tch_name);
 
             my_child->ref_type = REFERENCE_NODE;
             my_child->valid_ = true;

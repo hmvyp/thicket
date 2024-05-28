@@ -62,7 +62,7 @@ p2s(const string_t& s){ return some_string2string<string_t>(s); }
 
 //............................................................... trim string:
 
-
+/*
 inline
 std::string
 trim(const std::string& s)
@@ -76,6 +76,30 @@ trim(const std::string& s)
 
    return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
 }
+*/
+
+
+template<typename Predicate>
+inline
+std::string
+trim(const std::string& s, Predicate pred)
+{
+   auto wsfront=std::find_if_not(s.begin(),s.end(),pred);
+   auto wsback=std::find_if_not(s.rbegin(),s.rend(),pred).base();
+
+   return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
+}
+
+inline auto space_pred = [](unsigned char c){
+    return std::isspace(c) &&  c != '#';
+};
+
+inline
+std::string
+trim(const std::string& s){
+    return trim(s, space_pred);
+}
+
 
 }
 

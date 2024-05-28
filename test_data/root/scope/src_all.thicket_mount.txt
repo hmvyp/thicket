@@ -5,3 +5,20 @@ src
 
 ../importedA/src
 add:   ../importedB/src_all **/*
+
+add:  ../importedA/src     **/*  hide/here
+add:  ../importedB/src_all **/*  hide/here
+
+# the 2 records below generate error but diagnostics seems incorrect (unknown type instead of cyclic dependency):
+
+# add:  ../importedA  src      hide/there
+# add:  ../importedB  src_all  hide/there
+
+# new syntax:
+# add: from what where_to_put
+
+add:  ../importedA/src      x/**/*  hide/there
+add:  ../importedB/src_all  y       hide/there
+
+# add a file:
+add:  ../importedA/src/x importedA_x_tx.txt hide/there
