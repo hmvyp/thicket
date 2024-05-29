@@ -1,21 +1,23 @@
+
+# old syntax:
+
 src
-
-#   blabla/provoke/error
-#   blabla/provoke/another/error
-
 ../importedA/src
-add:   ../importedB/src_all **/*
+../importedB/src_all
+
+
+
+# new syntax:
+# add: <from> <what> <where_to_put>
 
 add:  ../importedA/src     **/*  hide/here
 add:  ../importedB/src_all **/*  hide/here
 
-# the 2 records below generate error but diagnostics seems incorrect (unknown type instead of cyclic dependency):
+# (adding **/* to the filter path actually does nothing and makes sense if filter path is empty ):
 
-# add:  ../importedA  src      hide/there
-# add:  ../importedB  src_all  hide/there
+add:  ../importedA  src/**/*     hide/there
+add:  ../importedB  src_all      hide/there
 
-# new syntax:
-# add: from what where_to_put
 
 add:  ../importedA/src      x/**/*  hide/there
 add:  ../importedB/src_all  y       hide/there

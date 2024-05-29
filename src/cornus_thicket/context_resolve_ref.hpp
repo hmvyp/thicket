@@ -5,6 +5,7 @@
 
 namespace cornus_thicket {
 
+
 inline void
 detectRefnodeType(Node& n){ // assuming targets already collected and resolved
     if(n.node_type != UNKNOWN_NODE_TYPE) {  // --T v2

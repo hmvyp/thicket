@@ -217,7 +217,17 @@ public:
     Node* nodeAt(const fs::path& p){ // assume p is canonical
         auto it = nodes.find(p);
         if(it != nodes.end()){
-            return it->second; // node already exists
+            Node* n = it->second;
+            if(n->ref_type == REFERENCE_NODE  &&  n->resolved_ == NODE_RESOLVING){
+                report_error(std::string(
+                        "Circular dependency encountered while accessing node at ")
+                            + p2s(n->path_),
+                            SEVERITY_ERROR
+                );
+                return nullptr;
+            }
+
+            return n;
         }
 
         if(
