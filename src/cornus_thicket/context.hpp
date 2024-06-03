@@ -31,11 +31,13 @@ struct FileSuffix {
 // define mountpoint_suffix description in platform-independent manner:
 
 THICKET_FS_LITERAL(mountpoint_suffix_func, CORNUS_THICKET_MOUNTPOINT_SUFFIX)
+inline const string_t mountpoint_suffix(mountpoint_suffix_func<char_t>());
 
-inline FileSuffix mountpoint_suffix = {
-    mountpoint_suffix_func<char_t>(),
-    std::strlen(mountpoint_suffix_func<char_t>())
-};
+
+// define mount template_suffix description:
+
+THICKET_FS_LITERAL(mountemplate_func, CORNUS_THICKET_MOUNTEMPLATE_SUFFIX)
+inline const string_t mounttemplate_suffix(mountemplate_func<char_t>());
 
 
 struct MountRecord; //forward
@@ -170,7 +172,7 @@ public:
 
         fs::path pm = p;  // will be path to mountpoint description file
 
-        pm.replace_filename( (string_t)p.filename() + mountpoint_suffix.suffix);
+        pm.replace_filename( (string_t)p.filename() + mountpoint_suffix);
 
         fs::file_status fstat = symlink_status(pm);
 
