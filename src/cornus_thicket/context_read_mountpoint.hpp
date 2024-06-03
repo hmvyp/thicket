@@ -139,14 +139,8 @@ Context::processMountRecord(
     using std::string;
 
     string errstr;
-    Node* tgn = resolveMountpointTarget(nd->get_path() , mrec.target, errstr);
-    if(tgn == nullptr || !errstr.empty()){
-        return errstr;
-    }
 
     // analyze the filter:
-
-    // bool has_wcard = false;
 
     size_t wcard_pos = mrec.filter.find("*");
 
@@ -167,7 +161,6 @@ Context::processMountRecord(
         }
     }
 
-    Node* tgn_to_push = tgn;  // A node the filter path points to (inside the whole target node)
     Node* nd_push_here = nd;
 
     auto createDescendants = [&](const string& path_as_string) -> void {
@@ -201,19 +194,21 @@ Context::processMountRecord(
         createDescendants(mrec.mount_path); // moves nd_push_here to the farthest descendant
     }
 
-    if(!filter_path.empty()) {
-        // std::cout << "\n filter path: " << filter_path;
-        tgn_to_push = resolveAt(tgn->get_path() / fs::path(string2path_string(filter_path)));
-        // std::cout << "\n filter path (after): " << filter_path;
-        if(tgn_to_push == nullptr){
-            return string("Can not resolve filter path ") + filter_path + " inside mountpoint target" ;
-        }
+    const std::string&
+    full_target_pathstring = (filter_path.empty())
+            ? mrec.target
+            : (mrec.target + "/" + filter_path);
 
-        // create descendants with (has_own_content_ == true) along filter_path
-        // from the nd_push_here and point nd_push_here to the last one:
+    Node* tgn_to_push =  resolveMountpointTarget(nd->get_path() , full_target_pathstring, errstr);
 
-        createDescendants(filter_path); // moves nd_push_here to the farthest descendant
+    if(tgn_to_push == nullptr){
+        return string("Can not resolve mountpoint target ") + full_target_pathstring;
     }
+
+    // create descendants with (has_own_content_ == true) along filter_path
+    // from the nd_push_here and point nd_push_here to the last one:
+
+    createDescendants(filter_path); // moves nd_push_here to the farthest descendant
 
     nd_push_here->node_type = tgn_to_push->node_type;
     nd_push_here->targets.push_back(tgn_to_push);
