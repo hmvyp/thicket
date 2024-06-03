@@ -12,6 +12,10 @@
 #   define CORNUS_THICKET_MOUNTPOINT_SUFFIX ".thicket_mount.txt"
 #endif
 
+#ifndef CORNUS_THICKET_MOUNTEMPLATE_SUFFIX
+#   define CORNUS_THICKET_MOUNTEMPLATE_SUFFIX ".thicket_template.txt"
+#endif
+
 #ifndef CORNUS_THICKET_ADD_CLAUSE
 #   define CORNUS_THICKET_ADD_CLAUSE "add:"
 #endif

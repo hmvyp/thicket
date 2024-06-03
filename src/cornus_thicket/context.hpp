@@ -15,28 +15,35 @@
 
 namespace cornus_thicket {
 
-#define THICKET_MOUNT_SUFFIX_STR(literal_prefix) CORNUS_THICKET_CONCAT(literal_prefix,CORNUS_THICKET_MOUNTPOINT_SUFFIX)
+struct FileSuffix {
+    const char_t* suffix;
+    const size_t suffix_len;
+};
+
+#define THICKET_FS_LITERAL(funcname, literal) template<typename CharT>  constexpr const CharT* funcname(){ \
+    if constexpr (sizeof(CharT) == sizeof(char)) { \
+        return CORNUS_THICKET_CONCAT( ,literal); \
+    }else{ \
+        return CORNUS_THICKET_CONCAT(L, literal);  /*wide character literal*/ \
+    } \
+};
+
+// define mountpoint_suffix description in platform-independent manner:
+
+THICKET_FS_LITERAL(mountpoint_suffix_func, CORNUS_THICKET_MOUNTPOINT_SUFFIX)
+
+inline FileSuffix mountpoint_suffix = {
+    mountpoint_suffix_func<char_t>(),
+    std::strlen(mountpoint_suffix_func<char_t>())
+};
 
 
 struct MountRecord; //forward
 
+
 struct Context
         : public ObjectFactory
 {
-    template<typename CharT>
-    static constexpr const CharT* MNT_SUFFIX_T(){
-        if constexpr (sizeof(CharT) == sizeof(char)) {
-            return THICKET_MOUNT_SUFFIX_STR();
-        }else{
-            return THICKET_MOUNT_SUFFIX_STR(L);  //wide character literal
-        }
-    };
-
-    static constexpr const char_t* MNT_SUFFIX(){return MNT_SUFFIX_T<char_t>();}
-
-    static inline size_t MNT_SUFFIX_LENGTH = std::strlen(THICKET_MOUNT_SUFFIX_STR());
-
-
     fs::path root_;  // converted to canonical
     fs::path scope_; // converted to canonical
 
@@ -163,7 +170,7 @@ public:
 
         fs::path pm = p;  // will be path to mountpoint description file
 
-        pm.replace_filename( (string_t)p.filename() + MNT_SUFFIX() );
+        pm.replace_filename( (string_t)p.filename() + mountpoint_suffix.suffix);
 
         fs::file_status fstat = symlink_status(pm);
 

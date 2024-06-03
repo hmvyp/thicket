@@ -5,29 +5,39 @@
 
 namespace cornus_thicket {
 
+
+bool
+filepath_has_suffix(
+        const fs::path& p, // input parameter (path to mountpoint description file)
+        const FileSuffix& suff, // suffix description
+        fs::path* path_wo_suffix // output parameter: path without suffix (filled on success)
+){
+    auto fn = p.filename();
+    auto s = fn.native();
+    size_t len = s.length();
+    if(len <= suff.suffix_len){
+        return false;
+    }
+
+
+    if(s.substr(len - suff.suffix_len, suff.suffix_len) == suff.suffix){
+        if(path_wo_suffix != nullptr){
+            *path_wo_suffix = p;
+            path_wo_suffix->replace_filename(s.substr(0, len - suff.suffix_len));
+        }
+        return true;
+    }else{
+        return false;
+    }
+}
+
 bool
 Context::
 is_thicket_mountpoint_description(
         const fs::path& p, // input parameter (path to mountpoint description file)
         fs::path* mountpoint_path // output parameter (path to mountpoint itself)
 ){
-    auto fn = p.filename();
-    auto s = fn.native();
-    size_t len = s.length();
-    if(len <= MNT_SUFFIX_LENGTH){
-        return false;
-    }
-
-
-    if(s.substr(len - MNT_SUFFIX_LENGTH, MNT_SUFFIX_LENGTH) == MNT_SUFFIX()){
-        if(mountpoint_path != nullptr){
-            *mountpoint_path = p;
-            mountpoint_path->replace_filename(s.substr(0, len - MNT_SUFFIX_LENGTH));
-        }
-        return true;
-    }else{
-        return false;
-    }
+    return filepath_has_suffix(p, mountpoint_suffix, mountpoint_path);
 }
 
 
@@ -100,7 +110,7 @@ Context::resolveFilesystemNode(Node& n){
 
         //skip possible thicket artifact:
 
-        if(fs::exists(fs::symlink_status(fs::path(p.native() + MNT_SUFFIX())))){
+        if(fs::exists(fs::symlink_status(fs::path(p.native() + mountpoint_suffix.suffix)))){
             continue; // skip possibly generated materialization of a mountpoint
             // --T v2 todo: skip also possible template instantiations
         }
