@@ -17,7 +17,7 @@ struct MountRecord {
 
     static constexpr auto&  FILTER_UNIVERSAL = "**/*";
 
-    std::string parseRecord( // returns error string (emty on success)
+    std::string parseRecord( // returns error string (empty on success)
             const std::string& src
     ){
 
@@ -117,13 +117,7 @@ Context::resolveMountpointTarget(
                               //  (maybe  valid_ makes sense for final nodes only?)
             || tgn->resolved_ != NODE_RESOLVED
     ){
-        // nd->resolved_ = NODE_FAILED_TO_RESOLVE; // removed because:
-                                                   // 1) it is only partial failure
-                                                   // 2) it will be overwritten by resolveReferenceNode()
-        errstr =
-                    + "can not resolve mountpoint target:\n    "
-                    + p2s(ptcn);
-        return nullptr;
+        return nullptr; // silently (the target may be optional)
     }
 
     return tgn;
@@ -154,10 +148,8 @@ Context::processMountRecord(
 
     if(wcard_pos != string::npos){
         string wcard = mrec.filter.substr(wcard_pos);
-        if(wcard == MountRecord::FILTER_UNIVERSAL){
-            // has_wcard = true;
-        }else{
-            return string("Only universal wildcard */** at the end of a filter is supported ");
+        if( !(wcard == MountRecord::FILTER_UNIVERSAL)){
+            return string("Only universal wildcard **/* at the end of a filter is supported ");
         }
     }
 
@@ -189,11 +181,6 @@ Context::processMountRecord(
     };
 
 
-    if(!mrec.mount_path.empty()) {
-        // create mountpath as Nodes graph, i.e.
-        createDescendants(mrec.mount_path); // moves nd_push_here to the farthest descendant
-    }
-
     const std::string&
     full_target_pathstring = (filter_path.empty())
             ? mrec.target
@@ -202,12 +189,24 @@ Context::processMountRecord(
     Node* tgn_to_push =  resolveMountpointTarget(nd->get_path() , full_target_pathstring, errstr);
 
     if(tgn_to_push == nullptr){
-        return string("Can not resolve mountpoint target ") + full_target_pathstring;
+        if(!errstr.empty()){
+            return string("Error while resolving mountpoint target at ") + full_target_pathstring + " The error: " + errstr;
+        }else if (!mrec.optional){
+            return string("Can not resolve mandatory mountpoint target ") + full_target_pathstring;
+        }else{
+            return string(); // silently return in case of optional record
+        }
     }
 
-    // create descendants with (has_own_content_ == true) along filter_path
-    // from the nd_push_here and point nd_push_here to the last one:
+    // mountpoint target is Ok here.
 
+    // create descendants along mountpath:
+    if(!mrec.mount_path.empty()) {
+        createDescendants(mrec.mount_path); // moves nd_push_here to the farthest descendant
+    }
+
+    // create descendants along filter_path
+    // from the nd_push_here and point nd_push_here to the last one:
     createDescendants(filter_path); // moves nd_push_here to the farthest descendant
 
     nd_push_here->node_type = tgn_to_push->node_type;

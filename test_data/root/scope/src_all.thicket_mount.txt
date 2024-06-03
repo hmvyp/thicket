@@ -24,3 +24,10 @@ add:  ../importedB/src_all  y       hide/there
 
 # add a file:
 add:  ../importedA/src/x importedA_x_tx.txt hide/there
+
+# optional redcords: 
+
+add?  ../importedB src_all       optional_resolved
+add?  ../importedB src_alllll       optional_failed
+add?  ../importedBBBB/src_all  y       optional_failed
+

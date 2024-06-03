@@ -6,7 +6,7 @@ do
     if [[ -L "$line" ]]
     then
         # symlink case
-        echo "symlink: $(readlink $line)"
+        echo "symlink: from: $line to: $(readlink $line)"
     elif [[ -d "$line" ]]
     then
         echo "dir: $line"
