@@ -37,7 +37,7 @@ inline const string_t mountpoint_suffix(mountpoint_suffix_func<char_t>());
 // define mount template_suffix description:
 
 THICKET_FS_LITERAL(mountemplate_func, CORNUS_THICKET_MOUNTEMPLATE_SUFFIX)
-inline const string_t mounttemplate_suffix(mountemplate_func<char_t>());
+inline const string_t mountemplate_suffix(mountemplate_func<char_t>());
 
 
 struct MountRecord; //forward
