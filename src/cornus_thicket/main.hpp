@@ -88,7 +88,7 @@ int run_thicket(Context& ctx){
 
     std::cout << "\n";
 
-    return 0;
+    return error_count != 0;
 }
 
 inline std::array<Option*, 8> all_options{{

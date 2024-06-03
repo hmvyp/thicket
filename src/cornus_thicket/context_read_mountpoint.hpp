@@ -12,12 +12,13 @@ struct MountRecord {
                         // (path/to... is relative to target)
     std::string mount_path; // "" or  "." denotes the mountpoint itself
 
+    bool optional = false;
+
 
     static constexpr auto&  FILTER_UNIVERSAL = "**/*";
 
-    static std::string parseRecord( // returns error string (emty on success)
-            const std::string& src,
-            MountRecord& put_here
+    std::string parseRecord( // returns error string (emty on success)
+            const std::string& src
     ){
 
         // std::cout<< "parsing path " << src;
@@ -43,20 +44,20 @@ struct MountRecord {
 
         size_t sz = parts.size();
 
-        MountRecord& rec = put_here;
 
         if(sz == 1){ // old syntax: target path only
-            rec.target = parts[0];
-            rec.filter = FILTER_UNIVERSAL;
+            target = parts[0];
+            filter = FILTER_UNIVERSAL;
             //std::cout << "old syntax detected, target: " + rec.target ;
-        }else if ( (sz ==3 || sz == 4) && parts[0] == CORNUS_THICKET_ADD_CLAUSE){
-            rec.target = parts[1];
-            rec.filter = parts[2];
+        }else if (
+                (sz ==3 || sz == 4)
+                && ((parts[0] == CORNUS_THICKET_ADD_CLAUSE) || (optional = (parts[0] == CORNUS_THICKET_ADD_OPTIONAL)))
+        ){
+            target = parts[1];
+            filter = parts[2];
             if(sz == 4) {
-                rec.mount_path = parts[3];
+                mount_path = parts[3];
             }
-            //std::cout << "\n new syntax detected, target: " + rec.target ;
-            //std::cout << "\no 1 2 3 : " + parts[0] + " " + parts[1] + " " + parts[2] + " ";
         }else{
             return std::string("Syntax error in mountpoint record: ") + src;
         }
@@ -204,7 +205,7 @@ Context::processMountRecord(
         // std::cout << "\n filter path: " << filter_path;
         tgn_to_push = resolveAt(tgn->get_path() / fs::path(string2path_string(filter_path)));
         // std::cout << "\n filter path (after): " << filter_path;
-        if(tgn == nullptr){
+        if(tgn_to_push == nullptr){
             return string("Can not resolve filter path ") + filter_path + " inside mountpoint target" ;
         }
 
@@ -212,7 +213,6 @@ Context::processMountRecord(
         // from the nd_push_here and point nd_push_here to the last one:
 
         createDescendants(filter_path); // moves nd_push_here to the farthest descendant
-
     }
 
     nd_push_here->node_type = tgn_to_push->node_type;
@@ -268,7 +268,7 @@ Context::readMountpoint(
     for(auto& eno : mt){
 
         MountRecord mount_record;
-        auto errstr = MountRecord::parseRecord(eno, mount_record);
+        auto errstr = mount_record.parseRecord(eno);
 
         if(!errstr.empty()){
             report_error(erprfx(eno) + errstr, SEVERITY_ERROR);

@@ -16,5 +16,9 @@
 #   define CORNUS_THICKET_ADD_CLAUSE "add:"
 #endif
 
+#ifndef CORNUS_THICKET_ADD_OPTIONAL
+#   define CORNUS_THICKET_ADD_OPTIONAL "add?"
+#endif
+
 
 #endif

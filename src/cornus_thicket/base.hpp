@@ -31,9 +31,17 @@ enum Severity{
     SEVERITY_PANIC = 100 // program can not proceed
 };
 
+
+inline int error_count = 0;
+
 void report_error(std::string err, Severity sev){
     auto errs =  std::string("\nError: ") + err  + "\n";
     std::cout << errs;
+
+    if(sev >= SEVERITY_ERROR){
+       ++error_count;
+    }
+
 
     if(sev >= SEVERITY_PANIC){
        throw errs;
