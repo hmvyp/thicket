@@ -252,7 +252,7 @@ Context::readMountpoint(
     auto erprfx = [&pm](const std::string& mnt_entry) -> std::string {
         return
              std::string("\n    in mountpoint description file:\n    ") + p2s(pm)
-             + "\n    mountpoint target:\n    " + mnt_entry
+             + "\n    mountpoint entry:\n    " + mnt_entry
              + "\n    ";
     };
 

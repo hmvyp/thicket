@@ -1,24 +1,16 @@
 #ifndef cornus_thicket_context_hpp
 #define cornus_thicket_context_hpp
 
-#include "base.hpp"
 #include "utils.hpp"
-
 #include "node.hpp"
+
 #include <streambuf>
 #include <fstream>
-
 #include <cctype>
-//#include <algorithm>
-//#include <codecvt>
 
 
 namespace cornus_thicket {
 
-struct FileSuffix {
-    const char_t* suffix;
-    const size_t suffix_len;
-};
 
 #define THICKET_FS_LITERAL(funcname, literal) template<typename CharT>  constexpr const CharT* funcname(){ \
     if constexpr (sizeof(CharT) == sizeof(char)) { \
@@ -182,7 +174,6 @@ public:
 
         // The path represents a mountpoint.
         // From here, if something goes wrong, it is an error
-        // and we shall return erroneous node instead of nullptr
 
         auto it = nodes.find(p);
         if(it != nodes.end()){
@@ -290,6 +281,12 @@ public:
         if(nd) {
             return nd;
         }
+
+        // ToDo: (templates):
+        // nd = templateInstanceAt(parn, p); // shall read top level files in parent node and collect templates definitions.
+        // (perhaps this job shall be done by existingFileAt())
+        // if some template matches then templateInstanceAt() may just resolve parent and return its child
+        // (assuming that resolveFilesystemNode() must collect all template instances)
 
         return existingFileAt(p);
     }
