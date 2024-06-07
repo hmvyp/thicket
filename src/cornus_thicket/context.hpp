@@ -12,24 +12,10 @@
 namespace cornus_thicket {
 
 
-#define THICKET_FS_LITERAL(funcname, literal) template<typename CharT>  constexpr const CharT* funcname(){ \
-    if constexpr (sizeof(CharT) == sizeof(char)) { \
-        return CORNUS_THICKET_CONCAT( ,literal); \
-    }else{ \
-        return CORNUS_THICKET_CONCAT(L, literal);  /*wide character literal*/ \
-    } \
-};
+// define string_t constants in platform-independent manner:
 
-// define mountpoint_suffix description in platform-independent manner:
-
-THICKET_FS_LITERAL(mountpoint_suffix_func, CORNUS_THICKET_MOUNTPOINT_SUFFIX)
-inline const string_t mountpoint_suffix(mountpoint_suffix_func<char_t>());
-
-
-// define mount template_suffix description:
-
-THICKET_FS_LITERAL(mountemplate_func, CORNUS_THICKET_MOUNTEMPLATE_SUFFIX)
-inline const string_t mountemplate_suffix(mountemplate_func<char_t>());
+THICKET_FS_LITERAL(mountpoint_suffix, CORNUS_THICKET_MOUNTPOINT_SUFFIX);
+THICKET_FS_LITERAL(mountemplate_suffix, CORNUS_THICKET_MOUNTEMPLATE_SUFFIX);
 
 
 struct MountRecord; //forward
@@ -283,10 +269,8 @@ public:
         }
 
         // ToDo: (templates):
-        // nd = templateInstanceAt(parn, p); // shall read top level files in parent node and collect templates definitions.
+        // nd = templateInstanceAt(parn, p); // shall collect templates definitions.
         // (perhaps this job shall be done by existingFileAt())
-        // if some template matches then templateInstanceAt() may just resolve parent and return its child
-        // (assuming that resolveFilesystemNode() must collect all template instances)
 
         return existingFileAt(p);
     }

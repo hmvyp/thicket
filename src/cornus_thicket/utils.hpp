@@ -10,6 +10,23 @@
 namespace cornus_thicket {
 
 
+// The macro THICKET_FS_LITERAL(constname, literal) declares a fs::path::string constant.
+// The constant is named constname and initialized by a quoted string literal
+// in a uniform way (regardless of character width used in fs::path::string)
+
+#define THICKET_FS_LITERAL(constname, literal) \
+template<typename CharT> \
+inline constexpr const CharT* constname##_initfunc(){ /*returns lteral as  byte or wide character C-string */ \
+    if constexpr (sizeof(CharT) == sizeof(char)) { \
+        return CORNUS_THICKET_CONCAT( ,literal); \
+    }else{ \
+        return CORNUS_THICKET_CONCAT(L, literal);  /*wide character literal*/ \
+    } \
+};\
+\
+inline const string_t constname = constname##_initfunc<char_t>(); /* declare const variable of type fs::path::string_type */
+
+
 //.......................... helper template to implement string2path_string():
 
 template<typename some_string_t>
