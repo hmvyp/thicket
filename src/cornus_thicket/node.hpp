@@ -68,7 +68,11 @@ struct Node
     ResolveStatus resolved_ = NODE_UNRESOLVED;
 
     bool has_own_content_ = false; // -T v2  true for filesystem nodes and rarely for reference  nodes (in case of mountpaths present)
+
+    // initial value of has_refernces_ may be overridden
+    // while resolving as filesystem node or as regular file reference node
     bool has_refernces_ = true; // --T v2  false-->true (for reference nodes or if there are references among descendants)
+
 
     fs::path path_ ; // canonical
     std::map<string_t, Node*> children;

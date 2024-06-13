@@ -164,16 +164,15 @@ Context::processMountRecord(
 
             if(!pathelem.empty()){
                 Node* child = ensureChild(nd_push_here, string2path_string(pathelem));
-                child->has_own_content_ = true; // stop following  references
+
+                // --T 2024-06-14  do not try to calculate node_type here!
+                // (do not bypass detectRefnodeType()) which does some side work)
+
+                child->has_own_content_ = true; // stop following  references; // may be overridden by detectRefnodeType())
                 child->ref_type = REFERENCE_NODE;
-                child->node_type = DIR_NODE; // may be overridden
                 child->valid_ = true;
 
                 nd_push_here = child;
-
-                if(nd->node_type == NodeType::UNKNOWN_NODE_TYPE) {
-                    nd->node_type = NodeType::DIR_NODE; // if some child exists, the node is a directory
-                }
             }
 
             if(pos_slash == string::npos) {
@@ -213,7 +212,6 @@ Context::processMountRecord(
     // from the nd_push_here and point nd_push_here to the last one:
     createDescendants(filter_path); // moves nd_push_here to the farthest descendant
 
-    nd_push_here->node_type = tgn_to_push->node_type;
     nd_push_here->targets.push_back(tgn_to_push);
 
     return errstr;

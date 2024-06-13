@@ -81,7 +81,7 @@ Context::materializeAsSymlinks(Node& n){
                     );
                 }
             }
-        }else if(n.node_type == UNKNOWN_NODE_TYPE){
+        }else { // if(n.node_type == UNKNOWN_NODE_TYPE){
             report_error(
                     std::string("Node at ")
                     + p2s(n.path_)

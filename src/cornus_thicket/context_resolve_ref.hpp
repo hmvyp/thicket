@@ -9,7 +9,7 @@ namespace cornus_thicket {
 inline void
 detectRefnodeType(Node& n){ // assuming targets already collected and resolved
     if(n.node_type != UNKNOWN_NODE_TYPE) {  // --T v2
-        return; // if already assigned (mount path elements inside mountpoint may not have targets at all)
+        return;
     }
 
     Node* first_detected_target = NULL;
@@ -41,7 +41,11 @@ detectRefnodeType(Node& n){ // assuming targets already collected and resolved
 
     if(first_detected_target){
         n.node_type = first_detected_target->node_type;
+    }else if(n.children.size() != 0){
+        n.node_type = DIR_NODE; // --T 2024-06-14
     }
+
+
 
     if(n.node_type == UNKNOWN_NODE_TYPE) {
         report_error(
@@ -51,12 +55,20 @@ detectRefnodeType(Node& n){ // assuming targets already collected and resolved
         );
     }
 
-    if(n.node_type == FILE_NODE && n.final_targets.size() > 1){
-        report_error(
-                std::string("Reference Node ") + p2s(n.path_)
-                + " has regular file target but has more than one final target nodes"
-                , SEVERITY_ERROR
-        );
+    if(n.node_type == FILE_NODE) {
+
+        n.has_refernces_  = false;  // --T 2024-06-14 (do not fool materializers)
+        n.has_own_content_ = false;  // --T 2024-06-14 (do not fool resolvers)
+
+        if(n.final_targets.size() > 1){
+            report_error(
+                    std::string("Reference Node ") + p2s(n.path_)
+                    + " is a regular file node and shall have 1 final target, but it has "
+                    + std::to_string(n.final_targets.size())
+                    + " final targets"
+                    , SEVERITY_ERROR
+            );
+        }
     }
 }
 
@@ -130,6 +142,7 @@ Context::collectRefnodeChildren(Node& n){
 
 void
 Context:: resolveReferenceNode(Node& n, bool check_resolving){ // assuming targets are resolved
+
     if(n.resolved_ >= NODE_RESOLVED){
         return;
     }
