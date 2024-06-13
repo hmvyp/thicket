@@ -15,12 +15,22 @@ enum NodeType {
     ,DIR_NODE
 };
 
+inline const char* verboseNodeType(NodeType nt){
+    switch(nt){
+    case UNKNOWN_NODE_TYPE: return "UNKNOWN_NODE_TYPE";
+    case FILE_NODE: return "FILE_NODE";
+    case DIR_NODE: return "DIR_NODE";
+    default: return " Node Type out of range";
+    }
+}
 
 enum ReferenceType {
     UNKNOWN_REFTYPE,
     FS_NODE,  // original file system object (file or directory) pre-existed before processing.
     REFERENCE_NODE, // refer to other nodes as content sources (may be materialized as directory or link)
 };
+
+
 
 
 enum ResolveStatus{

@@ -57,9 +57,40 @@ Context::materializeAsSymlinks(Node& n){
 
         if(n.node_type == DIR_NODE){
             // materialize node as directory:
-            fs::create_directory(n.path_); // ToDo: catch ???
-        }
 
+            fs::file_status fstat = fs::symlink_status(n.path_);
+
+            if(fs::exists(fstat)){
+                report_error(
+                        std::string("Can not create directory: the file already exists")
+                        + p2s(n.path_)
+                        + "\nThis probably is undeleted previous artefacts (or internal Thicket error)"
+                        , SEVERITY_ERROR
+                );
+
+
+                // else (if the directory already exists) do nothing
+            }else{
+                try{
+                    fs::create_directory(n.path_);
+                }catch(...){
+                    report_error(
+                            std::string("Error creating directory ")
+                            + p2s(n.path_)
+                            , SEVERITY_ERROR
+                    );
+                }
+            }
+        }else if(n.node_type == UNKNOWN_NODE_TYPE){
+            report_error(
+                    std::string("Node at ")
+                    + p2s(n.path_)
+                    + "shall be a directory, but actually is "
+                    + verboseNodeType(n.node_type)
+                    + "\n(This probably is internal Thicket error)"
+                    , SEVERITY_ERROR
+            );
+        }
     }
 
     // for final (filesystem) nodes or references with more than one target:

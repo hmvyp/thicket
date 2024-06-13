@@ -15,6 +15,13 @@ file: root/importedB/src/y/importedB_y_tx.txt md5: d41d8cd98f00b204e9800998ecf84
 file: root/importedB/src_all.thicket_mount.txt md5: a6ad4225fab1fbb148acb1080040d085
 file: root/importedB/src_super.thicket_mount.txt md5: cc43f24f7fefd112d17c39f56a454610
 dir: root/scope
+dir: root/scope/deep_file
+file: root/scope/deep_file.thicket_mount.txt md5: f55a23bc0c94ebacb6c4d420c2f19892
+dir: root/scope/deep_file/very
+dir: root/scope/deep_file/very/deep
+dir: root/scope/deep_file/very/deep/diving
+dir: root/scope/deep_file/very/deep/diving/into
+symlink: from: root/scope/deep_file/very/deep/diving/into/importedA_x_tx.txt to: ../../../../../../importedA/src/x/importedA_x_tx.txt
 file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
 dir: root/scope/src
 dir: root/scope/src/a

@@ -160,7 +160,7 @@ Context::processMountRecord(
         // then point nd_push_here to the last one
         for(size_t pos = 0; pos != string::npos; ){
             size_t pos_slash = path_as_string.find("/", pos);
-            string pathelem = path_as_string.substr(pos, pos_slash); // pos_slash may be npos
+            string pathelem = path_as_string.substr(pos, pos_slash - pos); // pos_slash may be npos
 
             if(!pathelem.empty()){
                 Node* child = ensureChild(nd_push_here, string2path_string(pathelem));
@@ -170,6 +170,10 @@ Context::processMountRecord(
                 child->valid_ = true;
 
                 nd_push_here = child;
+
+                if(nd->node_type == NodeType::UNKNOWN_NODE_TYPE) {
+                    nd->node_type = NodeType::DIR_NODE; // if some child exists, the node is a directory
+                }
             }
 
             if(pos_slash == string::npos) {
