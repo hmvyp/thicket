@@ -1,1 +1,4 @@
 ../importedA
+
+# test reference chain (from the scope) finally pointed to a regular file (bugfix 2024-06-14):
+add: ../importedA/src/x importedA_x_tx.txt one_file_from_A
