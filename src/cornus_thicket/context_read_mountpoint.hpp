@@ -261,10 +261,25 @@ Context::readMountpoint(
     nd->resolved_ = NODE_RESOLVING; // to catch circular dependencies
 
     // run over mountpoint entries to calculate and resolve targets:
-    for(auto& eno : mt){
+    for(auto& eno_as_is : mt){
+
+        std::string errstr;
+
+        std::string eno =  substituteExpressions(
+                this->varpool,
+                eno_as_is,
+                [&](std::string errs) -> bool {errstr = errs; return true;} // return gtrue to stop substitutions
+        );
+
+        if(!errstr.empty()){
+            report_error(erprfx(eno) + errstr, SEVERITY_ERROR);
+            continue;
+        }
 
         MountRecord mount_record;
-        auto errstr = mount_record.parseRecord(eno);
+
+        //auto
+        errstr = mount_record.parseRecord(eno);
 
         if(!errstr.empty()){
             report_error(erprfx(eno) + errstr, SEVERITY_ERROR);

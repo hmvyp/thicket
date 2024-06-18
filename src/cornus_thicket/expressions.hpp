@@ -9,15 +9,27 @@
 namespace cornus_thicket {
 
 struct Var{
-    const std::string vname;
-    std::optional<std::string> value;
+
+    std::string vname;
+
+    bool is_set = false;
+
+    void setValue(const std::string& val){
+        is_set = true;
+        value_ = val;
+    }
+
+    std::string getValue() const { return value_;}
+
+
+    std::string value_;
 };
 
 struct VarPool:
         public std::map<std::string, Var>
 {
     void putVar(const Var& var){
-        (*this)[var.vname];
+        (*this)[var.vname] = var;
     }
 
     const Var* findVar(const std::string& vn) const {
@@ -39,7 +51,9 @@ struct VarOccurrence{
     std::optional<std::string> value;
 
     VarOccurrence(const std::string& where, size_t pos, size_t length)
-        : vname(where.substr(pos, length)), place_pos(pos), place_length(length)
+        : vname(where.substr(pos + 2, length - 3))
+        , place_pos(pos)
+        , place_length(length)
     {}
 
     static
@@ -59,10 +73,10 @@ struct VarOccurrence{
             }
 
             size_t place_length = vendpos - vpos + 1;
-            VarOccurrence vocc(s.substr(vpos + 2, place_length - 3), vpos, place_length);
 
+            VarOccurrence vocc(s, vpos, place_length);
 
-            output_vars.push_back(std::move(vocc));
+            output_vars.push_back(vocc);
 
             pos = vendpos + 1;
         }
@@ -73,10 +87,11 @@ struct VarOccurrence{
 };
 
 template<typename ErrHandler>
+inline
 std::string  substituteExpressions(
         const VarPool& vpool,
-        const std::string s,
-        ErrHandler& err_handler
+        const std::string& s,
+        const ErrHandler& err_handler // returns true to cancel substitution
 ){
     std::vector<VarOccurrence> voccs;
     auto err = VarOccurrence::parse(s, voccs);
@@ -93,17 +108,20 @@ std::string  substituteExpressions(
     std::string ret;
     size_t cur_text_pos = 0;
     for(auto& vocc: voccs){
-        //texts.push_back(s.substr(cur_text_pos, vocc.place_pos - cur_text_pos));
         ret += s.substr(cur_text_pos, vocc.place_pos - cur_text_pos);
 
         const Var* pvar = vpool.findVar(vocc.vname);
 
         if(pvar == nullptr){
-            err_handler(std::string("Variable not found: " + vocc.vname) );
-        }else if(!pvar->value) {
-            err_handler(std::string("Variable is not set: " + vocc.vname) );
+            if(err_handler(std::string("Variable not found: " + vocc.vname) )){
+                return std::string();
+            }
+        }else if(!pvar->is_set) {
+            if(err_handler(std::string("Variable is not set: " + vocc.vname) )){
+                return std::string();
+            }
         }else{
-            ret += pvar->value.value();
+            ret += pvar->getValue();
         }
 
         cur_text_pos = vocc.place_pos + vocc.place_length;
@@ -113,6 +131,28 @@ std::string  substituteExpressions(
 
     ret += s.substr(last_vocc.place_pos + last_vocc.place_length); // last text chunk after last variable
     return ret;
+}
+
+
+inline
+std::string // error string
+addVarOptions(VarPool& add_here, const std::vector<const char* >& varoptions){
+    using std::string;
+    for(auto optval: varoptions){
+        string ov(optval);
+        size_t colon_pos = ov.find(':');
+        if(colon_pos == string::npos){
+            return string("-var option shall contain colon ':' between variable name and value, but it does not: ") + ov;
+        }
+
+        Var var;
+        var.vname =ov.substr(0, colon_pos);
+        var.setValue(ov.substr(colon_pos + 1));
+
+        add_here.putVar(var);
+    }
+
+    return string();
 }
 
 }

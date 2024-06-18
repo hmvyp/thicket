@@ -1,0 +1,6 @@
+
+add: src  **/*                 ${varM}
+add: ../${varA}/src  **/*      ${varM}
+add: ../${varB}/src_all  **/*  ${varM}
+
+

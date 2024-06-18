@@ -28,12 +28,18 @@ inline void print_tree(Node* nd){
 
 struct Option
 {
-    constexpr Option(const char* k, bool hasval = false): has_val(hasval), key(k){}
-    constexpr Option(const char* k, const char* value):  Option(k, true) {is_set = true; val = value;}
+    Option(const char* k, bool hasval = false, bool multival=false)
+        : has_val(hasval)
+        , is_multival(multival)
+        , key(k)
+    {}
+    Option(const char* k, const char* value):  Option(k, true) {is_set = true; val = value;}
     bool has_val;
+    bool is_multival;
     bool is_set = false;
     const char* key;
     const char* val = "";
+    std::vector<const char*> multivalue;
 };
 
 inline Option opt_clean_only("-c");
@@ -43,6 +49,7 @@ inline Option opt_method("-m", "symlinks");
 inline Option opt_print_tree("-p");
 inline Option opt_dry_run("-d");
 inline Option opt_root_lev("-root_lev", true);
+inline Option opt_variable("-var", true, true); // multivalue
 inline Option opt_end_of_options("--");
 
 
@@ -60,7 +67,7 @@ int run_thicket(Context& ctx){
     ctx.resolve();
 
     if(opt_print_tree.is_set){
-        print_tree(ctx.nodeAt(ctx.scope_));
+        print_tree(ctx.nodeAt(ctx.getScope()));
     }
 
 
@@ -91,7 +98,7 @@ int run_thicket(Context& ctx){
     return error_count != 0;
 }
 
-inline std::array<Option*, 8> all_options{{
+inline std::array<Option*, 9> all_options{{
     &opt_clean_only,
     &opt_quiet,
     &opt_force,
@@ -99,6 +106,7 @@ inline std::array<Option*, 8> all_options{{
     &opt_print_tree,
     &opt_dry_run,
     &opt_root_lev,
+    &opt_variable,
     &opt_end_of_options
 }};
 
@@ -156,7 +164,12 @@ inline bool parse_option(char* s, bool& err){
                 std::cout << "\nError: no = before value in option " << opt->key << " Found: " << s;
                 return false;
             }else{
-                opt->val =  s + klen +1;
+                const char* optval = s + klen +1;
+                if(opt->is_multival){
+                    opt->multivalue.push_back(optval);
+                }else{
+                    opt->val =  optval;
+                }
             }
         }
 
@@ -243,12 +256,22 @@ main(int nargs, char** args){
         return 1;
     }
 
+    auto run_lambda = [&](Context& cx) -> int {
+        auto err = addVarOptions(cx.getVarPool(), opt_variable.multivalue);
+        if(err.empty()){
+            return run_thicket(cx);
+        }else{
+            std::cout << "\nError: syntax in options " << err << "\n";
+            return 1;
+        }
+    };
+
     if(root_lev < 0){
         Context ctx(root, scope);
-        return run_thicket(ctx);
+        return run_lambda(ctx);
     }else{
         Context ctx(root_lev, scope);
-        return run_thicket(ctx);
+        return run_lambda(ctx);
     }
 }
 

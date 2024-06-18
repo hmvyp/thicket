@@ -72,3 +72,12 @@ symlink: from: root/scope/src_another/x to: ../../importedA/src/x
 dir: root/scope/src_import1file
 symlink: from: root/scope/src_import1file/file_from_a to: ../../importedA/src/x/importedA_x_tx.txt
 file: root/scope/src_import1file/file_from_a.thicket_mount.txt md5: 9cd9aaa20691006185927d6cd7ad10cf
+dir: root/scope/src_vars
+file: root/scope/src_vars.thicket_mount.txt md5: 418bd9fb4671763635cd3d4a25a39433
+dir: root/scope/src_vars/mounted_here
+symlink: from: root/scope/src_vars/mounted_here/a to: ../../src/a
+symlink: from: root/scope/src_vars/mounted_here/b to: ../../src/b
+dir: root/scope/src_vars/mounted_here/x
+symlink: from: root/scope/src_vars/mounted_here/x/importedA_x_tx.txt to: ../../../../importedA/src/x/importedA_x_tx.txt
+symlink: from: root/scope/src_vars/mounted_here/x/importedB_x_tx.txt to: ../../../../importedB/src/x/importedB_x_tx.txt
+symlink: from: root/scope/src_vars/mounted_here/y to: ../../../importedB/src/y

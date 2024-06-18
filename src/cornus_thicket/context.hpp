@@ -22,13 +22,17 @@ THICKET_FS_LITERAL(mountemplate_suffix, CORNUS_THICKET_MOUNTEMPLATE_SUFFIX);
 struct MountRecord; //forward
 
 
-struct Context
+class Context
         : public ObjectFactory
 {
     fs::path root_;  // converted to canonical
     fs::path scope_; // converted to canonical
 
     std::map<fs::path, Node*> nodes;
+
+    VarPool varpool;
+
+public:
 
     Context(
             fs::path root, // the whole universe
@@ -83,6 +87,10 @@ struct Context
 
         mkRootAndScopeNodes();
     }
+
+    const fs::path& getScope(){return scope_;};
+
+    VarPool& getVarPool(){return this->varpool;}
 
 private:
     void mkRootAndScopeNodes(){ // this is actually just a part of ctors
