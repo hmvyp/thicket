@@ -3,6 +3,7 @@
 
 #include "utils.hpp"
 #include "node.hpp"
+#include "expressions.hpp"
 
 #include <streambuf>
 #include <fstream>
