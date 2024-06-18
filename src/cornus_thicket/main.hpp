@@ -63,13 +63,15 @@ int run_thicket(Context& ctx){
     
     bool q = opt_quiet.is_set;
 
-    if(!q){std::cout << "\nresolving tree nodes...\n";};
-    ctx.resolve();
+    if(!opt_clean_only.is_set){ // then resolve...
 
-    if(opt_print_tree.is_set){
-        print_tree(ctx.nodeAt(ctx.getScope()));
+        if(!q){std::cout << "\nresolving tree nodes...\n";};
+        ctx.resolve();
+
+        if(opt_print_tree.is_set){
+            print_tree(ctx.nodeAt(ctx.getScope()));
+        }
     }
-
 
     if(!q){std::cout << "\ncleaning up previous artefacts...\n";};
     ctx.clean();
