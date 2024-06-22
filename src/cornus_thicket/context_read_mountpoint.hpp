@@ -18,8 +18,10 @@ struct MountRecord {
     static constexpr auto&  FILTER_UNIVERSAL = "**/*";
 
     std::string parseRecord( // returns error string (empty on success)
+            const VarPool& vpool,
             const std::string& src
     ){
+        using std::string;
 
         // std::cout<< "parsing path " << src;
         size_t part_start_pos = 0;
@@ -35,7 +37,6 @@ struct MountRecord {
                 continue; // skip multiple spaces
             }
 
-            //std::cout << "\n pos: " << pos << " part_start pos: "  << part_start_pos;
             parts.push_back(src.substr(part_start_pos, pos - part_start_pos));
             part_start_pos = pos + 1;
         }
@@ -62,7 +63,38 @@ struct MountRecord {
             return std::string("Syntax error in mountpoint record: ") + src;
         }
 
-        return std::string();
+        string errstr;
+
+        auto errhandler = [&](std::string errs) -> bool {errstr = errs; return true;}; // return true to stop substitutions
+
+        auto mk_substitutions = [&](std::string& s) -> void {
+            s = substituteEscapes(s);
+            s = substituteExpressions(
+                            vpool,
+                            s,
+                            errhandler
+                    );
+        };
+
+        mk_substitutions(target);
+
+        if(!errstr.empty()){
+            return errstr;
+        }
+
+        mk_substitutions(filter);
+
+        if(!errstr.empty()){
+            return errstr;
+        }
+
+        mk_substitutions(mount_path);
+        if(!errstr.empty()){
+            return errstr;
+        }
+
+
+        return string(); // Ok
     }
 };
 
@@ -261,25 +293,29 @@ Context::readMountpoint(
     nd->resolved_ = NODE_RESOLVING; // to catch circular dependencies
 
     // run over mountpoint entries to calculate and resolve targets:
-    for(auto& eno_as_is : mt){
+
+    // for(auto& eno_as_is : mt){ // duck!!!
+    for(auto& eno : mt){
 
         std::string errstr;
 
+        /*
         std::string eno =  substituteExpressions(
                 this->varpool,
                 eno_as_is,
-                [&](std::string errs) -> bool {errstr = errs; return true;} // return gtrue to stop substitutions
+                [&](std::string errs) -> bool {errstr = errs; return true;} // return true to stop substitutions
         );
 
         if(!errstr.empty()){
             report_error(erprfx(eno) + errstr, SEVERITY_ERROR);
             continue;
         }
+        */
 
         MountRecord mount_record;
 
         //auto
-        errstr = mount_record.parseRecord(eno);
+        errstr = mount_record.parseRecord(this->varpool, eno);
 
         if(!errstr.empty()){
             report_error(erprfx(eno) + errstr, SEVERITY_ERROR);

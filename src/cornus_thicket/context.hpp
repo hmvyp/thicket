@@ -3,6 +3,7 @@
 
 #include "utils.hpp"
 #include "node.hpp"
+#include "escapes.hpp"
 #include "expressions.hpp"
 
 #include <streambuf>
