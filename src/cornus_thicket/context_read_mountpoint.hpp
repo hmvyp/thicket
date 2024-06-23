@@ -108,8 +108,6 @@ Context::resolveMountpointTarget(
 ){
     std::string en = target_path; // copy as en may be changed (leave original untouched)
 
-    // std::cout<< "target path passed: " + target_path;
-
     bool from_root = (en[0] == '/') ? true : false; // path from the root ("absolute") or relative to mountpoint
 
     if(from_root){
@@ -120,7 +118,6 @@ Context::resolveMountpointTarget(
     auto prt = fs::path(pas); // the entry as fs:path
 
     if(prt.empty()){
-        // nd->resolved_ = NODE_FAILED_TO_RESOLVE;
         errstr = "results in empty path";
         return nullptr;
     }
@@ -136,7 +133,6 @@ Context::resolveMountpointTarget(
     std::error_code err;
     auto ptcn = fs::weakly_canonical(pt, err); // the tail may not exist (e.g. may point to another mountpoint)
     if(err){
-        // nd->resolved_ = NODE_FAILED_TO_RESOLVE;
         errstr = std::string() +  "mountpoint target\n    "
                 + p2s(pt) + "\n    can not be converted to canonical path";
         return nullptr;
@@ -294,28 +290,10 @@ Context::readMountpoint(
 
     // run over mountpoint entries to calculate and resolve targets:
 
-    // for(auto& eno_as_is : mt){ // duck!!!
     for(auto& eno : mt){
-
-        std::string errstr;
-
-        /*
-        std::string eno =  substituteExpressions(
-                this->varpool,
-                eno_as_is,
-                [&](std::string errs) -> bool {errstr = errs; return true;} // return true to stop substitutions
-        );
-
-        if(!errstr.empty()){
-            report_error(erprfx(eno) + errstr, SEVERITY_ERROR);
-            continue;
-        }
-        */
-
         MountRecord mount_record;
 
-        //auto
-        errstr = mount_record.parseRecord(this->varpool, eno);
+        std::string errstr = mount_record.parseRecord(this->varpool, eno);
 
         if(!errstr.empty()){
             report_error(erprfx(eno) + errstr, SEVERITY_ERROR);

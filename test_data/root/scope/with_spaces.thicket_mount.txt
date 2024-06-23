@@ -1,0 +1,1 @@
+add: dir\swith\s\sspaces file\swith\s\sspaces.txt put\swith\s\sspaces/to\sthis\sfolder

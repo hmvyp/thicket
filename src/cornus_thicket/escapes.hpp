@@ -21,13 +21,13 @@ std::string  substituteEscapes(
     string res;
     for(unsigned pos = 0 ; pos != string::npos;){
         auto bspos = s.find('\\', pos);  // nearest backslash position
-        res += s.substr(pos, bspos - pos); // bspos == npos Ok
+        res += s.substr(pos, bspos - pos); // bspos == npos case is Ok
         if(bspos == string::npos){
             break;
         }
 
         if(bspos + 1 == s.length()){
-           return res;
+           break; // ignore final backslash (maybe report error?)
         }
 
         char c = s[bspos + 1];
@@ -46,7 +46,11 @@ std::string  substituteEscapes(
 
         res += cr;
 
-        pos = bspos + 1;
+        if(bspos + 2 == s.length()){
+           break;
+        }
+
+        pos = bspos + 2;
     }
 
     return res;

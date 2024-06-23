@@ -23,6 +23,8 @@ dir: root/scope/deep_file/very/deep/diving
 dir: root/scope/deep_file/very/deep/diving/into
 dir: root/scope/deep_file/very/deep/diving/into/one_file_from_A_trough_B
 symlink: from: root/scope/deep_file/very/deep/diving/into/one_file_from_A_trough_B/importedA_x_tx.txt to: ../../../../../../../importedA/src/x/importedA_x_tx.txt
+dir: root/scope/dir with  spaces
+file: root/scope/dir with  spaces/file with  spaces.txt md5: d41d8cd98f00b204e9800998ecf8427e
 file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
 dir: root/scope/src
 dir: root/scope/src/a
@@ -81,3 +83,8 @@ dir: root/scope/src_vars/mounted_here/x
 symlink: from: root/scope/src_vars/mounted_here/x/importedA_x_tx.txt to: ../../../../importedA/src/x/importedA_x_tx.txt
 symlink: from: root/scope/src_vars/mounted_here/x/importedB_x_tx.txt to: ../../../../importedB/src/x/importedB_x_tx.txt
 symlink: from: root/scope/src_vars/mounted_here/y to: ../../../importedB/src/y
+dir: root/scope/with_spaces
+file: root/scope/with_spaces.thicket_mount.txt md5: eed0f448195e617fc159a89f496c4c83
+dir: root/scope/with_spaces/put with  spaces
+dir: root/scope/with_spaces/put with  spaces/to this folder
+symlink: from: root/scope/with_spaces/put with  spaces/to this folder/file with  spaces.txt to: 
