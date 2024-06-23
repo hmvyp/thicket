@@ -19,7 +19,7 @@ std::string  substituteEscapes(
 ){
     using std::string;
     string res;
-    for(unsigned pos = 0 ; pos != string::npos;){
+    for(size_t pos = 0 ;;){
         auto bspos = s.find('\\', pos);  // nearest backslash position
         res += s.substr(pos, bspos - pos); // bspos == npos case is Ok
         if(bspos == string::npos){
