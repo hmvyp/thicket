@@ -196,7 +196,8 @@ Context::processMountRecord(
                 // --T 2024-06-14  do not try to calculate node_type here!
                 // (do not bypass detectRefnodeType()) which does some side work)
 
-                child->has_own_content_ = true; // stop following  references; // may be overridden by detectRefnodeType())
+                nd_push_here->has_own_content_ = true; // --T 2024-07-02 the parent has own content
+                                              // (it has at least an explicit child), the child may or may not have its own content
                 child->ref_type = REFERENCE_NODE;
                 child->valid_ = true;
 

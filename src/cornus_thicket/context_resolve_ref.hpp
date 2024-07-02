@@ -58,7 +58,7 @@ detectRefnodeType(Node& n){ // assuming targets already collected and resolved
     if(n.node_type == FILE_NODE) {
 
         n.has_refernces_  = false;  // --T 2024-06-14 (do not fool materializers)
-        n.has_own_content_ = false;  // --T 2024-06-14 (do not fool resolvers)
+        n.has_own_content_ = false;  // --T 2024-06-14 (do not fool resolvers) (perhaps redundant after changes 2024-07-02 in context_read_mountpoint.hpp)
 
         if(n.final_targets.size() > 1){
             report_error(
