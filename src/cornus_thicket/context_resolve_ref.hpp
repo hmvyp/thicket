@@ -117,19 +117,6 @@ Context::collectRefnodeChildren(Node& n){
         for(auto itg_ch = tnch.begin(); itg_ch != tnch.end(); itg_ch++){ // over target's children
             const string_t& tch_name = itg_ch->first;
             Node* tch_node = itg_ch->second;
-
-            /*
-            auto my_child_entry = n.children.find(tch_name);
-            Node* my_child = nullptr;
-
-            if (my_child_entry != n.children.end()){ // child already exists?
-                my_child = my_child_entry->second;
-            }else{
-                my_child = create<Node>(n.path_/tch_name);
-                n.children[tch_name] = my_child;
-            }
-            */
-
             Node* my_child = this->ensureChild(&n, tch_name);
 
             my_child->ref_type = REFERENCE_NODE;

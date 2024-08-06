@@ -29,7 +29,7 @@ class Context
     fs::path root_;  // converted to canonical
     fs::path scope_; // converted to canonical
 
-    std::map<fs::path, Node*> nodes;
+    std::map<fs::path, Node*> nodes; // duck!!! ToDo: possible bug: non-mountpoint reference nodes seem not to appear here!!!
 
     VarPool varpool;
 
@@ -93,6 +93,10 @@ public:
 
     VarPool& getVarPool(){return this->varpool;}
 
+    Node* createNode(const fs::path&  p){
+        return create<Node>(p);
+    }
+
 private:
     void mkRootAndScopeNodes(){ // this is actually just a part of ctors
         if(existingFileAt(root_) == nullptr){
@@ -142,7 +146,7 @@ public:
             return ret; // maybe check if node is final and report an internal error otherwise?
         }
 
-        Node* nd = this->create<Node>(p);
+        Node* nd = createNode(p);
         nd->ref_type = FS_NODE;
         nodes[p] = nd;
         nd->node_type = tt;
@@ -189,7 +193,7 @@ public:
             return ret;  // return existing node
         }
 
-        Node* nd = create<Node>(p);
+        Node* nd = createNode(p);
         nd->ref_type = REFERENCE_NODE;
         nd->is_mountpoint = true;
         nodes[p] = nd;
@@ -362,7 +366,7 @@ private:
         if (my_child_entry != parent->children.end()){ // child already exists?
             my_child = my_child_entry->second;
         }else{
-            my_child = create<Node>(parent->path_/chname);
+            my_child = createNode(parent->path_/chname);
             parent->children[chname] = my_child;
         }
 
@@ -373,6 +377,12 @@ private:
     processMountRecord(
             Node* nd,  // mountpoint node
             MountRecord& mount_record
+    );
+
+    std::string // error
+    mergeNodes(
+            Node* nd,  // mountpoint node
+            Node* from
     );
 
     void readMountpoint(

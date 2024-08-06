@@ -14,6 +14,11 @@ struct MountRecord {
 
     bool optional = false;
 
+    Node* mp_placeholder; // mountpoint placeholder to merge into mountpoint
+
+    MountRecord(Context& ctx, Node* mountpoint_node)
+        :mp_placeholder(ctx.createNode(mountpoint_node->get_path()))
+    {}
 
     static constexpr auto&  FILTER_UNIVERSAL = "**/*";
 
@@ -181,7 +186,8 @@ Context::processMountRecord(
         }
     }
 
-    Node* nd_push_here = nd;
+    // Node* nd_push_here = nd; // tmp-2024-08-06
+    Node* nd_push_here = mrec.mp_placeholder;
 
     auto createDescendants = [&](const string& path_as_string) -> void {
         // create descendants with (has_own_content_ == true) and w/o targets
@@ -243,8 +249,64 @@ Context::processMountRecord(
 
     nd_push_here->targets.push_back(tgn_to_push);
 
+    // tmp-2024-08-06  ToDo: resolve nd_push_here using filter then merge the whole record with mountpoint root
+
+    mergeNodes(nd, mrec.mp_placeholder);// tmp-2024-08-06  temporary code
+
     return errstr;
 }
+
+
+inline
+std::string // error
+Context::mergeNodes(
+        Node* nd,  // to
+        Node* from  // assuming resolved
+){
+
+    nd->valid_ = nd->valid_ || from->valid_; // ???
+
+    // nd->resolved_== std::max(nd->resolved_, from->resolved_);
+
+    if(nd->node_type == UNKNOWN_NODE_TYPE){
+        nd->node_type = from->node_type;
+    }
+
+
+    // is_mountpoint  - do not touch
+
+
+    if(nd->node_type != from->node_type) {
+        return std::string("can not merge nodes of different types"); // ToDo: eleborate!
+    }
+
+    nd->ref_type = REFERENCE_NODE;
+
+
+    if(from->has_own_content_){
+        nd->has_own_content_ = true;
+    }
+
+    for(auto& trg : from->targets){
+        nd->targets.push_back(trg);
+    }
+
+    // merge final targets:
+    for(auto& ftrg_e: from->final_targets){
+        auto already = nd->final_targets.find(ftrg_e.first);
+        if(already == nd->final_targets.end()){
+            nd->final_targets[ftrg_e.first] = ftrg_e.second;
+        }
+    }
+
+    for(auto& chre: from->children){
+        Node* ch = ensureChild(nd, chre.first);
+        mergeNodes(ch, chre.second);
+    }
+
+    return std::string();
+}
+
 
 
 inline
@@ -292,7 +354,7 @@ Context::readMountpoint(
     // run over mountpoint entries to calculate and resolve targets:
 
     for(auto& eno : mt){
-        MountRecord mount_record;
+        MountRecord mount_record(*this, nd);
 
         std::string errstr = mount_record.parseRecord(this->varpool, eno);
 
