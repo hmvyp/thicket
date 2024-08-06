@@ -171,20 +171,32 @@ Context::processMountRecord(
 
     size_t wcard_pos = mrec.filter.find("*");
 
-    string filter_path = mrec.filter.substr(0, wcard_pos); // wcard_pos == string::npos is also  ok
+    std::string filter_path;
+    std::string filter_pattern;
+
+    if(wcard_pos != string::npos){
+        size_t last_fpath_slash_pos = mrec.filter.rfind("/", wcard_pos);
+        size_t filter_path_end_pos = (last_fpath_slash_pos == string::npos)? 0 : last_fpath_slash_pos;
+
+        filter_path = mrec.filter.substr(0, filter_path_end_pos);
+
+        size_t filter_patter_pos = (last_fpath_slash_pos == string::npos)
+                ? filter_path_end_pos
+                : filter_path_end_pos + 1; // skip last slash after the filter path
+
+        filter_pattern = mrec.filter.substr(filter_patter_pos);
+        if( !(filter_pattern == MountRecord::FILTER_UNIVERSAL)){
+            return string("Only universal wildcard **/* at the end of a filter is supported ");
+        }
+    }else{
+        filter_path = mrec.filter;
+    }
 
     auto slash_pred = [](unsigned char c){
         return c == '/';
     };
 
     filter_path = trim(filter_path, slash_pred); // hmmm... avoid segmentation fault in "/" fs::path operator...
-
-    if(wcard_pos != string::npos){
-        string wcard = mrec.filter.substr(wcard_pos);
-        if( !(wcard == MountRecord::FILTER_UNIVERSAL)){
-            return string("Only universal wildcard **/* at the end of a filter is supported ");
-        }
-    }
 
     // Node* nd_push_here = nd; // tmp-2024-08-06
     Node* nd_push_here = mrec.mp_placeholder;
@@ -250,8 +262,9 @@ Context::processMountRecord(
     nd_push_here->targets.push_back(tgn_to_push);
 
     // tmp-2024-08-06  ToDo: resolve nd_push_here using filter then merge the whole record with mountpoint root
+    resolveReferenceNode(*mrec.mp_placeholder, true);  //duck!! apply filter!!!
 
-    mergeNodes(nd, mrec.mp_placeholder);// tmp-2024-08-06  temporary code
+    mergeNodes(nd, mrec.mp_placeholder);// tmp-2024-08-06 duck!!! check return error string
 
     return errstr;
 }
@@ -260,7 +273,7 @@ Context::processMountRecord(
 inline
 std::string // error
 Context::mergeNodes(
-        Node* nd,  // to
+        Node* nd,  // merge into
         Node* from  // assuming resolved
 ){
 

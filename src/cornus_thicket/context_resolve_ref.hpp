@@ -109,6 +109,11 @@ collectFinalTargets(Node& n){
 
 inline void
 Context::collectRefnodeChildren(Node& n){
+
+    if(n.has_own_content_){
+        return; //duck!!!
+    }
+
     auto& tgs = n.targets;
 
     for(auto& tg : tgs){ // over targets
@@ -117,7 +122,7 @@ Context::collectRefnodeChildren(Node& n){
         for(auto itg_ch = tnch.begin(); itg_ch != tnch.end(); itg_ch++){ // over target's children
             const string_t& tch_name = itg_ch->first;
             Node* tch_node = itg_ch->second;
-            Node* my_child = this->ensureChild(&n, tch_name);
+            Node* my_child =  this->ensureChild(&n, tch_name);
 
             my_child->ref_type = REFERENCE_NODE;
             my_child->valid_ = true;
