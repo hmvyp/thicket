@@ -10,6 +10,11 @@ struct MountRecord {
     std::string target;
     std::string filter; // "**/*" - uiniversal filter, "path/to/file_or_dir" - singular filter
                         // (path/to... is relative to target)
+
+    std::string filter_path;  // path w/o wildcards before pattern
+    std::string filter_pattern; // pattern to match the remainder
+
+
     std::string mount_path; // "" or  "." denotes the mountpoint itself
 
     bool optional = false;
@@ -98,8 +103,42 @@ struct MountRecord {
             return errstr;
         }
 
+        errstr = parse_filter();
 
-        return string(); // Ok
+        return errstr;
+    }
+
+    std::string // error
+    parse_filter(){
+        using std::string;
+
+        size_t wcard_pos = filter.find("*");
+
+        if(wcard_pos != string::npos){
+            size_t last_fpath_slash_pos = filter.rfind("/", wcard_pos);
+            size_t filter_path_end_pos = (last_fpath_slash_pos == string::npos)? 0 : last_fpath_slash_pos;
+
+            filter_path = filter.substr(0, filter_path_end_pos);
+
+            size_t filter_patter_pos = (last_fpath_slash_pos == string::npos)
+                    ? filter_path_end_pos
+                    : filter_path_end_pos + 1; // skip last slash after the filter path
+
+            filter_pattern = filter.substr(filter_patter_pos);
+            if( !(filter_pattern == MountRecord::FILTER_UNIVERSAL)){
+                return string("Only universal wildcard **/* at the end of a filter is supported ");
+            }
+        }else{
+            filter_path = filter;
+        }
+
+        auto slash_pred = [](unsigned char c){
+            return c == '/';
+        };
+
+        filter_path = trim(filter_path, slash_pred); // hmmm... avoid segmentation fault in "/" fs::path operator...
+
+        return string();
     }
 };
 
@@ -167,37 +206,6 @@ Context::processMountRecord(
 
     string errstr;
 
-    // analyze the filter:
-
-    size_t wcard_pos = mrec.filter.find("*");
-
-    std::string filter_path;
-    std::string filter_pattern;
-
-    if(wcard_pos != string::npos){
-        size_t last_fpath_slash_pos = mrec.filter.rfind("/", wcard_pos);
-        size_t filter_path_end_pos = (last_fpath_slash_pos == string::npos)? 0 : last_fpath_slash_pos;
-
-        filter_path = mrec.filter.substr(0, filter_path_end_pos);
-
-        size_t filter_patter_pos = (last_fpath_slash_pos == string::npos)
-                ? filter_path_end_pos
-                : filter_path_end_pos + 1; // skip last slash after the filter path
-
-        filter_pattern = mrec.filter.substr(filter_patter_pos);
-        if( !(filter_pattern == MountRecord::FILTER_UNIVERSAL)){
-            return string("Only universal wildcard **/* at the end of a filter is supported ");
-        }
-    }else{
-        filter_path = mrec.filter;
-    }
-
-    auto slash_pred = [](unsigned char c){
-        return c == '/';
-    };
-
-    filter_path = trim(filter_path, slash_pred); // hmmm... avoid segmentation fault in "/" fs::path operator...
-
     // Node* nd_push_here = nd; // tmp-2024-08-06
     Node* nd_push_here = mrec.mp_placeholder;
 
@@ -232,9 +240,9 @@ Context::processMountRecord(
 
 
     const std::string&
-    full_target_pathstring = (filter_path.empty())
+    full_target_pathstring = (mrec.filter_path.empty())
             ? mrec.target
-            : (mrec.target + "/" + filter_path);
+            : (mrec.target + "/" + mrec.filter_path);
 
     Node* tgn_to_push =  resolveMountpointTarget(nd->get_path() , full_target_pathstring, errstr);
 
@@ -257,7 +265,7 @@ Context::processMountRecord(
 
     // create descendants along filter_path
     // from the nd_push_here and point nd_push_here to the last one:
-    createDescendants(filter_path); // moves nd_push_here to the farthest descendant
+    createDescendants(mrec.filter_path); // moves nd_push_here to the farthest descendant
 
     nd_push_here->targets.push_back(tgn_to_push);
 
@@ -277,9 +285,7 @@ Context::mergeNodes(
         Node* from  // assuming resolved
 ){
 
-    nd->valid_ = nd->valid_ || from->valid_; // ???
-
-    // nd->resolved_== std::max(nd->resolved_, from->resolved_);
+    nd->valid_ = nd->valid_ || from->valid_; // ??? at least one is valid?
 
     if(nd->node_type == UNKNOWN_NODE_TYPE){
         nd->node_type = from->node_type;
@@ -290,7 +296,7 @@ Context::mergeNodes(
 
 
     if(nd->node_type != from->node_type) {
-        return std::string("can not merge nodes of different types"); // ToDo: eleborate!
+        return std::string("can not merge nodes of different types (regular file vs. directory)");
     }
 
     nd->ref_type = REFERENCE_NODE;
@@ -304,13 +310,7 @@ Context::mergeNodes(
         nd->targets.push_back(trg);
     }
 
-    // merge final targets:
-    for(auto& ftrg_e: from->final_targets){
-        auto already = nd->final_targets.find(ftrg_e.first);
-        if(already == nd->final_targets.end()){
-            nd->final_targets[ftrg_e.first] = ftrg_e.second;
-        }
-    }
+    // merge final targets... let's leave it to resolveReferenceNode()
 
     for(auto& chre: from->children){
         Node* ch = ensureChild(nd, chre.first);
