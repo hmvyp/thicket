@@ -2,6 +2,7 @@
 #define context_read_mountpoint_hpp
 
 #include "context.hpp" // not necessary, just help IDE to resolve symbols
+#include "filter.hpp"
 
 namespace cornus_thicket {
 

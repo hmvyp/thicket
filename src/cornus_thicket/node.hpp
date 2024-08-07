@@ -53,7 +53,7 @@ struct Node
     explicit Node(
             fs::path p // assuming canonical
     )
-        : path_(p)
+        : path_(p), path_as_string_(p2s(p))
     {
     }
 
@@ -74,7 +74,9 @@ struct Node
     bool has_refernces_ = true; // --T v2  false-->true (for reference nodes or if there are references among descendants)
 
 
-    fs::path path_ ; // canonical
+    const fs::path path_ ; // canonical
+    const std::string path_as_string_;
+
     std::map<string_t, Node*> children;
 
     // the following fields are used for reference nodes only:

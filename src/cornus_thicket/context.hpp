@@ -5,6 +5,7 @@
 #include "node.hpp"
 #include "escapes.hpp"
 #include "expressions.hpp"
+#include "filter.hpp"
 
 #include <streambuf>
 #include <fstream>
@@ -385,6 +386,15 @@ private:
             Node* from
     );
 
+    Node*
+    apply_filter(
+            Node& cur_target_node,
+            size_t start_filtering_from, // (in the target path string)
+            const fs::path& parent_path,
+            Node* cur_node, // optional may be null (if needed, it is created inside)
+            Filter& flt
+    );
+
     void readMountpoint(
             Node* nd,
             const fs::path& pm // path to mountpoint description file
@@ -409,6 +419,7 @@ private:
 #include "context_read_mountpoint.hpp"
 #include "context_resolve_fin.hpp"
 #include "context_resolve_ref.hpp"
+#include "filter_apply.hpp"
 #include "context_clean.hpp"
 #include "context_materialize_symlinks.hpp"
 #include "context_materialize_as_copy.hpp"
