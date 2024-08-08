@@ -11,7 +11,7 @@ Context::
 apply_filter(
         Node& cur_target_node,
         size_t start_filtering_from, // (in the target path string)
-        const fs::path& parent_path,
+        const fs::path& parent_path, // used only if cur_node is null (to calculate new node path)
         Node* cur_node, // optional may be null (if needed, it is created inside)
         Filter& flt
 ){
@@ -19,7 +19,11 @@ apply_filter(
 
     auto cur_path = [&]() -> const fs::path& {
         if(cur_path_memoized.empty()){
-            cur_path_memoized = parent_path/cur_target_node.path_.filename();
+            if(cur_node){
+                cur_path_memoized = cur_node->path_;
+            }else{
+                cur_path_memoized = parent_path/cur_target_node.path_.filename();
+            }
         }
         return cur_path_memoized;
     };

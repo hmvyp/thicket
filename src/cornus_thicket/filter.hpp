@@ -62,7 +62,7 @@ setFilter(const std::string& filter_str){
     }else if(filter_str == "*") {
         flttype = U_SHALLOW;
     }else{
-        return std::string("") + filter_str + " is not supported (only * and **/*)";
+        return std::string("Filter pattern ") + filter_str + " is not supported (only * and **/*)";
     }
 
     return std::string(); // Ok

@@ -11,7 +11,7 @@
 #endif
 
 
-int main(int nargs, char** args){
+ int main(int nargs, char** args){
 #   ifdef _WIN32 
     unsigned cur_cp = GetConsoleOutputCP();
     SetConsoleOutputCP(65001);  // utf-8 to display localized file names

@@ -113,7 +113,7 @@ inline std::array<Option*, 9> all_options{{
 }};
 
 inline void show_help(){
-    std::cout << "\nThicket dependencies resolver. Command line: \n"
+    std::cout << "\nThicket dependencies resolver v 2.2.01 beta 0. Command line: \n"
             "\n1st form:\n"
             "---------\n\n"
             "<thicket_executable> <options> [--] root scope\n\n"

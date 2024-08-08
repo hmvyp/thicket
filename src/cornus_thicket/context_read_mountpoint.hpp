@@ -15,6 +15,7 @@ struct MountRecord {
     std::string filter_path;  // path w/o wildcards before pattern
     std::string filter_pattern; // pattern to match the remainder
 
+    Filter filter_;
 
     std::string mount_path; // "" or  "." denotes the mountpoint itself
 
@@ -28,7 +29,8 @@ struct MountRecord {
 
     static constexpr auto&  FILTER_UNIVERSAL = "**/*";
 
-    std::string parseRecord( // returns error string (empty on success)
+    std::string // returns error string (empty on success)
+    parseRecord(
             const VarPool& vpool,
             const std::string& src
     ){
@@ -106,6 +108,9 @@ struct MountRecord {
 
         errstr = parse_filter();
 
+
+        errstr = errstr.empty()? filter_.setFilter(filter_pattern) : errstr;
+
         return errstr;
     }
 
@@ -131,6 +136,7 @@ struct MountRecord {
             }
         }else{
             filter_path = filter;
+            filter_pattern = MountRecord::FILTER_UNIVERSAL;
         }
 
         auto slash_pred = [](unsigned char c){
@@ -268,9 +274,15 @@ Context::processMountRecord(
     // from the nd_push_here and point nd_push_here to the last one:
     createDescendants(mrec.filter_path); // moves nd_push_here to the farthest descendant
 
-    nd_push_here->targets.push_back(tgn_to_push);
+    // nd_push_here->targets.push_back(tgn_to_push); // duck!!! (aopply filter instead)
+    apply_filter(
+            *tgn_to_push,
+            tgn_to_push->path_as_string_.length(),//size_t start_filtering_from, // (in the target path string)
+            fs::path(),
+            nd_push_here, // optional may be null (if needed, it is created inside)
+            mrec.filter_
+    );
 
-    // tmp-2024-08-06  ToDo: resolve nd_push_here using filter then merge the whole record with mountpoint root
     resolveReferenceNode(*mrec.mp_placeholder, true);  //duck!! apply filter!!!
 
     mergeNodes(nd, mrec.mp_placeholder);// tmp-2024-08-06 duck!!! check return error string
