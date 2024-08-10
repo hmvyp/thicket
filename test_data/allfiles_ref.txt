@@ -8,6 +8,8 @@ file: root/importedA/src/x/importedA_x_tx.txt md5: d41d8cd98f00b204e9800998ecf84
 dir: root/importedB
 file: root/importedB/.gitignore md5: 556d3988271ef28257e08f4582f7d422
 dir: root/importedB/src
+file: root/importedB/src/importedB_at_root_1.txt md5: 713a3c50eb14a22fa85280243af9df91
+file: root/importedB/src/importedB_at_root_2.txt md5: 9c16cafc1a0226d72a92c233eb99ad94
 dir: root/importedB/src/x
 file: root/importedB/src/x/importedB_x_tx.txt md5: d41d8cd98f00b204e9800998ecf8427e
 dir: root/importedB/src/y
@@ -26,6 +28,14 @@ symlink: from: root/scope/deep_file/very/deep/diving/into/one_file_from_A_trough
 dir: root/scope/dir with  spaces
 file: root/scope/dir with  spaces/file with  spaces.txt md5: d41d8cd98f00b204e9800998ecf8427e
 file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
+dir: root/scope/shallow_refs
+file: root/scope/shallow_refs.thicket_mount.txt md5: 29e7d72fc5a5fdd90c0b3a72bbf5e3ae
+dir: root/scope/shallow_refs/b_src
+symlink: from: root/scope/shallow_refs/b_src/importedB_at_root_1.txt to: ../../../importedB/src/importedB_at_root_1.txt
+symlink: from: root/scope/shallow_refs/b_src/importedB_at_root_2.txt to: ../../../importedB/src/importedB_at_root_2.txt
+dir: root/scope/shallow_refs/src
+symlink: from: root/scope/shallow_refs/src/importedB_at_root_1.txt to: ../../../importedB/src/importedB_at_root_1.txt
+symlink: from: root/scope/shallow_refs/src/importedB_at_root_2.txt to: ../../../importedB/src/importedB_at_root_2.txt
 dir: root/scope/src
 dir: root/scope/src/a
 dir: root/scope/src/a/a1
@@ -42,6 +52,8 @@ symlink: from: root/scope/src_all/a to: ../src/a
 symlink: from: root/scope/src_all/b to: ../src/b
 dir: root/scope/src_all/hide
 dir: root/scope/src_all/hide/here
+symlink: from: root/scope/src_all/hide/here/importedB_at_root_1.txt to: ../../../../importedB/src/importedB_at_root_1.txt
+symlink: from: root/scope/src_all/hide/here/importedB_at_root_2.txt to: ../../../../importedB/src/importedB_at_root_2.txt
 dir: root/scope/src_all/hide/here/x
 symlink: from: root/scope/src_all/hide/here/x/importedA_x_tx.txt to: ../../../../../importedA/src/x/importedA_x_tx.txt
 symlink: from: root/scope/src_all/hide/here/x/importedB_x_tx.txt to: ../../../../../importedB/src/x/importedB_x_tx.txt
@@ -50,14 +62,20 @@ dir: root/scope/src_all/hide/there
 symlink: from: root/scope/src_all/hide/there/importedA_x_tx.txt to: ../../../../importedA/src/x/importedA_x_tx.txt
 symlink: from: root/scope/src_all/hide/there/src to: ../../../../importedA/src
 dir: root/scope/src_all/hide/there/src_all
+symlink: from: root/scope/src_all/hide/there/src_all/importedB_at_root_1.txt to: ../../../../../importedB/src/importedB_at_root_1.txt
+symlink: from: root/scope/src_all/hide/there/src_all/importedB_at_root_2.txt to: ../../../../../importedB/src/importedB_at_root_2.txt
 dir: root/scope/src_all/hide/there/src_all/x
 symlink: from: root/scope/src_all/hide/there/src_all/x/importedA_x_tx.txt to: ../../../../../../importedA/src/x/importedA_x_tx.txt
 symlink: from: root/scope/src_all/hide/there/src_all/x/importedB_x_tx.txt to: ../../../../../../importedB/src/x/importedB_x_tx.txt
 symlink: from: root/scope/src_all/hide/there/src_all/y to: ../../../../../importedB/src/y
 symlink: from: root/scope/src_all/hide/there/x to: ../../../../importedA/src/x
 symlink: from: root/scope/src_all/hide/there/y to: ../../../../importedB/src/y
+symlink: from: root/scope/src_all/importedB_at_root_1.txt to: ../../importedB/src/importedB_at_root_1.txt
+symlink: from: root/scope/src_all/importedB_at_root_2.txt to: ../../importedB/src/importedB_at_root_2.txt
 dir: root/scope/src_all/optional_resolved
 dir: root/scope/src_all/optional_resolved/src_all
+symlink: from: root/scope/src_all/optional_resolved/src_all/importedB_at_root_1.txt to: ../../../../importedB/src/importedB_at_root_1.txt
+symlink: from: root/scope/src_all/optional_resolved/src_all/importedB_at_root_2.txt to: ../../../../importedB/src/importedB_at_root_2.txt
 dir: root/scope/src_all/optional_resolved/src_all/x
 symlink: from: root/scope/src_all/optional_resolved/src_all/x/importedA_x_tx.txt to: ../../../../../importedA/src/x/importedA_x_tx.txt
 symlink: from: root/scope/src_all/optional_resolved/src_all/x/importedB_x_tx.txt to: ../../../../../importedB/src/x/importedB_x_tx.txt
@@ -79,6 +97,8 @@ file: root/scope/src_vars.thicket_mount.txt md5: 418bd9fb4671763635cd3d4a25a3943
 dir: root/scope/src_vars/mounted_here
 symlink: from: root/scope/src_vars/mounted_here/a to: ../../src/a
 symlink: from: root/scope/src_vars/mounted_here/b to: ../../src/b
+symlink: from: root/scope/src_vars/mounted_here/importedB_at_root_1.txt to: ../../../importedB/src/importedB_at_root_1.txt
+symlink: from: root/scope/src_vars/mounted_here/importedB_at_root_2.txt to: ../../../importedB/src/importedB_at_root_2.txt
 dir: root/scope/src_vars/mounted_here/x
 symlink: from: root/scope/src_vars/mounted_here/x/importedA_x_tx.txt to: ../../../../importedA/src/x/importedA_x_tx.txt
 symlink: from: root/scope/src_vars/mounted_here/x/importedB_x_tx.txt to: ../../../../importedB/src/x/importedB_x_tx.txt

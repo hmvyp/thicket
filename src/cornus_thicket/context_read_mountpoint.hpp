@@ -131,9 +131,11 @@ struct MountRecord {
                     : filter_path_end_pos + 1; // skip last slash after the filter path
 
             filter_pattern = filter.substr(filter_patter_pos);
-            if( !(filter_pattern == MountRecord::FILTER_UNIVERSAL)){
-                return string("Only universal wildcard **/* at the end of a filter is supported ");
-            }
+
+            //if( !(filter_pattern == MountRecord::FILTER_UNIVERSAL)){
+            //    return string("Only universal wildcard **/* at the end of a filter is supported ");
+            //}
+
         }else{
             filter_path = filter;
             filter_pattern = MountRecord::FILTER_UNIVERSAL;

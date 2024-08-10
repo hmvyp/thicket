@@ -35,22 +35,24 @@ inline void mk_symlink(Node& n, const Node& to){
 inline void
 Context::materializeAsSymlinks(Node& n){
     if(n.ref_type == REFERENCE_NODE){  // (may return from the inside)
-        if(n.targets.size() == 1 && path_in_scope(n.targets[0]->path_)){
-            mk_symlink(n, *n.targets[0]); // the target shall be resolved, so just make symlink to it
-            return; // do not recurse further, link is enough
-        }else if(n.final_targets.size() == 1) {// if exactly one final target
-            Node* ft =  n.final_targets.begin()->second;
-
-            // is the target complete (fully final) or located inside materialization scope?
-            if(!ft->has_refernces_ || path_in_scope(ft->path_))
-            {
-                // then it can be symlinked
-                mk_symlink(n, *ft);
+        if(!n.has_own_content_){
+            if(n.targets.size() == 1 && path_in_scope(n.targets[0]->path_)){
+                mk_symlink(n, *n.targets[0]); // the target shall be resolved, so just make symlink to it
                 return; // do not recurse further, link is enough
-            }
+            }else if(n.final_targets.size() == 1) {// if exactly one final target
+                Node* ft =  n.final_targets.begin()->second;
 
-            // else (in case of "foreign" target containing mountpoints)
-            // the target can not be symlinked and shall be materialized below
+                // is the target complete (fully final) or located inside materialization scope?
+                if(!ft->has_refernces_ || path_in_scope(ft->path_))
+                {
+                    // then it can be symlinked
+                    mk_symlink(n, *ft);
+                    return; // do not recurse further, link is enough
+                }
+
+                // else (in case of "foreign" target containing mountpoints)
+                // the target can not be symlinked and shall be materialized below
+            }
         }
 
         // if node can not be symlinked:
@@ -83,9 +85,9 @@ Context::materializeAsSymlinks(Node& n){
             }
         }else { // if(n.node_type == UNKNOWN_NODE_TYPE){
             report_error(
-                    std::string("Node at ")
+                    std::string("Node at  ")
                     + p2s(n.path_)
-                    + "shall be a directory, but actually is "
+                    + "  shall be a directory, but actually is "
                     + verboseNodeType(n.node_type)
                     + "\n(This probably is internal Thicket error)"
                     , SEVERITY_ERROR

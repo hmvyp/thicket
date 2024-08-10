@@ -31,6 +31,7 @@ apply_filter(
     auto cur = [&]()-> auto {
         if(cur_node == nullptr){
             cur_node = createNode(cur_path());
+            cur_node->ref_type = REFERENCE_NODE;
         }
         return cur_node;
 
@@ -48,8 +49,9 @@ apply_filter(
     }else if(fm.desc_match == DESC_POSSIBLE){
         size_t count = 0;
         for(auto& trg_ch_entry : cur_target_node.children){
+            Node* trg_ch = trg_ch_entry.second;
             Node* chn = apply_filter(
-                    *trg_ch_entry.second, // hope not null
+                    *trg_ch, // hope not null
                     start_filtering_from,
                     cur_path(),
                     nullptr,
@@ -65,11 +67,21 @@ apply_filter(
         }
 
         if(count == 0 && cur_target_node.node_type != FILE_NODE){
+            if(cur_node){
+                cur_node->has_own_content_  = true; // if cur_node passed as parameter
+            }
+            return nullptr; // do not create empty directories;
+        }
+    }else{ // DESC_NONE
+        if(cur_target_node.node_type != FILE_NODE){ // if a directory
+            if(cur_node){
+                cur_node->has_own_content_  = true; // if cur_node passed as parameter
+            }
             return nullptr; // do not create empty directories;
         }
     }
 
-    cur()->has_own_content_  = cur_target_node.node_type != FILE_NODE; // filtered (if a directory)
+    cur()->has_own_content_  = cur_target_node.node_type != FILE_NODE; // filtered! (if a directory)
     cur()->targets.push_back(&cur_target_node);
     return cur();
 }

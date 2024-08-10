@@ -1,0 +1,2 @@
+add: ../importedB/src * b_src
+add: ../importedB src/* 
