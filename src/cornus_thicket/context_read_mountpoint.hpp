@@ -332,6 +332,9 @@ Context::mergeNodes(
         mergeNodes(ch, chre.second);
     }
 
+    nd->children_collected = true; // prevent resolveReferenceNode() from redundant collection of children and targets
+    //(that does not prevent subsequent calls of mergeNodes() from addition of another children)
+
     return std::string();
 }
 

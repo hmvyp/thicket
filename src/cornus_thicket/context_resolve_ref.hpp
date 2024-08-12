@@ -154,7 +154,10 @@ Context:: resolveReferenceNode(Node& n, bool check_resolving){ // assuming targe
     detectRefnodeType(n);
 
     collectFinalTargets(n);
-    collectRefnodeChildren(n);
+    if(!n.children_collected) {
+        collectRefnodeChildren(n);
+        n.children_collected = true;
+    }
 
     for(auto& pair: n.children){
         resolve(*(pair.second));  // resolve children

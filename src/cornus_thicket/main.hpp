@@ -5,6 +5,10 @@
 #include <string.h>
 #include <array>
 
+#define CORNUS_THICKET_APP_NAME "Thicket source tree resolver"
+#define CORNUS_THICKET_VERSION "2.1.02"
+
+
 namespace cornus_thicket {
 
 
@@ -42,6 +46,7 @@ struct Option
     std::vector<const char*> multivalue;
 };
 
+inline Option opt_version("-version");
 inline Option opt_clean_only("-c");
 inline Option opt_quiet("-q");
 inline Option opt_force("-f"); // do not ask anything
@@ -82,14 +87,14 @@ int run_thicket(Context& ctx){
             
             ctx.materializeAsSymlinks(); // ToDo: return result ???
             
-			if(!q){std::cout << "\n...something is done";};
+			if(!q){std::cout << "\n...something is done. Errors: " << error_count;};
         }else if(strcmp(opt_method.val, "copy") == 0 || strcmp(opt_method.val, "mixed") == 0){
             if(!q){std::cout << "\nstarting materialization process...\n";};
 
             ctx.materializeAsCopy(strcmp(opt_method.val, "mixed") == 0);
 
-            if(!q){std::cout << "\n...something is done";};
-       }else{
+            if(!q){std::cout << "\n...something is done. Errors: " << error_count;};
+        }else{
             std::cout << "\nError:unrecognized materialization method: " << opt_method.val << "\n";
             return 1;
         }
@@ -100,7 +105,8 @@ int run_thicket(Context& ctx){
     return error_count != 0;
 }
 
-inline std::array<Option*, 9> all_options{{
+inline std::array<Option*, 10> all_options{{
+    &opt_version,
     &opt_clean_only,
     &opt_quiet,
     &opt_force,
@@ -113,7 +119,11 @@ inline std::array<Option*, 9> all_options{{
 }};
 
 inline void show_help(){
-    std::cout << "\nThicket dependencies resolver v 2.2.01 beta 0. Command line: \n"
+    std::cout << "\n"
+            CORNUS_THICKET_APP_NAME
+            " version "
+            CORNUS_THICKET_VERSION
+            "\n\nCommand line: \n"
             "\n1st form:\n"
             "---------\n\n"
             "<thicket_executable> <options> [--] root scope\n\n"
@@ -133,6 +143,7 @@ inline void show_help(){
             "\n  searching for them in the grandfather of the current directory\n"
             "\n\nAvailable options:\n"
             "------------------\n\n"
+            "-version  prints Thicket version\n"
             "-c  clean only\n"
             "-f  force (do not ask before cleaning previous thicket artifacts)\n"
             "-q  quiet (implies -f), suppress console i/o except of error reporting\n"
@@ -140,6 +151,11 @@ inline void show_help(){
             "    symlinks - simlinks whereever possible\n"
             "    mixed - copy from the outside of the materialization scope, symlink inside\n"
             "    copy - always copy\n"
+            "-var  assigns a value to a variable\n"
+            "    (a variable with name NAME can be used in mountpoint description files as ${NAME})\n"
+            "    syntax:   var=NAME:VALUE\n"
+            "    for example var=TARGET_OS:LINUX\n"
+            "    There may be several -var options in the command line (a separate -var option per variable)\n"
             ;
 }
 
@@ -254,8 +270,17 @@ main(int nargs, char** args){
     }
 
     if(scope == nullptr){
-        show_help();
-        return 1;
+        if(opt_version.is_set){
+            std::cout <<
+                    CORNUS_THICKET_APP_NAME
+                    " version "
+                    CORNUS_THICKET_VERSION
+                    "\n";
+                    return 0;
+        }else{
+            show_help();
+            return 1;
+        }
     }
 
     auto run_lambda = [&](Context& cx) -> int {

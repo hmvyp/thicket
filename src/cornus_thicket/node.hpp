@@ -67,11 +67,17 @@ struct Node
 
     ResolveStatus resolved_ = NODE_UNRESOLVED;
 
-    bool has_own_content_ = false; // -T v2  true for filesystem nodes and rarely for reference  nodes (in case of mountpaths present)
+    bool children_collected = false; // a stage of node resolving (to prevent redundant collection of children and their targets)
+
+    // has_own_content_flag declares that the node is not just a union of targets
+    // (e.g. if the node content is filtered or created voluntary).
+    // This flag always prevents the node from materialization as symlink.
+    bool has_own_content_ = false; // -T v2  true for filesystem nodes and sometimes for reference  nodes (e.g. if  mountpaths present)
+
 
     // initial value of has_refernces_ may be overridden
     // while resolving as filesystem node or as regular file reference node
-    bool has_refernces_ = true; // --T v2  false-->true (for reference nodes or if there are references among descendants)
+    bool has_refernces_ = true; // --T v2  false-->true (for reference nodes or if there are mountpoints among descendants)
 
 
     const fs::path path_ ; // canonical
