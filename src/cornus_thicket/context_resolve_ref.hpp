@@ -111,7 +111,7 @@ inline void
 Context::collectRefnodeChildren(Node& n){
 
     if(n.has_own_content_){
-        return; // --T v2.2 duck!!! ???
+        return;
     }
 
     auto& tgs = n.targets;

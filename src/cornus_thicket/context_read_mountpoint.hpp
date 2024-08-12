@@ -276,7 +276,6 @@ Context::processMountRecord(
     // from the nd_push_here and point nd_push_here to the last one:
     createDescendants(mrec.filter_path); // moves nd_push_here to the farthest descendant
 
-    // nd_push_here->targets.push_back(tgn_to_push); // duck!!! (aopply filter instead)
     apply_filter(
             *tgn_to_push,
             tgn_to_push->path_as_string_.length(),//size_t start_filtering_from, // (in the target path string)
@@ -285,9 +284,9 @@ Context::processMountRecord(
             mrec.filter_
     );
 
-    resolveReferenceNode(*mrec.mp_placeholder, true);  //duck!! apply filter!!!
+    resolveReferenceNode(*mrec.mp_placeholder, true);
 
-    mergeNodes(nd, mrec.mp_placeholder);// tmp-2024-08-06 duck!!! check return error string
+    errstr = mergeNodes(nd, mrec.mp_placeholder);
 
     return errstr;
 }
@@ -402,6 +401,8 @@ Context::readMountpoint(
 
     // Reference node is useless being unresolved, so resolve it:
     resolveReferenceNode(*nd, false); // NODE_RESOLVING is already set, so pass false as 2nd arg
+
+    publishTree(*nd);
 }
 
 }

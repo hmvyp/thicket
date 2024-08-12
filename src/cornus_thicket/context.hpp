@@ -30,7 +30,7 @@ class Context
     fs::path root_;  // converted to canonical
     fs::path scope_; // converted to canonical
 
-    std::map<fs::path, Node*> nodes; // duck!!! ToDo: possible bug: non-mountpoint reference nodes seem not to appear here!!!
+    std::map<fs::path, Node*> nodes;
 
     VarPool varpool;
 
@@ -372,6 +372,18 @@ private:
         }
 
         return my_child;
+    }
+
+    // publishTree() adds all tree nodes to nodes hashtable.
+    void publishTree(Node& n){
+        auto it = nodes.find(n.path_);
+        if(it == nodes.end()){
+            nodes[n.path_] = &n; // publish node
+        }
+
+        for(auto& ch_entry : n.children){
+            publishTree(*ch_entry.second);
+        }
     }
 
     std::string // error
