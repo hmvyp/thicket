@@ -44,7 +44,8 @@ void report_error(std::string err, Severity sev){
 
 
     if(sev >= SEVERITY_PANIC){
-       throw errs;
+       //throw errs;
+       exit(111);
     }
 };
 

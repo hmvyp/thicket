@@ -6,6 +6,7 @@
 #include "escapes.hpp"
 #include "expressions.hpp"
 #include "filter.hpp"
+#include "imprint.hpp"
 
 #include <streambuf>
 #include <fstream>
@@ -34,6 +35,8 @@ class Context
 
     VarPool varpool;
 
+    Imprint imprint;
+
 public:
 
     Context(
@@ -51,14 +54,7 @@ public:
             );
         }
 
-        scope_ =  fs::canonical(root_/scope, err);
-
-        if(err){
-            report_error(
-                    std::string("cornus_thicket::Context: Invalid scope path") + p2s(scope),
-                    SEVERITY_PANIC
-            );
-        }
+        setScope(root_/scope);
 
         mkRootAndScopeNodes();
     }
@@ -67,17 +63,7 @@ public:
             unsigned root_level, // number of levels above the scope
             fs::path scope  // in this case: absolute or relative to the current directory
     ){
-
-        std::error_code err;
-
-        scope_ =  fs::canonical(scope, err);
-
-        if(err){
-            report_error(
-                    std::string("cornus_thicket::Context: Invalid scope path") + p2s(scope),
-                    SEVERITY_PANIC
-            );
-        }
+        setScope(scope);
 
         fs::path root = scope_;
 
@@ -98,7 +84,27 @@ public:
         return create<Node>(p);
     }
 
+
 private:
+
+    void setScope(const fs::path& scope){
+        std::error_code err;
+        scope_ =  fs::canonical(scope, err);
+
+        if(err){
+            report_error(
+                    std::string("cornus_thicket::Context: Invalid scope path") + p2s(scope),
+                    SEVERITY_PANIC
+            );
+        }
+
+        imprint.setScope(this->scope_);
+
+    }
+
+
+
+
     void mkRootAndScopeNodes(){ // this is actually just a part of ctors
         if(existingFileAt(root_) == nullptr){
             report_error("cornus_thicket::Context: Invalid root path", SEVERITY_PANIC);
@@ -350,8 +356,16 @@ public:
         }
     }
 
+    // cleaning methods:
+
+    void clean(); // cleans all under the scope using mountpoint description files
+
+    unsigned // errors count
+    clean_use_imprint(){  // cleans all under the scope using imprint from previous invocation
+        return imprint.deleteArtifacts();
+    }
+
     // materialization methods:
-    void clean(); // cleans all under scope
     void materializeAsSymlinks(); // materializes all under the scope
     void materializeAsCopy(bool symlinks_inside); // materializes all under the scope
 
@@ -422,6 +436,8 @@ private:
     static bool is_thicket_mountpoint_description(const fs::path& p, fs::path* mountpoint_path);
 
     static void clean(const fs::path& p, std::map<fs::path, bool>& to_delete);
+
+    void mk_symlink(Node& n, const Node& to);
     void materializeAsSymlinks(Node& n);
     void materializeAsCopy(Node& n, bool symlinks_inside);
 };

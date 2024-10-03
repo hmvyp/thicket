@@ -33,6 +33,7 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
         if(n.node_type == DIR_NODE){
             // materialize node as directory:
             fs::create_directory(n.path_); // ToDo: catch ???
+            imprint.addArtifact(n, nsCOPY);
         }else if (n.node_type == FILE_NODE){
             if(n.final_targets.size() == 1){
                 Node* ft =  n.final_targets.begin()->second;
@@ -53,6 +54,8 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
                             + p2s(ft->path_)
                             , SEVERITY_ERROR
                     );
+                }else{
+                    imprint.addArtifact(n, nsCOPY);
                 }
             } // else: hope the error has been already reported (more than one target for regular file)
         }
@@ -67,7 +70,9 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
 
 
 void Context::materializeAsCopy(bool symlinks_inside){ // materializes all under scope
+  imprint.reset();
   materializeAsCopy(*nodeAt(scope_), symlinks_inside);
+  imprint.writeImprintFile();
 }
 
 

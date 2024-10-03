@@ -6,7 +6,7 @@
 #include <array>
 
 #define CORNUS_THICKET_APP_NAME "Thicket source tree resolver"
-#define CORNUS_THICKET_VERSION "2.1.02"
+#define CORNUS_THICKET_VERSION "2.2.01"
 
 
 namespace cornus_thicket {
@@ -51,6 +51,7 @@ inline Option opt_clean_only("-c");
 inline Option opt_quiet("-q");
 inline Option opt_force("-f"); // do not ask anything
 inline Option opt_method("-m", "symlinks");
+inline Option opt_clean_method("-em", "imprint");  // erase method (imprint or mounts)
 inline Option opt_print_tree("-p");
 inline Option opt_dry_run("-d");
 inline Option opt_root_lev("-root_lev", true);
@@ -69,19 +70,35 @@ int run_thicket(Context& ctx){
     bool q = opt_quiet.is_set;
 
     if(!opt_clean_only.is_set){ // then resolve...
+    }
+
+    if(strcmp(opt_clean_method.val, "imprint") == 0){
+        if(!q){std::cout << "\ncleaning up previous artifacts using imprint from previous invocation...\n";};
+        ctx.clean_use_imprint();
+        if(error_count){
+            std::cout << "\n... Artifacts cleaning FAILED";
+            if(!opt_clean_only.is_set){
+                std::cout << "\n    Further processing aborted due to cleaning failure";
+            }
+            return error_count != 0;
+        }else{
+            if(!q) { std::cout << "... cleaning complete.\n";}
+        }
+    } else  if(strcmp(opt_clean_method.val, "mounts") == 0) {
+        if(!q){std::cout << "\ncleaning up previous artifacts using mountpoint description files...\n";};
+        ctx.clean();
+    }
+
+    if(!opt_clean_only.is_set){
 
         if(!q){std::cout << "\nresolving tree nodes...\n";};
+
         ctx.resolve();
 
         if(opt_print_tree.is_set){
             print_tree(ctx.nodeAt(ctx.getScope()));
         }
-    }
 
-    if(!q){std::cout << "\ncleaning up previous artefacts...\n";};
-    ctx.clean();
-
-    if(!opt_clean_only.is_set){
         if(strcmp(opt_method.val, "symlinks") == 0){
             if(!q){std::cout << "\nstarting materialization process...\n";};
             
@@ -100,17 +117,18 @@ int run_thicket(Context& ctx){
         }
     }
 
-    std::cout << "\n";
+    if(!q || error_count !=0) {std::cout << "\n";}
 
     return error_count != 0;
 }
 
-inline std::array<Option*, 10> all_options{{
+inline std::array<Option*, 11> all_options{{
     &opt_version,
     &opt_clean_only,
     &opt_quiet,
     &opt_force,
     &opt_method,
+    &opt_clean_method,
     &opt_print_tree,
     &opt_dry_run,
     &opt_root_lev,
@@ -151,6 +169,14 @@ inline void show_help(){
             "    symlinks - simlinks whereever possible\n"
             "    mixed - copy from the outside of the materialization scope, symlink inside\n"
             "    copy - always copy\n"
+            "-em=erase_method artifacts cleaning method: imprint (default) or mounts\n"
+            "    imprint - based on .thicket_imprint file produced by previous invocation of Thicket\n"
+            "        (the file lists all previously created artifacts). This is a recommended method\n"
+            "    mounts - an old cleaning method based on the current set of mountpoints under the scope\n"
+            "        this method is less precise and may be dangerous in some circumstances \n"
+            "        (there is a risk to delete something vital accidentally placed into artifact directory) \n"
+            "        The 'mounts' method, however, may be a last resort if .thicket_imprint file \n"
+            "        is corrupted or accidentally deleted \n"
             "-var  assigns a value to a variable\n"
             "    (a variable with name NAME can be used in mountpoint description files as ${NAME})\n"
             "    syntax:   var=NAME:VALUE\n"

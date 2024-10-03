@@ -5,7 +5,9 @@
 
 namespace cornus_thicket {
 
-inline void mk_symlink(Node& n, const Node& to){
+inline void
+Context::
+mk_symlink(Node& n, const Node& to){
 
     // create symlink:
     fs::path base = n.path_.parent_path();
@@ -21,19 +23,27 @@ inline void mk_symlink(Node& n, const Node& to){
     }
 
     if(er){
+        std::string add_explanation = (fs::exists(n.path_))
+                ? "\n    Possible cause: artifact already exists from previous Thicket invocation (cleaning is needed)"
+                : "";
+
         report_error(
                 std::string("Failed to create symlink \n    from: ")
                 + p2s(n.path_)
                 + "\n    to: "
                 + p2s(link_target_canon)
+                + add_explanation
                 , SEVERITY_ERROR
         );
     }
+
+    std::string errs = imprint.addArtifact(n, nsLINK);
 }
 
 
 inline void
-Context::materializeAsSymlinks(Node& n){
+Context::
+materializeAsSymlinks(Node& n){
     if(n.ref_type == REFERENCE_NODE){  // (may return from the inside)
         if(!n.has_own_content_){
             if(n.targets.size() == 1 && path_in_scope(n.targets[0]->path_)){
@@ -75,6 +85,7 @@ Context::materializeAsSymlinks(Node& n){
             }else{
                 try{
                     fs::create_directory(n.path_);
+                    imprint.addArtifact(n, nsCOPY);
                 }catch(...){
                     report_error(
                             std::string("Error creating directory ")
@@ -102,7 +113,9 @@ Context::materializeAsSymlinks(Node& n){
 }
 
 void Context::materializeAsSymlinks(){ // materializes all under the scope
+  imprint.reset();
   materializeAsSymlinks(*nodeAt(scope_));
+  imprint.writeImprintFile();
 }
 
 

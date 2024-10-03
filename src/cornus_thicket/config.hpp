@@ -12,6 +12,10 @@
 #   define CORNUS_THICKET_MOUNTPOINT_SUFFIX ".thicket_mount.txt"
 #endif
 
+#ifndef CORNUS_THICKET_IMPRINT_FILE
+#   define CORNUS_THICKET_IMPRINT_FILE ".thicket_imprint"
+#endif
+
 #ifndef CORNUS_THICKET_MOUNTEMPLATE_SUFFIX
 #   define CORNUS_THICKET_MOUNTEMPLATE_SUFFIX ".thicket_template.txt"
 #endif

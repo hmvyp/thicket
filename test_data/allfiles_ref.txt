@@ -17,6 +17,7 @@ file: root/importedB/src/y/importedB_y_tx.txt md5: d41d8cd98f00b204e9800998ecf84
 file: root/importedB/src_all.thicket_mount.txt md5: a6ad4225fab1fbb148acb1080040d085
 file: root/importedB/src_super.thicket_mount.txt md5: 5bac93b14b68413bb80d47d41e76d668
 dir: root/scope
+file: root/scope/.thicket_imprint md5: f2cf59016921f12ea0c115d215bf6e6e
 dir: root/scope/deep_file
 file: root/scope/deep_file.thicket_mount.txt md5: d47295567ed5b81ef46c85893fe9947d
 dir: root/scope/deep_file/very

@@ -1,29 +1,323 @@
 #ifndef cornus_thicket_imprint_hpp
 #define cornus_thicket_imprint_hpp
 
+#include <string_view>
+#include <fstream>
+#include <iostream>
+
+#include  "utils.hpp"
 #include  "node.hpp"
 
 
 namespace cornus_thicket {
 
+THICKET_FS_LITERAL(imprint_file, CORNUS_THICKET_IMPRINT_FILE);
+
+
+enum NodeStatus {
+    nsNONE,
+    nsEXISING, // not a thicket artifact (pre-existed)
+    nsLINK, // symbolic link (an artifact)
+    nsCOPY //  an artifact, but not a link, i.e. actual file/directory created by thicket
+};
+
+inline const char* verboseNodeStatus(NodeStatus ns){
+    switch(ns){
+    case nsNONE: return "UNKNOWN_NODE_STATUS";
+    case nsEXISING: return "Pre-existed Object";
+    case nsLINK: return "Link Artifact";
+    case nsCOPY: return "Copy Artifact";
+    default: return " Node status out of range";
+    }
+}
+
 class Imprint {
+public:
 
-    // Artifact type:
-    enum NodeStatus {
-        nsNONE,
-        nsEXISING, // not a thicket artifact (pre-existed here)
-        nsLINK, // symbolic link
-        nsCOPY //  an artifact, but not a link, i.e. actual file/directory created by thicket
-    };
+    void reset(){
+        all_records_.clear();
+        garbage_.clear();
+    }
 
+    void setScope(const fs::path& scope){
+        scope_ = scope;
+        scope_as_string_ = p2s(scope_);
+    }
+
+    unsigned // error count
+    deleteArtifacts()
+    {
+        unsigned errcount = 0;
+
+        all_records_.clear();
+        garbage_.clear();
+
+        const auto read_res = readImprint(scope_);
+
+        switch(read_res){
+        case Imprint_READ_NOFILE:
+            return 0; // nothing to do (not an error)
+        case Imprint_READ_ERROR:
+            return 1; // (already reported inside readImprint() )
+        case Imprint_READ_OK: // go further
+            ;
+        }
+
+        errcount = collectArtifactsInExistingDir(scope_);
+        all_records_.clear(); // we do not need them more
+
+        if(errcount != 0){
+            std::cout << " \n Errors while collecting artifacts (see previous messages). Nothing is deleted \n";
+            return errcount;
+        }
+
+        // artifact collection Ok.
+        for(auto& p : garbage_){
+            std::error_code er;
+            remove_all(p, er);
+            if(er){
+                ++errcount;
+                std::cout << " \n Error while deleting " << p2s(p);
+                report_error( std::string("Error while deleting artifact file:  " )
+                        + p2s(p)
+                        , SEVERITY_ERROR // maybe PANIC?
+                );
+            }
+        }
+
+        garbage_.clear();
+
+
+        if(errcount) {
+            std::cout << " \n Errors while deleting artifacts (see previous messages). Something is NOT deleted";
+            return errcount;
+        }
+
+
+
+        // Artifacts deleted. Try to delete imprint file:
+        std::error_code erc;
+        auto impath = mkImprintPath(scope_);
+        fs::remove(impath, erc);
+
+        if(erc){
+            ++errcount;
+            report_error( std::string("Error while deleting thicket imprint (artifacts description):  ")
+                    + p2s(impath)
+                    , SEVERITY_ERROR
+            );
+
+            return errcount;
+        }
+
+        return errcount; // i.e. 0
+    }
+
+
+    std::string // error or ""
+    addArtifact(Node& n, NodeStatus ns){
+        std::string ret_err;
+
+        const std::string_view npsv = std::string_view(n.path_as_string_);
+        const std::string_view sp_sv = std::string_view(scope_as_string_);
+
+
+        if(n.node_type == UNKNOWN_NODE_TYPE){
+            ret_err = "Internal Thicket error: "" Can not add artifact  node type (file or directory) is unknown";
+        }else if(n.ref_type == FS_NODE && ns > nsEXISING) {
+            ret_err = "Internal Thicket error:  Can not add artifact  pre-existed node can not be a link or copy";
+        }else if(n.ref_type == REFERENCE_NODE && ns == nsEXISING) {
+            ret_err = "Internal Thicket error:  Can not add artifact: virtual (reference) node can not have nsEXISING status";
+        }else if( // check if the node path is really prefixed with the scope path (paranoia):
+                npsv.length() < sp_sv.length() || npsv.substr(0, sp_sv.length()) != sp_sv
+        ){
+            ret_err = "Internal Thicket error:  for a node under the scope the node path is not prefixed with the scope path ";
+        }
+
+        if(!ret_err.empty()){
+            report_error(
+                    ret_err
+                    + " Node at: "
+                    + n.path_as_string_
+                    , SEVERITY_ERROR
+            );
+
+            return ret_err;
+        }
+
+        Record rc = {n.node_type, ns};
+
+        std::string key = (npsv.length() == sp_sv.length())
+                ? ""
+                : std::string(npsv.substr(sp_sv.length() + 1)); // remove slash before relative path
+
+        all_records_[key] = rc;
+
+        return "";
+    }
+
+    unsigned // error count
+    writeImprintFile(){
+        unsigned errcount = 0;
+
+
+        try{
+            std::ofstream os(mkImprintPath(scope_), std::ios::binary);
+            os << IMPRINT_SIGNATURE << '\n';
+            os << "# This is a generated file containing descriptions of Thicket artifacts created in this scope. Do not edit." << '\n';
+            for(auto it = all_records_.begin(); it != all_records_.end(); it++){
+                std::string s;
+                auto errstr = encodeRecord(it->first, it->second, s);
+                if(!errstr.empty()){
+                    ++errcount;
+                    report_error( std::string("Error while creating imprint file: \n ")
+                            + errstr
+                            + "\n for artifact: "
+                            +it->first
+                            , SEVERITY_ERROR
+                    );
+                    continue;
+                }
+
+                os << s << '\n';
+            }
+        }catch(...){
+            ++errcount;
+            report_error( std::string("I/O error while creating imprint file")
+                    , SEVERITY_ERROR
+            );
+        }
+
+        return errcount;
+    }
+
+
+private:
+
+    static inline const char* IMPRINT_SIGNATURE = "thicket imprint file version 1.0";
+
+    // artifact description record:
     struct Record {
         NodeType ntype; // file or dir
         NodeStatus nstatus;
     };
 
-private:
+
+    static fs::path
+    mkImprintPath(const fs::path& scope){
+        return scope/imprint_file;
+    }
+
+    enum ImprintFileReadResult{
+      Imprint_READ_OK = 0,
+      Imprint_READ_NOFILE,
+      Imprint_READ_ERROR
+    };
+
+    ImprintFileReadResult
+    readImprint(const fs::path& scope){
+        auto imprint_path = mkImprintPath(scope);
+
+        std::error_code err_exists;
+
+        if(!fs::exists(imprint_path)){
+            if(err_exists){
+                report_error( std::string("Error while checking imprint file existence. File:  " )
+                        + p2s(imprint_path)
+                        , SEVERITY_ERROR
+                );
+                return Imprint_READ_ERROR;
+            }else{
+                return Imprint_READ_NOFILE;
+            }
+        }
+
+        try{ // read imprint file:
+            std::ifstream is(imprint_path);
+            std::stringstream buffer;
+            buffer << is.rdbuf();
+
+            unsigned line_no = 0;
+            std::string line;
+
+            while(std::getline(buffer, line)) {
+                ++line_no;
+
+                if(line_no == 1){
+                    if(line != IMPRINT_SIGNATURE) {
+                        report_error( std::string("Invalid imprint file version. File:  " )
+                                + p2s(imprint_path)
+                                + " At line "
+                                + std::to_string(line_no)
+                                , SEVERITY_ERROR
+                        );
+                        return Imprint_READ_ERROR;
+                    }
+
+                    continue;
+                }
+
+                if(line.empty() || line[0] == '#'){ // empty or comment
+                    continue;
+                }
+
+                auto errstr = decodeRecord(line);
+                if(!errstr.empty()){
+                    report_error( std::string("Imprint file corrupted at line No " ) + std::to_string(line_no)
+                            , SEVERITY_ERROR
+                    );
+                    return Imprint_READ_ERROR;
+                }
+            }
+        }catch(...){
+            report_error( std::string("I/O error while reading imprint file ") + p2s(imprint_path), SEVERITY_ERROR);
+            return Imprint_READ_ERROR;
+        }
+
+        return Imprint_READ_OK;
+    }
+
+    std::string //error
+    encodeRecord(const std::string& relpathstr, Record& rc, std::string& output){
+        switch(rc.nstatus){
+        case nsEXISING:
+            output += 'e';
+            break;
+        case nsLINK:
+            output += 'l';
+            break;
+        case nsCOPY:
+            output += 'c';
+            break;
+        default:
+            return "Internal Thicket error: Unknown artifact node status (existing? link? copy?) ";
+        }
+
+        switch(rc.ntype){
+        case FILE_NODE:
+            output +=  'f';
+            break;
+        case DIR_NODE:
+            output +=  'd';
+            break;
+        default:
+            return "Internal Thicket error: Unknown artifact node type (file? directory?) ";
+        }
+
+        output += ':';
+        output += relpathstr;
+
+        return "";
+    }
+
     std::string // error
-    parseRecord(const std::string& line){
+    decodeRecord(const std::string& line){
+
+        // expected record structure example: cd:relative/path/from/scope
+        // 'c' - "copy"
+        // 'd' - "directory"
+        // ':' - delimiter
+
         size_t len = line.length();
         if(len == 0 || line[0] == '#'){
             return ""; // skip empty or comments
@@ -65,19 +359,144 @@ private:
             return "Imprint record syntax: 3d symbol shall be ':' ";
         }
 
-        all_nodes_[line.substr(3)] = rc;
+        all_records_[line.substr(3)] = rc;
 
         return "";
     }
 
 
-    std::map<std::string, Record> all_nodes_;
+    Record*
+    findRecord(
+            const fs::path& p, // absolute path
+            std::string& relpath // output (p relative to scope)
+    ){
+        relpath = p2s(p.lexically_proximate(scope_));
 
-};
+        auto rec_it = all_records_.find(relpath);
+
+        if(rec_it == all_records_.end()){
+            return nullptr; // do nothing with unknown objects and do not recurse into them
+        }
+
+        return &rec_it->second;
+    }
 
 
+    unsigned // error count
+    collectArtifactsInExistingDir(const fs::path& dirp)
+    {
+        unsigned errcount = 0;
+
+        for (auto const& de : fs::directory_iterator{dirp}){
+            auto& p = de.path();
+
+            if(p.empty()){
+                continue; // seems impossible
+            }
+
+            std::string relpath;
+            const Record* prec = findRecord(p, relpath);
+
+            if(prec == nullptr || prec->nstatus == nsEXISING ){ //existing or unknown
+                if(fs::is_directory(p) && !fs::is_symlink(p)){
+                    errcount += collectArtifactsInExistingDir(p); // clean child directory
+                } // (else do nothing with existing or unknown object)
+            }else{ // reference (artifact) case
+                errcount += collectArtifact(
+                        p,
+                        relpath,
+                        prec
+                );
+            }
+        }
+
+        return errcount;
+    }
 
 
-}
+    unsigned // error count
+    collectArtifactsInReferenceDir(const fs::path& dirp)
+    {
+        unsigned errcount = 0;
+
+        for (auto const& de : fs::directory_iterator{dirp}){
+            auto& p = de.path();
+            std::string relpath;
+            const Record* prec = findRecord(p, relpath);
+            if(prec == nullptr){
+                ++errcount;
+                report_error(
+                    std::string("Unexpected object inside an artifact directory: ") + relpath
+                        +
+                        "\n    Please check it, move it to an appropriate place or delete it manually"
+                    ,SEVERITY_ERROR
+                );
+            }
+
+            errcount += collectArtifact(
+                    p,
+                    relpath,
+                    prec
+            );
+
+            if(errcount == 0){
+                garbage_.push_back(p);
+            }
+        }
+
+        return errcount;
+    }
+
+
+    unsigned // error count
+    collectArtifact(
+            const fs::path& p,
+            const std::string& relpath,
+            const Record* prec // assuming non-null
+    ){
+        unsigned errcount = 0;
+
+        const NodeStatus nstatus = fs::is_symlink(p) ? nsLINK : nsCOPY;
+
+        // compare file and record status and type, if they differ, report error and leave the object untouched
+        if(nstatus != prec->nstatus){
+            report_error(
+                std::string("For artifact located at: ") + relpath
+                    + "\n    artifact status mismatch.\n Previously created as "
+                    + verboseNodeStatus(prec->nstatus)
+                    + "\n    but now found as "
+                    + verboseNodeStatus(nstatus)
+                    + "\n    Possible error cause: "
+                      "\n    last Thicket invocation has been performed under different OS."
+                      "\n    (this is especially likely for virtulization environment)"
+                      "\n    In this case return to another OS to clean up Thicket artifacts"
+                ,SEVERITY_PANIC  // very dangerous case
+            );
+
+            ++errcount;
+        }else if(nstatus == nsLINK || fs::is_regular_file(p)){
+            garbage_.push_back(p);
+        }else if(fs::is_directory(p)){
+            const unsigned ec = collectArtifactsInReferenceDir(p);
+            if(ec == 0){
+                garbage_.push_back(p); // collect the directory itself
+            }
+
+            errcount += ec;
+        }
+        return errcount;
+    }
+
+    fs::path scope_;
+
+    std::string scope_as_string_;
+
+    std::map<std::string, Record> all_records_;
+
+    std::list<fs::path> garbage_;
+
+}; // class Imprint
+
+} // namespace
 
 #endif
