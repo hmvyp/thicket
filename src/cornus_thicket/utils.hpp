@@ -74,7 +74,15 @@ some_string2string<std::string>(const std::string& s){ return s;}
 //....... convert a string in native filesystem::path encoding to utf-8 string:
 inline
 std::string
-p2s(const string_t& s){ return some_string2string<string_t>(s); }
+p2s(const string_t& s){
+    if(fs::path::preferred_separator != '/'){
+        std::string tmp =  some_string2string<string_t>(s);
+        std::replace(tmp.begin(), tmp.end(), '\\', '/');
+        return tmp;
+    }else{
+        return some_string2string<string_t>(s);
+    }
+}
 
 
 //............................................................... trim string:
