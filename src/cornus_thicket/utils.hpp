@@ -4,6 +4,8 @@
 #include "mutils.h"
 #include "base.hpp"
 
+#include <nowide/utf/convert.hpp>
+
 #include <algorithm>
 #include <codecvt>
 
@@ -27,61 +29,29 @@ inline constexpr const CharT* constname##_initfunc(){ /*returns lteral as  byte 
 inline const string_t constname = constname##_initfunc<char_t>(); /* declare const variable of type fs::path::string_type */
 
 
-//.......................... helper template to implement string2path_string():
-
-template<typename some_string_t>
-some_string_t
-string2some_string(const std::string& s);
-
-template<>
-std::wstring
-string2some_string<std::wstring>(const std::string& s){
-    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt;  // Deprecated?
-    return cvt.from_bytes(s);
-}
-
-template<>
-std::string
-string2some_string<std::string>(const std::string& s){ return s;}
-
-
 //..... convert an utf-8 string to a string in native filesystem::path encoding:
 
 inline
 string_t
-string2path_string(const std::string& s){return string2some_string<string_t>(s); }
-
-
-
-//...................... helper template to implement p2s() conversion function:
-
-template<typename some_string_t>
-std::string
-some_string2string(const some_string_t& s);
-
-template<>
-std::string
-some_string2string<std::wstring>(const std::wstring& s){
-    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt;   // Deprecated?
-    return cvt.to_bytes(s);
+string2path_string(const std::string& s){
+    return nowide::utf::convert_string<string_t::value_type, std::string::value_type>(s);
+    //return string2some_string<string_t>(s);
 }
-
-template<>
-std::string
-some_string2string<std::string>(const std::string& s){ return s;}
 
 
 //....... convert a string in native filesystem::path encoding to utf-8 string:
 inline
 std::string
 p2s(const string_t& s){
+    std::string tmp = nowide::utf::convert_string<std::string::value_type, string_t::value_type>(s);
+
     if(fs::path::preferred_separator != '/'){
-        std::string tmp =  some_string2string<string_t>(s);
+                // = some_string2string<string_t>(s);
         std::replace(tmp.begin(), tmp.end(), '\\', '/');
         return tmp;
-    }else{
-        return some_string2string<string_t>(s);
     }
+
+    return tmp;
 }
 
 

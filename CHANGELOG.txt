@@ -4,15 +4,18 @@ What is new in release 2.2.01
 ► New cleaning method («imprint»)
 
 New cleaning algorithm is implemented to clean artifacts remaining from previous Thicket invocation.
+
 The new algorithm uses a special "imprint" file that contains information about all previous artifacts.
 The file has name .thicket_imprint and is located just under the materialization scope.
 
-The old cleaning algorithm deletes artifacts by using only the presence of mountpoint description files. That approach usually works, but sometimes may be incorrect and even dangerous, especially under virtualization environment if Thicket runs under the host and guest alternatively and if the guest OS does not properly recognize host's symlinks.
+The old cleaning algorithm deletes artifacts by using the only presence of mountpoint description files. That approach usually works, but sometimes may be incorrect and even dangerous, especially under virtualization environment (if Thicket runs under the host and guest alternatively and if the guest OS does not properly recognize host's symlinks).
+
+The second possible pitfall with the old cleaning method is to add accidentally something important to the «materialized» directory: such an addition will dissapear on the next Thicket invokation without any warning.
 
 Due to the above reasons, the new (imprint) cleaning method is set as default.
 
 Before upgrading Thicket it is recommended to clean all artifacts using the old version (with -c command line option).
-Or clean using new version with options
+Or clean using new Thicket version with options
 
  -c -em=mounts
 
@@ -22,8 +25,8 @@ Otherwise, for the first time the new (imprint) cleaning method does nothing as 
 
 To specify cleaning method explicitly, use new command line option
 
--em=mounts   — for old method
--em=imprint  — for new method
+-em=mounts   — for the old method
+-em=imprint  — for the new method
 
 (-em stands for «erase method»)
 
