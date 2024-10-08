@@ -10,7 +10,7 @@ The file has name .thicket_imprint and is located just under the materialization
 
 The old cleaning algorithm deletes artifacts by using the only presence of mountpoint description files. That approach usually works, but sometimes may be incorrect and even dangerous, especially under virtualization environment (if Thicket runs under the host and guest alternatively and if the guest OS does not properly recognize host's symlinks).
 
-The second possible pitfall with the old cleaning method is to add accidentally something important to the «materialized» directory: such an addition will dissapear on the next Thicket invokation without any warning.
+The second possible pitfall with the old cleaning method is to add accidentally something important to the «materialized» directory: such an addition will disappear on the next Thicket invocation without any warning.
 
 Due to the above reasons, the new (imprint) cleaning method is set as default.
 
