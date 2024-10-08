@@ -9,7 +9,7 @@ Disclaimer. This readme file explains only the main idea and concepts. There are
 
 
 
-► Racionale.
+► Rationale.
 
 Thicket is a file tree merging system that allows to build a single directory as a result of merging several other directories. It was conceived as a tool for assembling a single C/C++ source tree from multiple software components, but it may also be used for other programming languages or even for any purpose unrelated to programming.
 
