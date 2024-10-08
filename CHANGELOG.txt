@@ -3,7 +3,7 @@ What is new in release 2.2.01
 
 ► New cleaning method («imprint»)
 
-New cleaning algorithm is implemented to clean artifacts remaining from previous Thicket invocation.
+New cleaning algorithm is implemented to erase artifacts remaining from previous Thicket invocation.
 
 The new algorithm uses a special "imprint" file that contains information about all previous artifacts.
 The file has name .thicket_imprint and is located just under the materialization scope.
@@ -51,7 +51,7 @@ In contrast with universal filter **/*, shallow filter * picks only top-level fi
 
 The behavior is inline with glob patterns semantics and I hope other glob-like patterns will be available soon as Thicket filters.
 
-Let us note, however, that shallow filter (or any other imaginable filter that can be implemented in the future, except of the universal filter **/* ) prevents directories from being symlinked since the filter really filters the directory content. Particularly, while materializing, shallow filter always creates a real directory with symlinks to regular files inside.
+Let us note, however, that shallow filter (or any other imaginable filter that can be implemented in the future, except for the universal filter **/* ) prevents directories from being symlinked since the filter really filters the directory content. Particularly, while materializing, shallow filter always creates a real directory with symlinks to regular files inside.
 
 Such "fine grain" structures are error prone since they increase a possiblility to add something important into a directory that is actually a Thicket artifact (which will be deleted on the next Thicket invocation). 
 So use non-trivial filters with care and only if they are really necessary.
@@ -121,7 +121,7 @@ add? <from> <what> <where_to_put> (optional record, does not report error if som
 
 All four components of the new syntax are separated by spaces.
 
-Old syntax (target path only) is also supported, so the new version is almost fully compatible except of weird target paths starting with add: or add?. If it happens (I hope, never) the old record shall be converted to the new syntax.
+Old syntax (target path only) is also supported, so the new version is almost fully compatible except for weird target paths starting with add: or add?. If it happens (I hope, never) the old record shall be converted to the new syntax.
 
 For example, an old syntax record
 

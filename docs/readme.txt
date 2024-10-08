@@ -4,7 +4,7 @@
 
 ═══════════════════════════════════════════════════
 
-This readme file explains only the main idea and concepts of Thicket. Thicket is evolving, and some new features are out of scope here. See CHANGELOG.txt for new features description.
+Disclaimer. This readme file explains only the main idea and concepts. There are also some new features described in CHANGELOG.txt.
 
 
 
@@ -31,12 +31,12 @@ Thicket does its work in three phases.
 
 2) Building an abstract result tree.
 
-3) «Materialization» of the abstract result as a real filesystem tree. 
+3) «Materialization» of the abstract result tree as a real filesystem tree. 
 
 
 Materialization technique may vary, as the result tree may be presented to the user in different ways. 
 
-The first way is just to copy files from source subtrees. Copying, however, has the obvious drawback: any subsequent modification of files in the result tree is not propagated back to the initial source files. If the user changes some files, the changes will be lost on the next Thicket invokation. However, «copy» materialization may be useful for build scripts that do not assume any source modifications.
+The first way is just to copy files from source subtrees. Copying, however, has the obvious drawback: any subsequent modification of files in the result tree is not propagated back to the initial source files. If the user changes some files, the changes will be lost on the next Thicket invocation. However, «copy» materialization may be useful for build scripts that do not assume any source modifications.
 
 The second way (preferred for development purpose) is to symlink target files or directories wherever possible. If a directory is a result of merging several «final» source directories, then such a directory is «materialized» as a «real» filesystem directory. However, if a directory has just a single «final source», a symlink to the target directory is created. Regular files are always symlinked (if they located in «materialized» directory).
 
@@ -191,7 +191,7 @@ For compilers invocation examples see shell scripts located in the "build" direc
 
 ► Thicket usage example.
 
-Root_path tree before Thicket invocation:
+Root tree before Thicket invocation:
 
 .
 ├── importedA
@@ -226,7 +226,7 @@ Root_path tree before Thicket invocation:
 │   │       └── A_b_sometext.txt
 │   │
 │   │
-│   └── src_all.thicket_mount.txt ◄ This is a description of mountpoint to be materialized
+│   └── src_all.thicket_mount.txt ◄ This is a description of a mountpoint to be materialized
 │
 │       Mountpoint description content:
 │         src
@@ -235,9 +235,10 @@ Root_path tree before Thicket invocation:
 
 
 
-After invokation of Thicket with scope parameter pointed to «scope» subdirectory (i.e. where «materialization» shall be done), the resulting root tree becomes as follows:
+After invocation of Thicket with scope parameter pointed to «scope» subdirectory (i.e. where materialization shall be done), the resulting root tree becomes as follows:
 
-.
+
+
 ├── importedA
 │   └── src
 │       └── x
@@ -251,7 +252,7 @@ After invokation of Thicket with scope parameter pointed to «scope» subdirecto
 │   │       └── importedB_y_tx.txt
 │   │
 │   │
-│   └── src_all.thicket_mount.txt  ◄ describes a mountpoint out of materialization scope
+│   └── src_all.thicket_mount.txt  ◄ describes some mountpoint out of materialization scope
 │
 │       Mountpoint description content:
 │         src
@@ -278,7 +279,7 @@ After invokation of Thicket with scope parameter pointed to «scope» subdirecto
 │   │     ../importedB/src_all
 │   │
 │   │
-│   └── src_all  ◄◄◄ This is a materialized mountpoint itself
+│   └── src_all  ◄◄◄ This is the materialized mountpoint itself
 │       │
 │       ├── a -> ../src/a
 │       ├── b -> ../src/b
@@ -294,13 +295,19 @@ After invokation of Thicket with scope parameter pointed to «scope» subdirecto
 
 All filesystem structures remain untouched, the only scope/src_all directory emerged. This is a materialized mountpoint.
 
-Almost all its subdirectories are materialized as symlinks except of 
-x that is materialized as «real» directory. That happens because the «x» directory
-is itself merged from two targets (sources) and, therefore, can not be symlinked.
+Almost all its subdirectories are materialized as symlinks except for «x» that is materialized as «real» directory. That happens because the «x» directory has mixed content (is merged from two sources) and, therefore, can not be symlinked.
 
-Note that one of the merging source, namely  ../importedB/src_all is itself a virtual node that does not really exist in the filesystem. It combines the content of two "src" folders, one from importedA and one from importedB.
+Note that one of the merged sources, namely  
 
-Note also that the file src_all/x/importedA_x_tx.txt in the materialized mountpoint comes here by two different ways: directly from ImportedA and indirectly from already mentioned intermediate virtual node importedB/src_all. Thicket recognized that the two ways eventually point to the same file. That illistrates the fact that Thicket merges common dependencies without duplication.
+../importedB/src_all
+
+is itself a virtual node (does not really exist in the filesystem). It combines the content of two "src" folders, one from importedA and one from importedB.
+
+Note also that the file 
+
+src_all/x/importedA_x_tx.txt
+
+located in the materialized mountpoint comes here by two different ways: directly from ImportedA and indirectly from already mentioned intermediate virtual node importedB/src_all. Thicket recognized that the two ways eventually point to the same file. That illistrates how Thicket merges common dependencies without duplication and conflicts.
 
 
 
