@@ -4,9 +4,12 @@
 
 ═══════════════════════════════════════════════════
 
+This readme file explains only the main idea and concepts of Thicket. Thicket is evolving, and some new features are out of scope here. See CHANGELOG.txt for new features description.
 
 
-► Racionale and main features.
+
+
+► Racionale.
 
 Thicket is a file tree merging system that allows to build a single directory as a result of merging several other directories. It was conceived as a tool for assembling a single C/C++ source tree from multiple software components, but it may also be used for other programming languages or even for any purpose unrelated to programming.
 
@@ -45,7 +48,7 @@ If the tree is changed by Thicket, just refresh the Eclipse project tree and... 
 
 We can also imagine other materialization techniques that are not currently implemented but theoretically may be useful.
 
-Currently, we do not consider a materialization technique based on hard links (instead of symbolic links)  because hard links may dangerously fool source control systems. However, such a technique might be sometimes useful if all Thicket artifacts are consistently ignored by SCM (and we actually recommend to gitignore them).
+Currently, we do not consider a materialization technique based on hard links (instead of symbolic links)  because hard links may dangerously fool source control systems. However, such a technique might be sometimes useful if all Thicket artifacts are consistently ignored by SCM (we actually recommend to gitignore artifacts).
 
 Theoretically,  it is also possible to materialize the resulting tree by mounting union (overlay) filesystem if the operating system supports it (e.g. Linux). Currently, we do not see any practical reason to implement union (overlay) materialization, but it seems possible. 
 
@@ -56,23 +59,23 @@ It would be also possible to materialize merge results not using filesystem tree
 
 ► Thicket mountpoints.
 
-Mountpoint and mountpoint description is the core Thicket concepts. Mountpoint represents the resulting (merged) tree while mountpoint description file specifies what this resulting tree must contain.
+Mountpoint and mountpoint description are the core Thicket concepts. Mountpoint represents the resulting (merged) tree while mountpoint description file specifies what this resulting tree must contain.
 
-To eleborate the concepts we need to clarify some terminology.
+To eleborate the concepts we need to clarify terminology.
 
-While constructing the abstract result tree we distinguish between «real» filesystem nodes (we call them «final» nodes) and «virtual» or «reference» nodes. Virtual (reference) node does not pre-exist before Thicket invocation. It generally represents a merge result. In particular,  there may be only one merge source, so such a virtual node may represent just a reference to another node (that explains the term «reference node»).
+While constructing the abstract result tree we distinguish between «real» filesystem nodes (we call them «final» nodes) and «virtual» or «reference» nodes. Virtual (reference, «imaginary») node does not pre-exist before Thicket invocation. It generally represents a merge result. In particular,  there may be only one merge source, so such a virtual node represents just a reference to another node (that explains the term «reference node»).
 
-A virtual node may have only virtual descendants, so virtual nodes forms one or more «pure virtual» hierarchies (subtrees). The root of any «virtual» hierarchy is a mountpoint node. Mountpoint node is always located in some «real» directory.
+A virtual node can have only virtual descendants, so virtual nodes forms one or more «pure virtual» hierarchies (subtrees). The root of any «virtual» hierarchy is a mountpoint node. Mountpoint node is always located in some «real» directory pre-existing in the file system.
 
 Every mountpoint node is specified by a utf-8 encoded text file, located in the same directory where the mountpoint node itself is deemed to exist. The name of the mountpoint description file has the following form: 
 
 <mountpoint_name>.thicket_mount.txt. 
 
+The mountpoint description file says that <mountpoint_name> virtual node is deemed to exist alongside the description file and can be materialized here (if needed).
+
 Every line in mountpoint description file defines one «target» subtree (one merge source). All target subtrees are intended to be merged into this mountpoint node. Every line (record) in the description file is just a filesystem path, usually relative to the parent directory of the description file (may also start with ../../ to access something through the ancestor directories).
 
-A target subtree specified in every record may be a final (real) node or may be itself a reference (virtual) node (so it may not really exist in the filesystem). The reference chain of indirections, however, shall finally point to some final nodes (actually existing in the filesystem). So every reference node has a union of «final targets» that are obtained by consecutive dereferencing through the reference chain. All «final targets» are final («real filesystem») nodes, i.e. real directories or real regular files.
-
-The mountpoint description file says that <mountpoint_name> virtual node is deemed to exist alongside the description file and can be materialized here (if needed).
+A target subtree specified in every record may be a final (real) node or may be itself a reference (virtual) node. In the latter case, it is usually absent in the filesystem but deemed to exist according to some another mountpoint description. However, a reference chain of indirections shall finally point to some final nodes (actually existing in the filesystem). So every reference node has a union of «final targets» that are real filesystem objects (directories or regular files) obtained by consecutive dereferencing through the reference chain.
 
 Note that we use the term «target» as a shortcut for «reference target» (i.e. referent). At the same time, the «target" may also be  treated as one of the «sources» used while building (merging) the resulting «big» tree. Interchangeable use of terms «target» and «source» may be confusing, but in the current context, the two terms just represent different aspects of the same thing.
 
@@ -89,14 +92,14 @@ Let's consider an example mountpoint file named my_point.thicket_mount.txt with 
 The two records (except for the comment) represent the source trees to be merged.
 The relative paths are relative to the directory where the mountpoin description file resides.
 
-Let's imagine that the first source tree (../first/source/tree) contains subdirectories A and C
+Let's imagine the first source tree (../first/source/tree) contains subdirectories A and C
 and the second source tree contains subdirectories B and C.
 
 let's also assume (for simplicity) that all the source subdirectories are «real» (actually locatetd in the filesystem) and contain only regular files.
 
 Our mountpoint, if materialized, will contain 3 directories: A, B and C.
 
-If symlink materialization method is used, A and B will be just a links to the corresponding sources, but C (which appears in both sources) will be materialized as a merge result, that is, as a real directory which contains links to all files located inside both incarnations of C (i.e. in ../first/source/tree/C and ../second/source/tree/C) .
+If symlink materialization method is used, A and B will be just a symbolic links to the corresponding sources, but C (which appears in both sources) will be materialized as a merge result, that is, as a real directory which contains links to all files located inside both incarnations of C (i.e. in ../first/source/tree/C and ../second/source/tree/C) .
 
 Graphically, the content of materialized montpoint may be depicted as:
 
@@ -104,11 +107,13 @@ Graphically, the content of materialized montpoint may be depicted as:
 └─ my_point
    ├── A -> ../../first/source/tree/A
    ├── B -> ../../second/source/tree/B
-   └── C (contains links to all files located in C directory of both sources)
+   └── C (directory containing links to all files located in C directory from both sources)
 
-(additional ../ in links appears because the materialized links are relative to my_point, not to containg directory as in mountpoint description).
+Extra "../" in links appears because the materialized links are relative to my_point (not to the containg directory as in the mountpoint description).
 
 If some file name appears in both ../first/source/tree/C and ../second/source/tree/C then Thicket generates an error (it can not merge regular files).
+
+Let's note that mountpoint description syntax has also some extentions (variables,  optional "internal" mount point for a record, etc.), see CHANGELOG.txt for details.
 
 
 
@@ -161,34 +166,32 @@ Available options (for both forms):
     copy
     mixed - copy from the outside of materialization scope, symlinks inside.
 
+There are also a few additional options, see CHANGELOG.txt for details.
+
 
 
 
 ► Building Thicket
 
 Thicket is written in C++ using std::filesystem, so at least C++17 is needed.
+
 gcc or clang for Linux and clang for Windows are both ok (at least clang as it bundled with Microsoft command line toolset aka «Build Tools for Visual Studio»)
 
-To build Thicket just compile the single file: src/cornus_thicket/main.cpp
- (it is the only .cpp file in the Thicket sources, all others are just headers).
+The only dependency is boost/nowide used for utf-8/utf-16 conversions under Windows platform. The boost/nowide sources are included in the repo, so you do not need to download or checkout everything else.
 
-Do not forget -std=c++17 compiler option if it is not default for your compiler.
+To build Thicket just compile the single file: src/cornus_thicket/main.cpp with include path pointed to "src" folder.
+(there is only one .cpp file in the Thicket sources, all others are just headers).
 
-For details see shell scripts located in the "build" directory for compilers invocation examples.
+Do not forget -std=c++17 (or higher) compiler option if it is not default for your compiler.
 
-
-
-
-► Important note.
-
-Thicket is evolving and this readme does not cover all new features, such as extended mountpoint record syntax, new command line options, etc. See CHANGELOG.txt for the new features description.
+For compilers invocation examples see shell scripts located in the "build" directory.
 
 
 
 
 ► Thicket usage example.
 
-An example of root_path tree before Thicket invokation:
+Root_path tree before Thicket invocation:
 
 .
 ├── importedA
@@ -203,7 +206,7 @@ An example of root_path tree before Thicket invokation:
 │   │       └── importedB_y_tx.txt
 │   │
 │   │
-│   └── src_all.thicket_mount.txt
+│   └── src_all.thicket_mount.txt  ◄ describes some mountpoint out of materialization scope
 │
 │     Mountpoint description content:
 │     src
@@ -223,23 +226,22 @@ An example of root_path tree before Thicket invokation:
 │   │       └── A_b_sometext.txt
 │   │
 │   │
-│   └── src_all.thicket_mount.txt
+│   └── src_all.thicket_mount.txt ◄ This is a description of mountpoint to be materialized
 │
-│     Mountpoint description content:
-│     src
-│     ../importedA/src
-│     ../importedB/src_all
+│       Mountpoint description content:
+│         src
+│         ../importedA/src
+│         ../importedB/src_all
 
 
 
-After invokation of thicket with scope parameter pointed to «scope» subdirectory (let us remind that scope parameter points to a directory where «materialization» shall be done), the resulting root tree becomes as follows:
+After invokation of Thicket with scope parameter pointed to «scope» subdirectory (i.e. where «materialization» shall be done), the resulting root tree becomes as follows:
 
 .
 ├── importedA
 │   └── src
 │       └── x
 │           └── importedA_x_tx.txt
-│
 │
 ├── importedB
 │   ├── src
@@ -249,8 +251,11 @@ After invokation of thicket with scope parameter pointed to «scope» subdirecto
 │   │       └── importedB_y_tx.txt
 │   │
 │   │
-│   └── src_all.thicket_mount.txt
+│   └── src_all.thicket_mount.txt  ◄ describes a mountpoint out of materialization scope
 │
+│       Mountpoint description content:
+│         src
+│         ../importedA/src
 │
 ├── scope
 │   ├── src
@@ -263,21 +268,40 @@ After invokation of thicket with scope parameter pointed to «scope» subdirecto
 │   │   │   └── a_tx.txt
 │   │   └── b
 │   │       └── A_b_sometext.txt
-│   ├── src_all
-│   │   ├── a -> ../src/a
-│   │   ├── b -> ../src/b
-│   │   ├── x
-│   │   │   ├── importedA_x_tx.txt -> ../../../importedA/src/x/importedA_x_tx.txt
-│   │   │   └── importedB_x_tx.txt -> ../../../importedB/src/x/importedB_x_tx.txt
-│   │   └── y -> ../../importedB/src/y
+│   │ 
+│   │
+│   ├── src_all.thicket_mount.txt ◄ This is a description of the materialized mountpoint
+│   │
+│   │   Mountpoint description content:
+│   │     src
+│   │     ../importedA/src
+│   │     ../importedB/src_all
 │   │
 │   │
-│   └── src_all.thicket_mount.txt
+│   └── src_all  ◄◄◄ This is a materialized mountpoint itself
+│       │
+│       ├── a -> ../src/a
+│       ├── b -> ../src/b
+│       │
+│       ├── x   ◄◄◄ materialized as real directory due to mixed content
+│       │   │
+│       │   ├── importedA_x_tx.txt -> ../../../importedA/src/x/importedA_x_tx.txt
+│       │   └── importedB_x_tx.txt -> ../../../importedB/src/x/importedB_x_tx.txt
+│       │
+│       └── y -> ../../importedB/src/y
+   
 
 
-Note that almost all subdirectories in scope/src_all are materialized as symlinks except of 
-scope/src_all/x that is materialized as «real» directory. That happens because the «x» directory
+All filesystem structures remain untouched, the only scope/src_all directory emerged. This is a materialized mountpoint.
+
+Almost all its subdirectories are materialized as symlinks except of 
+x that is materialized as «real» directory. That happens because the «x» directory
 is itself merged from two targets (sources) and, therefore, can not be symlinked.
+
+Note that one of the merging source, namely  ../importedB/src_all is itself a virtual node that does not really exist in the filesystem. It combines the content of two "src" folders, one from importedA and one from importedB.
+
+Note also that the file src_all/x/importedA_x_tx.txt in the materialized mountpoint comes here by two different ways: directly from ImportedA and indirectly from already mentioned intermediate virtual node importedB/src_all. Thicket recognized that the two ways eventually point to the same file. That illistrates the fact that Thicket merges common dependencies without duplication.
+
 
 
 
