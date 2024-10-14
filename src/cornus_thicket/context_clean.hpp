@@ -6,7 +6,7 @@
 namespace cornus_thicket {
 
 inline void
-Context::clean(const fs::path& p, std::map<fs::path, bool>& to_delete){
+Context::clean_using_mounts(const fs::path& p, std::map<fs::path, bool>& to_delete){
     if(fs::symlink_status(p).type() != fs::file_type::directory){
         return;
     }
@@ -34,15 +34,15 @@ Context::clean(const fs::path& p, std::map<fs::path, bool>& to_delete){
          }
 
          if(to_delete.find(p) == to_delete.end() && !de.is_symlink() && de.is_directory()){
-             clean(p, to_delete);
+             clean_using_mounts(p, to_delete);
          }
     }
 }
 
 
-void Context::clean(){ // cleans all under the scope
+void Context::clean_using_mounts(){ // cleans all under the scope
     std::map<fs::path, bool> to_delete;
-    clean(this->scope_, to_delete);
+    clean_using_mounts(this->scope_, to_delete);
     if(to_delete.size() > 0){
         if(!silent_){
             std::cout << " \n Deleting generated files and directories: \n";

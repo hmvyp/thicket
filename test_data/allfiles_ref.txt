@@ -17,8 +17,8 @@ file: root/importedB/src/y/importedB_y_tx.txt md5: d41d8cd98f00b204e9800998ecf84
 file: root/importedB/src_all.thicket_mount.txt md5: a6ad4225fab1fbb148acb1080040d085
 file: root/importedB/src_super.thicket_mount.txt md5: 5bac93b14b68413bb80d47d41e76d668
 dir: root/scope
-file: root/scope/.thicket_imprint md5: f2cf59016921f12ea0c115d215bf6e6e
 dir: root/scope/deep_file
+file: root/scope/deep_file.thicket_imprint md5: b6f3a04ea3f2923715f68fad93ca8510
 file: root/scope/deep_file.thicket_mount.txt md5: d47295567ed5b81ef46c85893fe9947d
 dir: root/scope/deep_file/very
 dir: root/scope/deep_file/very/deep
@@ -30,6 +30,7 @@ dir: root/scope/dir with  spaces
 file: root/scope/dir with  spaces/file with  spaces.txt md5: d41d8cd98f00b204e9800998ecf8427e
 file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
 dir: root/scope/shallow_refs
+file: root/scope/shallow_refs.thicket_imprint md5: b6e5caa335c335b3d08ceff050fbd99d
 file: root/scope/shallow_refs.thicket_mount.txt md5: 29e7d72fc5a5fdd90c0b3a72bbf5e3ae
 dir: root/scope/shallow_refs/b_src
 symlink: from: root/scope/shallow_refs/b_src/importedB_at_root_1.txt to: ../../../importedB/src/importedB_at_root_1.txt
@@ -48,6 +49,7 @@ file: root/scope/src/a/a_tx.txt md5: d41d8cd98f00b204e9800998ecf8427e
 dir: root/scope/src/b
 file: root/scope/src/b/A_b_sometext.txt md5: d41d8cd98f00b204e9800998ecf8427e
 dir: root/scope/src_all
+file: root/scope/src_all.thicket_imprint md5: 9822f561e1eff775c982aeef2faedea7
 file: root/scope/src_all.thicket_mount.txt md5: 61ab59b82171e89fa956f5f6f5752ee5
 symlink: from: root/scope/src_all/a to: ../src/a
 symlink: from: root/scope/src_all/b to: ../src/b
@@ -86,14 +88,17 @@ symlink: from: root/scope/src_all/x/importedA_x_tx.txt to: ../../../importedA/sr
 symlink: from: root/scope/src_all/x/importedB_x_tx.txt to: ../../../importedB/src/x/importedB_x_tx.txt
 symlink: from: root/scope/src_all/y to: ../../importedB/src/y
 dir: root/scope/src_another
+file: root/scope/src_another.thicket_imprint md5: 09d55f681fa199ff59ec657eea6e34fb
 file: root/scope/src_another.thicket_mount.txt md5: 7c57017998424ed37159cd6dae00def6
 symlink: from: root/scope/src_another/a to: ../src/a
 symlink: from: root/scope/src_another/b to: ../src/b
 symlink: from: root/scope/src_another/x to: ../../importedA/src/x
 dir: root/scope/src_import1file
 symlink: from: root/scope/src_import1file/file_from_a to: ../../importedA/src/x/importedA_x_tx.txt
+file: root/scope/src_import1file/file_from_a.thicket_imprint md5: 88a3463c2a3e82b71397823975fda46b
 file: root/scope/src_import1file/file_from_a.thicket_mount.txt md5: 9cd9aaa20691006185927d6cd7ad10cf
 dir: root/scope/src_vars
+file: root/scope/src_vars.thicket_imprint md5: 11b1515dd0a597ddfe1c965f4c16187d
 file: root/scope/src_vars.thicket_mount.txt md5: 418bd9fb4671763635cd3d4a25a39433
 dir: root/scope/src_vars/mounted_here
 symlink: from: root/scope/src_vars/mounted_here/a to: ../../src/a
@@ -105,6 +110,7 @@ symlink: from: root/scope/src_vars/mounted_here/x/importedA_x_tx.txt to: ../../.
 symlink: from: root/scope/src_vars/mounted_here/x/importedB_x_tx.txt to: ../../../../importedB/src/x/importedB_x_tx.txt
 symlink: from: root/scope/src_vars/mounted_here/y to: ../../../importedB/src/y
 dir: root/scope/with_spaces
+file: root/scope/with_spaces.thicket_imprint md5: 403454cb31dbcadb4e35c0b5dc6c8308
 file: root/scope/with_spaces.thicket_mount.txt md5: eed0f448195e617fc159a89f496c4c83
 dir: root/scope/with_spaces/put with  spaces
 dir: root/scope/with_spaces/put with  spaces/to this folder

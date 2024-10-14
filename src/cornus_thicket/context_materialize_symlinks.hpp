@@ -37,13 +37,18 @@ mk_symlink(Node& n, const Node& to){
         );
     }
 
-    std::string errs = imprint.addArtifact(n, nsLINK);
+    std::string errs = imprint_wrap_.getImprint()->addArtifact(n, nsLINK);
 }
 
 
 inline void
 Context::
 materializeAsSymlinks(Node& n){
+    ImprintControl impc(imprint_wrap_);
+    if(n.is_mountpoint){
+        impc.newImprint(addSuffix(n.path_ , imprint_suffix));
+    }
+
     if(n.ref_type == REFERENCE_NODE){  // (may return from the inside)
         if(!n.has_own_content_){
             if(n.targets.size() == 1 && path_in_scope(n.targets[0]->path_)){
@@ -85,7 +90,7 @@ materializeAsSymlinks(Node& n){
             }else{
                 try{
                     fs::create_directory(n.path_);
-                    imprint.addArtifact(n, nsCOPY);
+                    impc.getImprint()->addArtifact(n, nsCOPY);
                 }catch(...){
                     report_error(
                             std::string("Error creating directory ")
@@ -113,9 +118,7 @@ materializeAsSymlinks(Node& n){
 }
 
 void Context::materializeAsSymlinks(){ // materializes all under the scope
-  imprint.reset();
   materializeAsSymlinks(*nodeAt(scope_));
-  imprint.writeImprintFile();
 }
 
 

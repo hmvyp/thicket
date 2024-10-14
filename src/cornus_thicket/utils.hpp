@@ -54,6 +54,37 @@ p2s(const string_t& s){
     return tmp;
 }
 
+bool
+filepath_has_suffix(
+        const fs::path& p, // input parameter (path to mountpoint description file)
+        const string_t& suff, // suffix description
+        fs::path* path_wo_suffix = nullptr // output parameter: path without suffix (filled on success)
+){
+    auto fn = p.filename();
+    auto s = fn.native();
+    size_t len = s.length();
+    if(len <= suff.length()){
+        return false;
+    }
+
+
+    if(s.substr(len - suff.length(), suff.length()) == suff){
+        if(path_wo_suffix != nullptr){
+            *path_wo_suffix = p;
+            path_wo_suffix->replace_filename(s.substr(0, len - suff.length()));
+        }
+        return true;
+    }else{
+        return false;
+    }
+}
+
+
+fs::path addSuffix(const fs::path& p, const fs::path::string_type& suffix){
+    fs::path tmp(p);
+    tmp += suffix;
+    return tmp;
+}
 
 //............................................................... trim string:
 

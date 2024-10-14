@@ -1,25 +1,19 @@
 #ifndef cornus_thicket_context_hpp
 #define cornus_thicket_context_hpp
 
+#include <cornus_thicket/special_files.hpp>
 #include "utils.hpp"
 #include "node.hpp"
 #include "escapes.hpp"
 #include "expressions.hpp"
 #include "filter.hpp"
-#include "imprint.hpp"
-
+#include "imprint_wrapper.hpp"
 #include <streambuf>
 #include <fstream>
 #include <cctype>
 
 
 namespace cornus_thicket {
-
-
-// define string_t constants in platform-independent manner:
-
-THICKET_FS_LITERAL(mountpoint_suffix, CORNUS_THICKET_MOUNTPOINT_SUFFIX);
-THICKET_FS_LITERAL(mountemplate_suffix, CORNUS_THICKET_MOUNTEMPLATE_SUFFIX);
 
 
 struct MountRecord; //forward
@@ -35,7 +29,9 @@ class Context
 
     VarPool varpool;
 
-    Imprint imprint;
+    ImprintWrapper imprint_wrap_; // holds current imprint while materializing
+
+    Context(Context&&) = delete; // non-copiable
 
 public:
 
@@ -97,13 +93,7 @@ private:
                     SEVERITY_PANIC
             );
         }
-
-        imprint.setScope(this->scope_);
-
     }
-
-
-
 
     void mkRootAndScopeNodes(){ // this is actually just a part of ctors
         if(existingFileAt(root_) == nullptr){
@@ -289,10 +279,6 @@ public:
             return nd;
         }
 
-        // ToDo: (templates):
-        // nd = templateInstanceAt(parn, p); // shall collect templates definitions.
-        // (perhaps this job shall be done by existingFileAt())
-
         return existingFileAt(p);
     }
 
@@ -358,11 +344,25 @@ public:
 
     // cleaning methods:
 
-    void clean(); // cleans all under the scope using mountpoint description files
+    void clean_using_mounts(); // cleans all under the scope using mountpoint description files
 
     unsigned // errors count
     clean_use_imprint(){  // cleans all under the scope using imprint from previous invocation
-        return imprint.deleteArtifacts();
+        unsigned errcount = 0;
+
+        // return imprint.deleteArtifacts();
+
+        std::list<Imprint> imprints;
+        errcount += Imprint::collectImprintsInside(this->scope_, imprints);
+
+        if(errcount) return errcount;
+
+        for(auto& imp : imprints){
+            unsigned ec = imp.collectAndDeleteArtifacts();
+            if(ec) return ec;
+        }
+
+        return errcount; // ==0
     }
 
     // materialization methods:
@@ -433,9 +433,8 @@ private:
 
 
     void collectRefnodeChildren(Node& n);
-    static bool is_thicket_mountpoint_description(const fs::path& p, fs::path* mountpoint_path);
 
-    static void clean(const fs::path& p, std::map<fs::path, bool>& to_delete);
+    static void clean_using_mounts(const fs::path& p, std::map<fs::path, bool>& to_delete);
 
     void mk_symlink(Node& n, const Node& to);
     void materializeAsSymlinks(Node& n);

@@ -5,42 +5,6 @@
 
 namespace cornus_thicket {
 
-
-bool
-filepath_has_suffix(
-        const fs::path& p, // input parameter (path to mountpoint description file)
-        const string_t& suff, // suffix description
-        fs::path* path_wo_suffix // output parameter: path without suffix (filled on success)
-){
-    auto fn = p.filename();
-    auto s = fn.native();
-    size_t len = s.length();
-    if(len <= suff.length()){
-        return false;
-    }
-
-
-    if(s.substr(len - suff.length(), suff.length()) == suff){
-        if(path_wo_suffix != nullptr){
-            *path_wo_suffix = p;
-            path_wo_suffix->replace_filename(s.substr(0, len - suff.length()));
-        }
-        return true;
-    }else{
-        return false;
-    }
-}
-
-bool
-Context::
-is_thicket_mountpoint_description(
-        const fs::path& p, // input parameter (path to mountpoint description file)
-        fs::path* mountpoint_path // output parameter (path to mountpoint itself)
-){
-    return filepath_has_suffix(p, mountpoint_suffix, mountpoint_path);
-}
-
-
 void
 Context::resolveFilesystemNode(Node& n){
 
@@ -108,11 +72,21 @@ Context::resolveFilesystemNode(Node& n){
             continue;
         }
 
+        if(
+                de.is_regular_file()
+                && is_thicket_imprint(p)
+        ){
+            continue;  // ignore possible imprint file
+        }
+
+
         //skip possible thicket artifact:
 
-        if(fs::exists(fs::symlink_status(fs::path(p.native() + mountpoint_suffix)))){
-            continue; // skip possibly generated materialization of a mountpoint
-            // --T v2 todo: skip also possible template instantiations
+        if(
+            fs::exists(fs::symlink_status(fs::path(p.native() + mountpoint_suffix))) ||
+            fs::exists(fs::symlink_status(fs::path(p.native() + imprint_suffix)))
+        ){
+            continue;
         }
 
         // final (filesystem) case:

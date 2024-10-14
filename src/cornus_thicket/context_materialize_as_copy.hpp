@@ -10,6 +10,12 @@ namespace cornus_thicket {
 
 inline void
 Context::materializeAsCopy(Node& n, bool symlinks_inside){
+    ImprintControl impc(imprint_wrap_);
+    if(n.is_mountpoint){
+        impc.newImprint(addSuffix(n.path_ , imprint_suffix));
+    }
+
+
     if(n.ref_type == REFERENCE_NODE){
         if(symlinks_inside) {  // (may return from the inside)
             if(n.targets.size() == 1 && path_in_scope(n.targets[0]->path_)){ // if a single immediate target is in scope
@@ -33,7 +39,7 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
         if(n.node_type == DIR_NODE){
             // materialize node as directory:
             fs::create_directory(n.path_); // ToDo: catch ???
-            imprint.addArtifact(n, nsCOPY);
+            impc.getImprint()->addArtifact(n, nsCOPY);
         }else if (n.node_type == FILE_NODE){
             if(n.final_targets.size() == 1){
                 Node* ft =  n.final_targets.begin()->second;
@@ -55,7 +61,7 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
                             , SEVERITY_ERROR
                     );
                 }else{
-                    imprint.addArtifact(n, nsCOPY);
+                    impc.getImprint()->addArtifact(n, nsCOPY);
                 }
             } // else: hope the error has been already reported (more than one target for regular file)
         }
@@ -70,9 +76,7 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
 
 
 void Context::materializeAsCopy(bool symlinks_inside){ // materializes all under scope
-  imprint.reset();
   materializeAsCopy(*nodeAt(scope_), symlinks_inside);
-  imprint.writeImprintFile();
 }
 
 

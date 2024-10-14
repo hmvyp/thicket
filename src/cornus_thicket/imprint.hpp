@@ -1,6 +1,7 @@
 #ifndef cornus_thicket_imprint_hpp
 #define cornus_thicket_imprint_hpp
 
+#include <cornus_thicket/special_files.hpp>
 #include <string_view>
 #include <fstream>
 #include <iostream>
@@ -10,8 +11,6 @@
 
 
 namespace cornus_thicket {
-
-THICKET_FS_LITERAL(imprint_file, CORNUS_THICKET_IMPRINT_FILE);
 
 
 enum NodeStatus {
@@ -39,29 +38,93 @@ public:
         garbage_.clear();
     }
 
-    void setScope(const fs::path& scope){
-        scope_ = scope;
+    void setImprintFilePath(const fs::path& imp_path){
+        imprint_file_ = imp_path;
+        scope_ = imp_path.parent_path();
         scope_as_string_ = p2s(scope_);
     }
 
+    static
     unsigned // error count
-    deleteArtifacts()
-    {
+    collectImprintsInside(const fs::path& cur_dir, std::list<Imprint>& imprints){
         unsigned errcount = 0;
 
-        all_records_.clear();
-        garbage_.clear();
-
-        const auto read_res = readImprint(scope_);
-
-        switch(read_res){
-        case Imprint_READ_NOFILE:
-            return 0; // nothing to do (not an error)
-        case Imprint_READ_ERROR:
-            return 1; // (already reported inside readImprint() )
-        case Imprint_READ_OK: // go further
-            ;
+        fs::path dot_imprint = cur_dir/imprint_suffix;
+        if(fs::exists(dot_imprint)) {
+            Imprint imp;
+            switch(imp.readImprint(dot_imprint)){
+            case Imprint_READ_NOFILE:
+                report_error(std::string(" Inprint file read i/o error") + p2s(dot_imprint), SEVERITY_ERROR);
+                [[fallthrough]];
+            case Imprint_READ_ERROR: // (already reported inside readImprint() )
+                ++errcount;
+                break;
+            case Imprint_READ_OK: // go further
+                imp.setImprintFilePath(dot_imprint);
+                imprints.push_back(std::move(imp));
+            }
         }
+
+        std::set<fs::path> mountpoints_inside_cur_dir;
+        std::list<fs::path> subdirs;
+
+        for (auto const& de : fs::directory_iterator{cur_dir}){
+             const auto& p = de.path();
+
+             fs::path mountpoint_path;
+             if(is_thicket_imprint(p, &mountpoint_path)) {
+
+                 mountpoints_inside_cur_dir.insert(std::move(mountpoint_path));  // moved, do not use further!!!
+
+                 Imprint imp;
+
+                 switch(imp.readImprint(p)){
+                 case Imprint_READ_NOFILE:
+                     report_error(std::string(" Inprint file read i/o error") + p2s(p), SEVERITY_ERROR);
+                     [[fallthrough]];
+                 case Imprint_READ_ERROR: // (already reported inside readImprint() )
+                     ++errcount;
+                     continue;
+                 case Imprint_READ_OK: // go further
+                     ;
+                 }
+
+                 imp.setImprintFilePath(p);
+                 imprints.push_back(std::move(imp));
+                 continue;
+             }
+
+             if(fs::is_directory(p)){
+                 subdirs.push_back(p);
+             }
+        }
+
+        for(const auto& subdir: subdirs){
+            if(mountpoints_inside_cur_dir.find(subdir) != mountpoints_inside_cur_dir.end()){
+                continue; // do not recurse into mountpoints
+            }
+
+            errcount += collectImprintsInside(subdir, imprints);
+        }
+
+
+        return errcount;
+    }
+
+    unsigned collectAndDeleteArtifacts(){
+        unsigned errcount = 0;
+
+        errcount += collectAllArtifacts();
+
+        if(errcount) return errcount;
+
+        return deleteGarbage();
+    }
+
+    unsigned // error count
+    collectAllArtifacts()
+    {
+        unsigned errcount = 0;
 
         errcount = collectArtifactsInExistingDir(scope_);
         all_records_.clear(); // we do not need them more
@@ -72,6 +135,14 @@ public:
         }
 
         // artifact collection Ok.
+
+        return errcount;
+    }
+
+    unsigned // error count
+    deleteGarbage()
+    {
+        unsigned errcount = 0;
         for(auto& p : garbage_){
             std::error_code er;
             remove_all(p, er);
@@ -97,13 +168,13 @@ public:
 
         // Artifacts deleted. Try to delete imprint file:
         std::error_code erc;
-        auto impath = mkImprintPath(scope_);
-        fs::remove(impath, erc);
+
+        fs::remove(imprint_file_, erc);
 
         if(erc){
             ++errcount;
             report_error( std::string("Error while deleting thicket imprint (artifacts description):  ")
-                    + p2s(impath)
+                    + p2s(imprint_file_)
                     , SEVERITY_ERROR
             );
 
@@ -162,7 +233,7 @@ public:
 
 
         try{
-            std::ofstream os(mkImprintPath(scope_), std::ios::binary);
+            std::ofstream os(imprint_file_, std::ios::binary);
             os << IMPRINT_SIGNATURE << '\n';
             os << "# This is a generated file containing descriptions of Thicket artifacts created in this scope. Do not edit." << '\n';
             for(auto it = all_records_.begin(); it != all_records_.end(); it++){
@@ -202,12 +273,6 @@ private:
         NodeStatus nstatus;
     };
 
-
-    static fs::path
-    mkImprintPath(const fs::path& scope){
-        return scope/imprint_file;
-    }
-
     enum ImprintFileReadResult{
       Imprint_READ_OK = 0,
       Imprint_READ_NOFILE,
@@ -215,12 +280,10 @@ private:
     };
 
     ImprintFileReadResult
-    readImprint(const fs::path& scope){
-        auto imprint_path = mkImprintPath(scope);
-
+    readImprint(const fs::path& imprint_path){
         std::error_code err_exists;
 
-        if(!fs::exists(imprint_path)){
+        if(!fs::exists(imprint_path, err_exists)){
             if(err_exists){
                 report_error( std::string("Error while checking imprint file existence. File:  " )
                         + p2s(imprint_path)
@@ -273,6 +336,9 @@ private:
             report_error( std::string("I/O error while reading imprint file ") + p2s(imprint_path), SEVERITY_ERROR);
             return Imprint_READ_ERROR;
         }
+
+        setImprintFilePath(imprint_path);
+
 
         return Imprint_READ_OK;
     }
@@ -486,6 +552,8 @@ private:
         }
         return errcount;
     }
+
+    fs::path imprint_file_;
 
     fs::path scope_;
 

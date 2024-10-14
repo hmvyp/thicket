@@ -86,7 +86,7 @@ int run_thicket(Context& ctx){
         }
     } else  if(strcmp(opt_clean_method.val, "mounts") == 0) {
         if(!q){std::cout << "\ncleaning up previous artifacts using mountpoint description files...\n";};
-        ctx.clean();
+        ctx.clean_using_mounts();
     }
 
     if(!opt_clean_only.is_set){
