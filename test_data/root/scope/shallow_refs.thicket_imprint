@@ -1,9 +1,0 @@
-thicket imprint file version 1.0
-# This is a generated file containing descriptions of Thicket artifacts created in this scope. Do not edit.
-cd:shallow_refs
-cd:shallow_refs/b_src
-lf:shallow_refs/b_src/importedB_at_root_1.txt
-lf:shallow_refs/b_src/importedB_at_root_2.txt
-cd:shallow_refs/src
-lf:shallow_refs/src/importedB_at_root_1.txt
-lf:shallow_refs/src/importedB_at_root_2.txt
