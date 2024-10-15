@@ -6,7 +6,7 @@
 #include <array>
 
 #define CORNUS_THICKET_APP_NAME "Thicket source tree resolver"
-#define CORNUS_THICKET_VERSION "2.2.01"
+#define CORNUS_THICKET_VERSION "2.2.02"
 
 
 namespace cornus_thicket {
@@ -74,7 +74,7 @@ int run_thicket(Context& ctx){
 
     if(strcmp(opt_clean_method.val, "imprint") == 0){
         if(!q){std::cout << "\ncleaning up previous artifacts using imprint from previous invocation...\n";};
-        ctx.clean_use_imprint();
+        ctx.clean_using_imprint();
         if(error_count){
             std::cout << "\n... Artifacts cleaning FAILED";
             if(!opt_clean_only.is_set){

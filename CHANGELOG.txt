@@ -1,3 +1,14 @@
+What is new in release 2.2.02
+═════════════════════════════
+
+► Imprint files are now created for each mountpoint...
+
+... instead of a single imprint file located in the materialization scope (see notes on version 2.2.01).
+Individual imprints provide correctness of the cleanup procedure when Thicket is running with different scopes alternately.
+
+
+
+
 What is new in release 2.2.01
 ═════════════════════════════
 

@@ -24,6 +24,8 @@ Context::clean_using_mounts(const fs::path& p, std::map<fs::path, bool>& to_dele
                  && fs::symlink_status(mountpoint_path).type() != fs::file_type::not_found
          ){
              to_delete[mountpoint_path] = true;
+         }else if(is_thicket_imprint(p)){ // also delete imprints
+             to_delete[p] = true;
          }
     }
 

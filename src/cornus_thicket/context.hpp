@@ -347,7 +347,7 @@ public:
     void clean_using_mounts(); // cleans all under the scope using mountpoint description files
 
     unsigned // errors count
-    clean_use_imprint(){  // cleans all under the scope using imprint from previous invocation
+    clean_using_imprint(){  // cleans all under the scope using imprint from previous invocation
         unsigned errcount = 0;
 
         // return imprint.deleteArtifacts();
