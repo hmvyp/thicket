@@ -78,7 +78,7 @@ int run_thicket(Context& ctx){
         if(error_count){
             std::cout << "\n... Artifacts cleaning FAILED";
             if(!opt_clean_only.is_set){
-                std::cout << "\n    Further processing aborted due to cleaning failure";
+                std::cout << "\n    Further processing aborted due to cleaning failure\n";
             }
             return error_count != 0;
         }else{

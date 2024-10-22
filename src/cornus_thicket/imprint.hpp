@@ -30,6 +30,12 @@ inline const char* verboseNodeStatus(NodeStatus ns){
     }
 }
 
+
+struct ImprintProps{
+    bool ignore_extra_objects = false; // if unexpected objects found while collecting artifacts
+};
+
+
 class Imprint {
 public:
 
@@ -46,7 +52,7 @@ public:
 
     static
     unsigned // error count
-    collectImprintsInside(const fs::path& cur_dir, std::list<Imprint>& imprints){
+    collectImprintsInside(const fs::path& cur_dir, const ImprintProps& improps, std::list<Imprint>& imprints){
         unsigned errcount = 0;
 
         fs::path dot_imprint = cur_dir/imprint_suffix;
@@ -61,6 +67,7 @@ public:
                 break;
             case Imprint_READ_OK: // go further
                 imp.setImprintFilePath(dot_imprint);
+                imp.improps_ = improps;
                 imprints.push_back(std::move(imp));
             }
         }
@@ -90,6 +97,7 @@ public:
                  }
 
                  imp.setImprintFilePath(p);
+                 imp.improps_ = improps;
                  imprints.push_back(std::move(imp));
                  continue;
              }
@@ -104,7 +112,7 @@ public:
                 continue; // do not recurse into mountpoints
             }
 
-            errcount += collectImprintsInside(subdir, imprints);
+            errcount += collectImprintsInside(subdir, improps, imprints);
         }
 
 
@@ -490,23 +498,29 @@ private:
             std::string relpath;
             const Record* prec = findRecord(p, relpath);
             if(prec == nullptr){
-                ++errcount;
-                report_error(
-                    std::string("Unexpected object inside an artifact directory: ") + relpath
-                        +
-                        "\n    Please check it, move it to an appropriate place or delete it manually"
-                    ,SEVERITY_ERROR
+                if(! improps_.ignore_extra_objects){
+                    ++errcount;
+                    report_error(
+                        std::string("Unexpected object inside an artifact directory: ") + relpath
+                            +
+                            "\n    Please check it, move it to an appropriate place or delete it manually"
+                            "\n    or use -f command line option to force extra objects deletion "
+                        ,SEVERITY_ERROR
+                    );
+                }
+
+                // else (improps_.ignore_extra_objects)  just ignore the object
+                // (it will be deleted within containing dir)
+            }else{
+                errcount += collectArtifact(
+                        p,
+                        relpath,
+                        prec
                 );
-            }
 
-            errcount += collectArtifact(
-                    p,
-                    relpath,
-                    prec
-            );
-
-            if(errcount == 0){
-                garbage_.push_back(p);
+                if(errcount == 0){
+                    garbage_.push_back(p);
+                }
             }
         }
 
@@ -563,6 +577,7 @@ private:
 
     std::list<fs::path> garbage_;
 
+    ImprintProps improps_;
 }; // class Imprint
 
 } // namespace

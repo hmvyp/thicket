@@ -350,10 +350,12 @@ public:
     clean_using_imprint(){  // cleans all under the scope using imprint from previous invocation
         unsigned errcount = 0;
 
+        ImprintProps improps = {this->force_};
+
         // return imprint.deleteArtifacts();
 
         std::list<Imprint> imprints;
-        errcount += Imprint::collectImprintsInside(this->scope_, imprints);
+        errcount += Imprint::collectImprintsInside(this->scope_, improps, imprints);
 
         if(errcount) return errcount;
 
