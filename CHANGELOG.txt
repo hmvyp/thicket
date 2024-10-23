@@ -1,3 +1,18 @@
+What is new in release 2.2.03
+═════════════════════════════
+►  -f ("force") command line option now affects imprint cleaning method.
+
+Extra objects found in artifact directory are silently ignored and deleted with the directory itself.
+
+Let's recall, without -f option any extra object (which is not created by Thicket) inside Thicket-created directory causes an error.
+
+However, object type mismatch (e.g. if file/directory found instead of symlink) cause an error regardless of -f option.
+
+There are also some bugfixes, so an upgrade from previous 2.2.XX versions is recommended.  
+
+
+
+
 What is new in release 2.2.02
 ═════════════════════════════
 
