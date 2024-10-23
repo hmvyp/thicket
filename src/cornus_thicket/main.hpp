@@ -6,7 +6,7 @@
 #include <array>
 
 #define CORNUS_THICKET_APP_NAME "Thicket source tree resolver"
-#define CORNUS_THICKET_VERSION "2.2.02"
+#define CORNUS_THICKET_VERSION "2.2.03"
 
 
 namespace cornus_thicket {
@@ -163,25 +163,27 @@ inline void show_help(){
             "------------------\n\n"
             "-version  prints Thicket version\n"
             "-c  clean only\n"
-            "-f  force (do not ask before cleaning previous thicket artifacts)\n"
-            "-q  quiet (implies -f), suppress console i/o except of error reporting\n"
+            "-f  force (clean previous artifacts without confirmation;\n"
+            "    delete silently any extra object detected inside artifact directory)\n"
+            "-q  quiet (in case of -em=mounts also implies -f), suppress console i/o except of error reporting\n"
             "-m=method  materialization method: symlinks (default), copy, mixed\n"
-            "    symlinks - simlinks whereever possible\n"
+            "    symlinks - simlinks wherever possible\n"
             "    mixed - copy from the outside of the materialization scope, symlink inside\n"
             "    copy - always copy\n"
             "-em=erase_method artifacts cleaning method: imprint (default) or mounts\n"
-            "    imprint - based on .thicket_imprint file produced by previous invocation of Thicket\n"
-            "        (the file lists all previously created artifacts). This is a recommended method\n"
-            "    mounts - an old cleaning method based on the current set of mountpoints under the scope\n"
-            "        this method is less precise and may be dangerous in some circumstances \n"
-            "        (there is a risk to delete something vital accidentally placed into artifact directory) \n"
-            "        The 'mounts' method, however, may be a last resort if .thicket_imprint file \n"
-            "        is corrupted or accidentally deleted \n"
+            "    imprint - based on *.thicket_imprint files produced by previous invocation of Thicket\n"
+            "        (imprint file lists previously created artifacts). This is the recommended method\n"
+            "    mounts - an old cleaning method based on the current set of mountpoints under the scope.\n"
+            "        This method is less precise and may be dangerous in some circumstances \n"
+            "        (especially in OS virtualization environment if host's symlinks are not recognized by guest).\n"
+            "        There is also a risk to delete something vital accidentally placed into artifact directory. \n"
+            "        The 'mounts' method, however, is the last resort if .thicket_imprint files \n"
+            "        are corrupted or accidentally deleted. \n"
             "-var  assigns a value to a variable\n"
             "    (a variable with name NAME can be used in mountpoint description files as ${NAME})\n"
             "    syntax:   var=NAME:VALUE\n"
             "    for example var=TARGET_OS:LINUX\n"
-            "    There may be several -var options in the command line (a separate -var option per variable)\n"
+            "    There may be several -var options in the command line (a separate -var option for each variable)\n"
             ;
 }
 
