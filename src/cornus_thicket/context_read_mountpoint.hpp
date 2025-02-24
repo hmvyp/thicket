@@ -70,7 +70,7 @@ struct MountRecord {
             target = parts[1];
             filter = parts[2];
             if(sz == 4) {
-                mount_path = parts[3];
+                mount_path = trim(parts[3], slash_pred); // mount_path shall not start or end with slash
             }
         }else{
             return std::string("Syntax error in mountpoint record: ") + src;
@@ -108,6 +108,22 @@ struct MountRecord {
 
         errstr = parse_filter();
 
+        if(!filter_path.empty()){
+            // Remove filter_path at all using the following transformation:
+            // (1) append filter_path to the target and (2) append filter_path to the mount_path
+            // such transformation also allow to resolve more specific target instead of broad one
+
+            target.append(1,'/').append(filter_path);
+
+            if(mount_path.empty()){
+                mount_path = filter_path;
+            }else{
+                mount_path.append(1, '/').append(filter_path);
+            }
+
+            filter_path = "";
+        }
+
 
         errstr = errstr.empty()? filter_.setFilter(filter_pattern) : errstr;
 
@@ -131,24 +147,21 @@ struct MountRecord {
                     : filter_path_end_pos + 1; // skip last slash after the filter path
 
             filter_pattern = filter.substr(filter_patter_pos);
-
-            //if( !(filter_pattern == MountRecord::FILTER_UNIVERSAL)){
-            //    return string("Only universal wildcard **/* at the end of a filter is supported ");
-            //}
-
         }else{
             filter_path = filter;
             filter_pattern = MountRecord::FILTER_UNIVERSAL;
         }
 
-        auto slash_pred = [](unsigned char c){
-            return c == '/';
-        };
-
         filter_path = trim(filter_path, slash_pred); // hmmm... avoid segmentation fault in "/" fs::path operator...
 
         return string();
     }
+
+    static bool
+    slash_pred(unsigned char c){
+        return c == '/';
+    }
+
 };
 
 
@@ -215,7 +228,6 @@ Context::processMountRecord(
 
     string errstr;
 
-    // Node* nd_push_here = nd; // tmp-2024-08-06
     Node* nd_push_here = mrec.mp_placeholder;
 
     auto createDescendants = [&](const string& path_as_string) -> void {
@@ -249,9 +261,7 @@ Context::processMountRecord(
 
 
     const std::string&
-    full_target_pathstring = (mrec.filter_path.empty())
-            ? mrec.target
-            : (mrec.target + "/" + mrec.filter_path);
+    full_target_pathstring = mrec.target; //  (as filter_path is now empty)
 
     Node* tgn_to_push =  resolveMountpointTarget(nd->get_path() , full_target_pathstring, errstr);
 
@@ -271,10 +281,6 @@ Context::processMountRecord(
     if(!mrec.mount_path.empty()) {
         createDescendants(mrec.mount_path); // moves nd_push_here to the farthest descendant
     }
-
-    // create descendants along filter_path
-    // from the nd_push_here and point nd_push_here to the last one:
-    createDescendants(mrec.filter_path); // moves nd_push_here to the farthest descendant
 
     apply_filter(
             *tgn_to_push,
