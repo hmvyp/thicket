@@ -18,7 +18,7 @@ namespace cornus_thicket {
 
 #define THICKET_FS_LITERAL(constname, literal) \
 template<typename CharT> \
-inline constexpr const CharT* constname##_initfunc(){ /*returns lteral as  byte or wide character C-string */ \
+inline constexpr const CharT* constname##_initfunc(){ /*returns literal as  byte or wide character C-string */ \
     if constexpr (sizeof(CharT) == sizeof(char)) { \
         return CORNUS_THICKET_CONCAT( ,literal); \
     }else{ \
@@ -31,8 +31,7 @@ inline const string_t constname = constname##_initfunc<char_t>(); /* declare con
 
 //..... convert an utf-8 string to a string in native filesystem::path encoding:
 
-inline
-string_t
+inline string_t
 string2path_string(const std::string& s){
     return nowide::utf::convert_string<string_t::value_type, std::string::value_type>(s);
     //return string2some_string<string_t>(s);
@@ -54,7 +53,7 @@ p2s(const string_t& s){
     return tmp;
 }
 
-bool
+inline bool
 filepath_has_suffix(
         const fs::path& p, // input parameter (path to mountpoint description file)
         const string_t& suff, // suffix description
@@ -80,7 +79,8 @@ filepath_has_suffix(
 }
 
 
-fs::path addSuffix(const fs::path& p, const fs::path::string_type& suffix){
+inline fs::path
+addSuffix(const fs::path& p, const fs::path::string_type& suffix){
     fs::path tmp(p);
     tmp += suffix;
     return tmp;
