@@ -25,7 +25,6 @@ class Context
     fs::path root_;  // converted to canonical
     fs::path scope_; // converted to canonical
 
-    // std::map<fs::path, Node*> nodes; duck!!!
     std::unordered_map<fs::path, Node*,  FsHashFunc> nodes{50000};
 
     VarPool varpool;

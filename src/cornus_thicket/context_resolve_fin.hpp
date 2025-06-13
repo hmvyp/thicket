@@ -40,11 +40,13 @@ Context::resolveFilesystemNode(Node& n){
 
     bool has_ref_descendants = false;
 
+    std::vector<fs::path> files; // to process as final nodes
+    std::set<fs::path> exclude_files; // thicket artifacts to ignore in files
 
     for (auto const& de : fs::directory_iterator{n.path_}){
         auto& p = de.path();
 
-        if(p.empty()){
+        if(p.empty() || !(de.is_regular_file() || de.is_directory())){ // ignore empty or special files
             continue; //
         }
 
@@ -56,6 +58,8 @@ Context::resolveFilesystemNode(Node& n){
                 && is_thicket_mountpoint_description(p, &mountpoint_path)
         ){
             // mountpoint case:
+            exclude_files.emplace(mountpoint_path);
+
             Node* cn = mountpointAt(mountpoint_path);
             if(cn != nullptr){
                 // resolveReferenceNode(*cn, true);  // redundant? mountpointAt() have already resolved the node
@@ -72,37 +76,35 @@ Context::resolveFilesystemNode(Node& n){
             continue;
         }
 
+        fs::path imprint_artifact;
         if(
                 de.is_regular_file()
-                && is_thicket_imprint(p)
+                && is_thicket_imprint(p, &imprint_artifact)
         ){
+            exclude_files.emplace(imprint_artifact);
+
             continue;  // ignore possible imprint file
         }
 
+        files.push_back(p); // to process as final nodes
+    }
 
-        //skip possible thicket artifact:
 
-        if(
-            fs::exists(fs::symlink_status(fs::path(p.native() + mountpoint_suffix))) ||
-            fs::exists(fs::symlink_status(fs::path(p.native() + imprint_suffix)))
-        ){
+    for(auto& p : files){
+        if(exclude_files.find(p) != exclude_files.end()){
             continue;
         }
 
-        // final (filesystem) case:
+        Node* cn = existingFileAt(p);
+        if(cn == nullptr){
+            // ToDo: report error???
+            continue;
+        }
 
-        {
-            Node* cn = existingFileAt(p);
-            if(cn == nullptr){
-                // ToDo: report error???
-                continue;
-            }
-
-            if(cn->valid_) {
-                resolveFilesystemNode(*cn);
-                n.children[p.filename()] = cn; // append existing final node as child
-                has_ref_descendants = has_ref_descendants || cn->has_refernces_;
-            }
+        if(cn->valid_) {
+            resolveFilesystemNode(*cn);
+            n.children[p.filename()] = cn; // append existing final node as child
+            has_ref_descendants = has_ref_descendants || cn->has_refernces_;
         }
     }
 
