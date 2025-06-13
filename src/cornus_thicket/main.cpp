@@ -17,7 +17,17 @@
     SetConsoleOutputCP(65001);  // utf-8 to display localized file names
 #   endif
 
+    auto before = std::chrono::system_clock::now();
+
     auto res = cornus_thicket::main(nargs, args);
+
+    auto after = std::chrono::system_clock::now();
+    auto tdiff = after - before;
+
+    std::cout << "  \n time spent: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(tdiff).count()
+
+            << " ms \n";
 
 #   ifdef _WIN32 
     if(cur_cp) {

@@ -11,6 +11,7 @@
 #include <streambuf>
 #include <fstream>
 #include <cctype>
+#include <unordered_map>
 
 
 namespace cornus_thicket {
@@ -18,14 +19,14 @@ namespace cornus_thicket {
 
 struct MountRecord; //forward
 
-
 class Context
         : public ObjectFactory
 {
     fs::path root_;  // converted to canonical
     fs::path scope_; // converted to canonical
 
-    std::map<fs::path, Node*> nodes;
+    // std::map<fs::path, Node*> nodes; duck!!!
+    std::unordered_map<fs::path, Node*,  FsHashFunc> nodes{50000};
 
     VarPool varpool;
 

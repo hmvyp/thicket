@@ -41,6 +41,11 @@ enum ResolveStatus{
 };
 
 
+struct FsHashFunc {
+  size_t operator() (const fs::path & p) const  {return fs::hash_value(p);}
+};
+
+
 struct Node
         : public ObjectBase
 {
@@ -83,7 +88,9 @@ struct Node
     const fs::path path_ ; // canonical
     const std::string path_as_string_;
 
-    std::map<string_t, Node*> children;
+    //std::map<string_t, Node*> children;
+
+    std::unordered_map<fs::path, Node*,  FsHashFunc> children;
 
     // the following fields are used for reference nodes only:
 
