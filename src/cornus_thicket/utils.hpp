@@ -55,10 +55,29 @@ p2s(const string_t& s){
 
 inline bool
 filepath_has_suffix(
-        const fs::path& p, // input parameter (path to mountpoint description file)
+        const fs::path& p, // input parameter (path to check for suffix)
         const string_t& suff, // suffix description
         fs::path* path_wo_suffix = nullptr // output parameter: path without suffix (filled on success)
 ){
+    auto& ps = p.native();
+    if(ps.length() < suff.length()){
+        return false;
+    }
+
+    size_t pos = ps.length() - suff.length();
+    if(ps.find(suff, pos) == pos){
+        if(path_wo_suffix != nullptr){
+            fs::path pwosuf(ps.begin(), ps.begin() + pos);
+            *path_wo_suffix = std::move(pwosuf);
+        }
+        return true;
+    }else{
+        return false;
+    }
+
+
+#   if 0
+    //.........................
     auto fn = p.filename();
     auto s = fn.native();
     size_t len = s.length();
@@ -76,6 +95,7 @@ filepath_has_suffix(
     }else{
         return false;
     }
+#   endif
 }
 
 
