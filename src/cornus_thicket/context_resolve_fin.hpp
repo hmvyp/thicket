@@ -8,6 +8,11 @@ namespace cornus_thicket {
 void
 Context::resolveFilesystemNode(Node& n){
 
+    struct ChildEntry{
+        fs::path p;
+        fs::file_status symstatus;
+    };
+
     if(!n.valid_ || n.resolved_ >= NODE_RESOLVED){
         return;
     }
@@ -40,13 +45,23 @@ Context::resolveFilesystemNode(Node& n){
 
     bool has_ref_descendants = false;
 
-    std::vector<fs::path> files; // to process as final nodes
+    std::vector<ChildEntry> files; // to process as final nodes
     std::set<fs::path> exclude_files; // thicket artifacts to ignore in files
 
     for (auto const& de : fs::directory_iterator{n.path_}){
+        std::error_code ec;
+        auto symstat = de.symlink_status(ec);
         auto& p = de.path();
 
-        if(p.empty() || !(de.is_regular_file() || de.is_directory())){ // ignore empty or special files
+        if( // ignore invalid, empty or special files:
+                ec ||
+                p.empty() ||
+                !(
+                        fs::is_regular_file(symstat) ||
+                        fs::is_directory(symstat) ||
+                        fs::is_symlink(symstat) // symlink is ok, but treated as just a file
+                )
+        ){
             continue; //
         }
 
@@ -54,7 +69,7 @@ Context::resolveFilesystemNode(Node& n){
 
         fs::path mountpoint_path;
         if(
-                de.is_regular_file()
+                fs::is_regular_file(symstat)
                 && is_thicket_mountpoint_description(p, &mountpoint_path)
         ){
             // mountpoint case:
@@ -78,7 +93,7 @@ Context::resolveFilesystemNode(Node& n){
 
         fs::path imprint_artifact;
         if(
-                de.is_regular_file()
+                fs::is_regular_file(symstat)
                 && is_thicket_imprint(p, &imprint_artifact)
         ){
             exclude_files.emplace(imprint_artifact);
@@ -86,16 +101,16 @@ Context::resolveFilesystemNode(Node& n){
             continue;  // ignore possible imprint file
         }
 
-        files.push_back(p); // to process as final nodes
+        files.push_back(ChildEntry{p, symstat}); // to process as final nodes
     }
 
 
-    for(auto& p : files){
-        if(exclude_files.find(p) != exclude_files.end()){
+    for(auto& cent : files){ // over final subnodes...
+        if(exclude_files.find(cent.p) != exclude_files.end()){
             continue;
         }
 
-        Node* cn = existingFileAt(p);
+        Node* cn = existingFileAt(cent.p, &cent.symstatus);
         if(cn == nullptr){
             // ToDo: report error???
             continue;
@@ -103,7 +118,7 @@ Context::resolveFilesystemNode(Node& n){
 
         if(cn->valid_) {
             resolveFilesystemNode(*cn);
-            n.children[p.filename()] = cn; // append existing final node as child
+            n.children[cent.p.filename()] = cn; // append existing final node as child
             has_ref_descendants = has_ref_descendants || cn->has_refernces_;
         }
     }

@@ -120,8 +120,22 @@ public:
        return false;
     }
 
-    Node* existingFileAt(const fs::path& p){
-        fs::file_status fstat = fs::symlink_status(p);
+    Node* existingFileAt(
+            const fs::path& p,
+            fs::file_status* psymlink_status = nullptr // symlink_status() is costly, so pass it if known
+    ){
+        auto it = nodes.find(p);
+        if(it != nodes.end()){
+            Node* ret = it->second; // node already exists
+            return ret; // maybe check if node is final and report an internal error otherwise?
+        }
+
+
+        std::error_code ec;
+
+        fs::file_status fstat = (psymlink_status == nullptr)?
+                fs::symlink_status(p, ec) :
+                *psymlink_status;
 
         NodeType tt = UNKNOWN_NODE_TYPE;
 
@@ -130,18 +144,11 @@ public:
         }else if(fs::is_directory(fstat)){
             tt = DIR_NODE;
         }else{
-
             return nullptr;  // silently skip exotic filesystem objects
         }
 
         // from here it seems that it is final node
-        // (we hope the caller previously checks if it is a mountpoint)
-
-        auto it = nodes.find(p);
-        if(it != nodes.end()){
-            Node* ret = it->second; // node already exists
-            return ret; // maybe check if node is final and report an internal error otherwise?
-        }
+        // (we hope the caller previously checks if it is a mountpoint description or thicket artifact)
 
         Node* nd = createNode(p);
         nd->ref_type = FS_NODE;
