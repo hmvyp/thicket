@@ -400,7 +400,7 @@ Context::readMountpoint(
         }
 
         if(!(errstr = processMountRecord(nd, mount_record)).empty()) {
-            report_error(erprfx(eno) + errstr, SEVERITY_ERROR);
+            report_error(erprfx(eno) + errstr, SEVERITY_ERROR, 10); // err_order == 10 suppress others
             continue;
         }
     }

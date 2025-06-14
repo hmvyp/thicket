@@ -202,7 +202,7 @@ public:
 
 
         if(n.node_type == UNKNOWN_NODE_TYPE){
-            ret_err = "Internal Thicket error: "" Can not add artifact  node type (file or directory) is unknown";
+            ret_err = " Can not add artifact  node type (file or directory) is unknown";
         }else if(n.ref_type == FS_NODE && ns > nsEXISING) {
             ret_err = "Internal Thicket error:  Can not add artifact  pre-existed node can not be a link or copy";
         }else if(n.ref_type == REFERENCE_NODE && ns == nsEXISING) {

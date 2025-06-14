@@ -99,18 +99,35 @@ int run_thicket(Context& ctx){
             print_tree(ctx.nodeAt(ctx.getScope()));
         }
 
+        auto fin_report = [&]() -> void {
+            if(error_count > 0) {
+                std::cerr <<
+                        "\n... the result may be incomplete due to errors.\nTotal errors: "
+                        << error_count
+                        << " Errors explained: "
+                        << shown_errors_count
+                        << "\n (some errors may be caused by others)";
+            }else{
+                if(!q){
+                    std::cout << "\n... done";
+                }
+            }
+        };
+
         if(strcmp(opt_method.val, "symlinks") == 0){
             if(!q){std::cout << "\nstarting materialization process...\n";};
             
             ctx.materializeAsSymlinks(); // ToDo: return result ???
             
-			if(!q){std::cout << "\n...something is done. Errors: " << error_count;};
+			//if(!q){std::cout << "\n...something is done. Errors: " << error_count;};
+			fin_report();
         }else if(strcmp(opt_method.val, "copy") == 0 || strcmp(opt_method.val, "mixed") == 0){
             if(!q){std::cout << "\nstarting materialization process...\n";};
 
             ctx.materializeAsCopy(strcmp(opt_method.val, "mixed") == 0);
 
-            if(!q){std::cout << "\n...something is done. Errors: " << error_count;};
+            // if(!q){std::cout << "\n...something is done. Errors: " << error_count;};
+            fin_report();
         }else{
             std::cout << "\nError:unrecognized materialization method: " << opt_method.val << "\n";
             return 1;
@@ -314,7 +331,21 @@ main(int nargs, char** args){
     auto run_lambda = [&](Context& cx) -> int {
         auto err = addVarOptions(cx.getVarPool(), opt_variable.multivalue);
         if(err.empty()){
-            return run_thicket(cx);
+            auto before = std::chrono::system_clock::now();
+
+            auto res = run_thicket(cx);
+
+            auto after = std::chrono::system_clock::now();
+            auto tdiff = after - before;
+
+            if(! opt_quiet.is_set){
+                std::cout << "  \n time spent: "
+                        << std::chrono::duration_cast<std::chrono::milliseconds>(tdiff).count()
+
+                        << " ms \n";
+            }
+
+            return res;
         }else{
             std::cout << "\nError: syntax in options " << err << "\n";
             return 1;
