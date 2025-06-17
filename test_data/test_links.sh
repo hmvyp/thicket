@@ -3,8 +3,8 @@ if [[ $1 == "w"  ]] ; then
     echo running Thicket as Windows executable...
     expath=/windows/thicket.exe
 else
-    echo running Thicket as linux executable on x86_64 platform...
-    expath=Linux_x86_64/thicket
+    echo running Thicket as linux executable...
+    expath="$(uname -s)_$(uname -i)/thicket"
 fi
 
 ../build/output/${expath} -root_lev=1 -var=varA:importedA -var=varB:importedB -var=varM:mounted_here -- root/scope
