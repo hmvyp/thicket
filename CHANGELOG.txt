@@ -1,3 +1,11 @@
+What is new in release 2.2.04
+═════════════════════════════
+►  Thicket performance improved (up to 2 times). 
+►  Error reporting is now less verbose: errors caused by another errors are not usually reported.
+
+
+
+
 What is new in release 2.2.03
 ═════════════════════════════
 ►  -f ("force") command line option now affects imprint cleaning method.
