@@ -102,11 +102,13 @@ int run_thicket(Context& ctx){
         auto fin_report = [&]() -> void {
             if(error_count > 0) {
                 std::cerr <<
-                        "\n... the result may be incomplete due to errors.\nTotal errors: "
+                        "\n Total errors: "
                         << error_count
-                        << " Errors explained: "
+                        << " Errors reported: "
                         << shown_errors_count
-                        << "\n (some errors may be caused by others)";
+                        << "\n (some errors may be caused by others)"
+                        << "\n";
+                std::cout << "\n... there are errors, the result may be incomplete ";
             }else{
                 if(!q){
                     std::cout << "\n... done";
