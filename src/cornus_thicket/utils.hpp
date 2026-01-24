@@ -41,8 +41,9 @@ string2path_string(const std::string& s){
 //....... convert a string in native filesystem::path encoding to utf-8 string:
 inline
 std::string
-p2s(const string_t& s){
-    std::string tmp = nowide::utf::convert_string<std::string::value_type, string_t::value_type>(s);
+//p2s(const string_t& s){ // duck!!!
+p2s(const fs::path& p){
+    std::string tmp = nowide::utf::convert_string<std::string::value_type, string_t::value_type>(p.native());
 
     if(fs::path::preferred_separator != '/'){
                 // = some_string2string<string_t>(s);

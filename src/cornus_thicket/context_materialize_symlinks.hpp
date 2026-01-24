@@ -14,7 +14,7 @@ mk_symlink(Node& n, const Node& to){
     fs::path link_target_canon = to.path_ ; // n.final_targets.begin()->second->path_;
     fs::path link_target = fs::relative(link_target_canon, base);
 
-    std::error_code er;
+    fs_errcode er;
 
     if(n.node_type == DIR_NODE) {
         create_directory_symlink(link_target, n.path_, er);

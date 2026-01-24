@@ -196,7 +196,7 @@ Context::resolveMountpointTarget(
         pt = mountpoint_path.parent_path() / prt;
     }
 
-    std::error_code err;
+    fs_errcode err;
     auto ptcn = fs::weakly_canonical(pt, err); // the tail may not exist (e.g. may point to another mountpoint)
     if(err){
         errstr = std::string() +  "mountpoint target\n    "
@@ -333,7 +333,7 @@ Context::mergeNodes(
     // merge final targets... let's leave it to resolveReferenceNode()
 
     for(auto& chre: from->children){
-        Node* ch = ensureChild(nd, chre.first);
+        Node* ch = ensureChild(nd, chre.first.native());
         mergeNodes(ch, chre.second);
     }
 
@@ -354,7 +354,7 @@ Context::readMountpoint(
     auto& mt = nd->mount_targets;
 
     try{ // read mountpoint description file:
-        std::ifstream is(pm);
+        std::ifstream is(pm.native());
         std::stringstream buffer;
         buffer << is.rdbuf();
 

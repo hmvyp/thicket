@@ -152,7 +152,7 @@ public:
     {
         unsigned errcount = 0;
         for(auto& p : garbage_){
-            std::error_code er;
+            fs_errcode er;
             remove_all(p, er);
             if(er){
                 ++errcount;
@@ -175,7 +175,7 @@ public:
 
 
         // Artifacts deleted. Try to delete imprint file:
-        std::error_code erc;
+        fs_errcode erc;
 
         fs::remove(imprint_file_, erc);
 
@@ -197,8 +197,8 @@ public:
     addArtifact(Node& n, NodeStatus ns){
         std::string ret_err;
 
-        const std::string_view npsv = std::string_view(n.path_as_string_);
-        const std::string_view sp_sv = std::string_view(scope_as_string_);
+        const strview_type npsv = strview_type(n.path_as_string_);
+        const strview_type sp_sv = strview_type(scope_as_string_);
 
 
         if(n.node_type == UNKNOWN_NODE_TYPE){
@@ -241,7 +241,7 @@ public:
 
 
         try{
-            std::ofstream os(imprint_file_, std::ios::binary);
+            std::ofstream os(imprint_file_.native(), std::ios::binary);
             os << IMPRINT_SIGNATURE << '\n';
             os << "# This is a generated file containing descriptions of Thicket artifacts created in this scope. Do not edit." << '\n';
             for(auto it = all_records_.begin(); it != all_records_.end(); it++){
@@ -289,7 +289,7 @@ private:
 
     ImprintFileReadResult
     readImprint(const fs::path& imprint_path){
-        std::error_code err_exists;
+        fs_errcode err_exists;
 
         if(!fs::exists(imprint_path, err_exists)){
             if(err_exists){
@@ -304,7 +304,7 @@ private:
         }
 
         try{ // read imprint file:
-            std::ifstream is(imprint_path);
+            std::ifstream is(imprint_path.native());
             std::stringstream buffer;
             buffer << is.rdbuf();
 

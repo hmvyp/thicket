@@ -7,7 +7,7 @@ namespace cornus_thicket {
 
 inline void
 Context::clean_using_mounts(const fs::path& p, std::map<fs::path, bool>& to_delete){
-    if(fs::symlink_status(p).type() != fs::file_type::directory){
+    if(fs::symlink_status(p).type() != FileTypesEnum::directory){
         return;
     }
 
@@ -21,7 +21,7 @@ Context::clean_using_mounts(const fs::path& p, std::map<fs::path, bool>& to_dele
          if(
                  is_thicket_mountpoint_description(p, &mountpoint_path)
                  && !mountpoint_path.empty() // hope impossible
-                 && fs::symlink_status(mountpoint_path).type() != fs::file_type::not_found
+                 && fs::symlink_status(mountpoint_path).type() != FileTypesEnum::not_found
          ){
              to_delete[mountpoint_path] = true;
          }else if(is_thicket_imprint(p)){ // also delete imprints
@@ -65,7 +65,7 @@ void Context::clean_using_mounts(){ // cleans all under the scope
             while( !std::cin.fail() && yn!='y' && yn!='n' );
         }
 
-        std::error_code er;
+        fs_errcode er;
         if(silent_ || force_ || yn == 'y'){
             for(auto& pair : to_delete){ // then delete
                 auto& p = pair.first;

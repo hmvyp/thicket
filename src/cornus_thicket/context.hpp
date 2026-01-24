@@ -40,7 +40,7 @@ public:
             fs::path scope // a folder where imports shall be resolved (path relative to root)
     ){
 
-        std::error_code err;
+        fs_errcode err;
 
         root_ = fs::canonical(root, err);
         if(err){
@@ -84,7 +84,7 @@ public:
 private:
 
     void setScope(const fs::path& scope){
-        std::error_code err;
+        fs_errcode err;
         scope_ =  fs::canonical(scope, err);
 
         if(err){
@@ -131,7 +131,7 @@ public:
         }
 
 
-        std::error_code ec;
+        fs_errcode ec;
 
         fs::file_status fstat = (psymlink_status == nullptr)?
                 fs::symlink_status(p, ec) :
@@ -168,7 +168,7 @@ public:
 
         fs::path pm = p;  // will be path to mountpoint description file
 
-        pm.replace_filename( (string_t)p.filename() + mountpoint_suffix);
+        pm.replace_filename( p.filename().native() + mountpoint_suffix);
 
         fs::file_status fstat = symlink_status(pm);
 

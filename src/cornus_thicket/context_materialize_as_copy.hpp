@@ -43,7 +43,7 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
         }else if (n.node_type == FILE_NODE){
             if(n.final_targets.size() == 1){
                 Node* ft =  n.final_targets.begin()->second;
-                std::error_code er;
+                fs_errcode er;
                 // copy file:
                 fs::copy(
                        ft->path_,
