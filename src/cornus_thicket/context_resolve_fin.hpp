@@ -49,7 +49,7 @@ Context::resolveFilesystemNode(Node& n){
     std::set<fs::path> exclude_files; // thicket artifacts to ignore in files
 
     for (auto const& de : fs::directory_iterator{n.path_}){
-        std::error_code ec;
+        fs_errcode ec;
         auto symstat = de.symlink_status(ec);
         auto& p = de.path();
 

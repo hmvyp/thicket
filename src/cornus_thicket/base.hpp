@@ -11,13 +11,48 @@
 #include <map>
 #include <unordered_map>
 
-#include <filesystem>
+#if CORNUS_THICKET_BOOST_FS == 1
+#   include <boost/filesystem.hpp>
+#   include <boost/utility/string_view.hpp>
+#   include <boost/optional.hpp>
+#else
+#   include <filesystem>
+#   include <optional>
+#endif
+
 #include <memory>
 #include <iostream>
 
 namespace cornus_thicket {
 
-namespace fs = ::std::filesystem;
+#if CORNUS_THICKET_BOOST_FS == 1
+    namespace fs = ::boost::filesystem;
+    using fs_errcode = ::boost::system::error_code;
+    using strview_type = boost::string_view;
+
+    enum FileTypesEnum{
+        not_found = boost::filesystem::file_type::file_not_found,
+        regular = boost::filesystem::file_type::regular_file,
+        directory = boost::filesystem::file_type::directory_file,
+        // the following may not apply to some operating systems or file systems
+        symlink = boost::filesystem::file_type::symlink_file,
+        unknown = boost::filesystem::file_type::type_unknown  // file does exist, but isn't one of the above types or
+
+    };
+
+    template <typename T>
+    using optional_alias = boost::optional<T>;
+
+#else
+    namespace fs = ::std::filesystem;
+    using fs_errcode = ::std::error_code;
+    using strview_type = std::string_view;
+
+    using FileTypesEnum = std::filesystem::file_type;
+
+    template <typename T>
+    using optional_alias = std::optional<T>;
+#endif
 
 using char_t = fs::path::value_type;
 using string_t = fs::path::string_type;

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <optional>
+//#include <optional>
 
 namespace cornus_thicket {
 
@@ -48,7 +48,7 @@ struct VarOccurrence{
     const size_t place_pos; // where encountered
     const size_t place_length;
 
-    std::optional<std::string> value;
+    optional_alias<std::string> value;
 
     VarOccurrence(const std::string& where, size_t pos, size_t length)
         : vname(where.substr(pos + 2, length - 3))

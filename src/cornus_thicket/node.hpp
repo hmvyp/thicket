@@ -42,7 +42,10 @@ enum ResolveStatus{
 
 
 struct FsHashFunc {
-  size_t operator() (const fs::path & p) const  {return fs::hash_value(p);}
+//     size_t operator() (const fs::path & p) const  {return fs::hash_value(p);} // duck!!! (strange linker errors with boost::filesystem)
+    size_t operator() (const fs::path & p) const  {return hasher_(p.native());}
+
+    std::hash<string_t> hasher_;
 };
 
 

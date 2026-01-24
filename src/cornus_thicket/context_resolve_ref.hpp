@@ -120,7 +120,7 @@ Context::collectRefnodeChildren(Node& n){
         Node& tn = *tg;
         auto& tnch = tn.children;
         for(auto itg_ch = tnch.begin(); itg_ch != tnch.end(); itg_ch++){ // over target's children
-            const string_t& tch_name = itg_ch->first;
+            const string_t& tch_name = itg_ch->first.native();
             Node* tch_node = itg_ch->second;
             Node* my_child =  this->ensureChild(&n, tch_name);
 
