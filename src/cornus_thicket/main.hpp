@@ -6,7 +6,7 @@
 #include <array>
 
 #define CORNUS_THICKET_APP_NAME "Thicket source tree resolver"
-#define CORNUS_THICKET_VERSION "2.2.03"
+#define CORNUS_THICKET_VERSION "2.2.04"
 
 
 namespace cornus_thicket {
