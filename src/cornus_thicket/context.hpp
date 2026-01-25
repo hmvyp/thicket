@@ -168,7 +168,7 @@ public:
 
         fs::path pm = p;  // will be path to mountpoint description file
 
-        pm.replace_filename( p.filename().native() + mountpoint_suffix);
+        pm.replace_filename( p.filename().native() + mountpoint_suffix());
 
         fs::file_status fstat = symlink_status(pm);
 

@@ -16,17 +16,35 @@ namespace cornus_thicket {
 // The constant is named constname and initialized by a quoted string literal
 // in a uniform way (regardless of character width used in fs::path::string)
 
+
+//#define THICKET_FS_LITERAL(constname, literal) \
+//template<typename CharT> \
+//inline constexpr const CharT* constname##_initfunc(){ /*returns literal as  byte or wide character C-string */ \
+//    if constexpr (sizeof(CharT) == sizeof(char)) { \
+//        return CORNUS_THICKET_CONCAT( ,literal); \
+//    }else{ \
+//        return CORNUS_THICKET_CONCAT(L, literal);  /*wide character literal*/ \
+//    } \
+//};\
+//\
+//inline const string_t constname = constname##_initfunc<char_t>(); /* declare const variable of type fs::path::string_type */
+
+
 #define THICKET_FS_LITERAL(constname, literal) \
-template<typename CharT> \
-inline constexpr const CharT* constname##_initfunc(){ /*returns literal as  byte or wide character C-string */ \
-    if constexpr (sizeof(CharT) == sizeof(char)) { \
-        return CORNUS_THICKET_CONCAT( ,literal); \
-    }else{ \
-        return CORNUS_THICKET_CONCAT(L, literal);  /*wide character literal*/ \
-    } \
-};\
-\
-inline const string_t constname = constname##_initfunc<char_t>(); /* declare const variable of type fs::path::string_type */
+template<typename CharT>\
+const CharT& constname##_impl();\
+template<>\
+inline const std::string& constname##_impl<std::string>(){ /*returns literal as  byte character C-string */ \
+        static const std::string ret(CORNUS_THICKET_CONCAT( ,literal)); \
+        return ret;\
+}\
+template<>\
+inline const std::wstring& constname##_impl<std::wstring>(){ /*returns literal as wide character C-string */ \
+        static  const std::wstring ret(CORNUS_THICKET_CONCAT(L, literal));  /*wide character literal*/ \
+        return ret;\
+} \
+inline const string_t& constname(){ return constname##_impl<string_t>(); }
+
 
 
 //..... convert an utf-8 string to a string in native filesystem::path encoding:
@@ -121,13 +139,14 @@ trim(const std::string& s, Predicate pred)
    return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
 }
 
-inline auto space_pred = [](unsigned char c){
-    return std::isspace(c) &&  c != '#';
-};
 
 inline
 std::string
 trim(const std::string& s){
+    static auto space_pred = [](unsigned char c){
+        return std::isspace(c) &&  c != '#';
+    };
+
     return trim(s, space_pred);
 }
 

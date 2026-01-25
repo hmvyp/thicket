@@ -55,7 +55,7 @@ public:
     collectImprintsInside(const fs::path& cur_dir, const ImprintProps& improps, std::list<Imprint>& imprints){
         unsigned errcount = 0;
 
-        fs::path dot_imprint = cur_dir/imprint_suffix;
+        fs::path dot_imprint = cur_dir/imprint_suffix();
         if(fs::exists(dot_imprint)) {
             Imprint imp;
             switch(imp.readImprint(dot_imprint)){
@@ -273,7 +273,7 @@ public:
 
 private:
 
-    static inline const char* IMPRINT_SIGNATURE = "thicket imprint file version 1.0";
+    static constexpr const char* IMPRINT_SIGNATURE = "thicket imprint file version 1.0";
 
     // artifact description record:
     struct Record {
