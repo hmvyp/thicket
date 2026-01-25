@@ -7,6 +7,15 @@
 
 #define CORNUS_THICKET_APP_NAME "Thicket source tree resolver"
 #define CORNUS_THICKET_VERSION "2.2.04"
+#if defined __has_include
+#   if __has_include (<cornus_thicket/rev_hash.h>)
+#       include <cornus_thicket/rev_hash.h>
+#   else
+#       define CORNUS_THICKET_REVISION_HASH "n/a"
+#   endif
+#else
+#    define CORNUS_THICKET_REVISION_HASH "n/a"
+#endif
 
 
 namespace cornus_thicket {
@@ -159,7 +168,7 @@ inline void show_help(){
     std::cout << "\n"
             CORNUS_THICKET_APP_NAME
             " version "
-            CORNUS_THICKET_VERSION
+            CORNUS_THICKET_VERSION " revision hash: " CORNUS_THICKET_REVISION_HASH
             "\n\nCommand line: \n"
             "\n1st form:\n"
             "---------\n\n"
