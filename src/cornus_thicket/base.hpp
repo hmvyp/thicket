@@ -67,42 +67,56 @@ enum Severity{
 };
 
 
-inline int error_count = 0;
+struct ErrorCounts{
+    int error_count = 0;
 
-inline int shown_errors_count = 0;
+    int shown_errors_count = 0;
 
-inline int max_err_order = 0;
+    int max_err_order = 0;
+
+    void report_error(
+            std::string err,
+            Severity sev,
+            int err_order = 1 // suppress further errors with lesser order
+    ){
+        if(err_order > max_err_order){
+            max_err_order = err_order;
+        }
+
+        bool shown = false;
+
+        if(err_order >= max_err_order){
+            auto errs =  std::string("\nError: ") + err  + "\n";
+            std::cerr << errs;
+            shown = true;
+        }
+
+        if(sev >= SEVERITY_ERROR){
+           ++error_count;
+           if(shown){
+               ++shown_errors_count;
+           }
+        }
+
+
+        if(sev >= SEVERITY_PANIC){
+           //throw errs;
+           exit(111);
+        }
+    }
+};
+
+ErrorCounts& getErrorCounts(){
+    static ErrorCounts errc;
+    return errc;
+}
 
 void report_error(
         std::string err,
         Severity sev,
         int err_order = 1 // suppress further errors with lesser order
-){
-    if(err_order > max_err_order){
-        max_err_order = err_order;
-    }
+){getErrorCounts().report_error(err, sev, err_order);}
 
-    bool shown = false;
-
-    if(err_order >= max_err_order){
-        auto errs =  std::string("\nError: ") + err  + "\n";
-        std::cerr << errs;
-        shown = true;
-    }
-
-    if(sev >= SEVERITY_ERROR){
-       ++error_count;
-       if(shown){
-           ++shown_errors_count;
-       }
-    }
-
-
-    if(sev >= SEVERITY_PANIC){
-       //throw errs;
-       exit(111);
-    }
-};
 
 struct ObjectFactory;
 

@@ -12,7 +12,7 @@ inline void
 Context::materializeAsCopy(Node& n, bool symlinks_inside){
     ImprintControl impc(imprint_wrap_);
     if(n.is_mountpoint){
-        impc.newImprint(addSuffix(n.path_ , imprint_suffix));
+        impc.newImprint(addSuffix(n.path_ , imprint_suffix()));
     }
 
 

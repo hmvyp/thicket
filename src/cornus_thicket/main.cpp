@@ -17,7 +17,7 @@
     SetConsoleOutputCP(65001);  // utf-8 to display localized file names
 #   endif
 
-    auto res = cornus_thicket::main(nargs, args);
+    auto res = cornus_thicket::ThicketRun<>().main(nargs, args);
 
 
 #   ifdef _WIN32 

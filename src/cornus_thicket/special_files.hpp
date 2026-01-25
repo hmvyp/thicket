@@ -16,7 +16,7 @@ is_thicket_mountpoint_description(
         const fs::path& p, // input parameter (path to mountpoint description file)
         fs::path* mountpoint_path // output parameter (path to mountpoint itself)
 ){
-    return filepath_has_suffix(p, mountpoint_suffix, mountpoint_path);
+    return filepath_has_suffix(p, mountpoint_suffix(), mountpoint_path);
 }
 
 
@@ -25,7 +25,7 @@ is_thicket_imprint(
         const fs::path& p, // input parameter (path to mountpoint description file)
         fs::path* mountpoint_path = nullptr // output parameter (path to mountpoint )
 ){
-    return filepath_has_suffix(p, imprint_suffix, mountpoint_path);
+    return filepath_has_suffix(p, imprint_suffix(), mountpoint_path);
 }
 
 

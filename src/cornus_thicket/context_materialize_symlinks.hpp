@@ -46,7 +46,7 @@ Context::
 materializeAsSymlinks(Node& n){
     ImprintControl impc(imprint_wrap_);
     if(n.is_mountpoint){
-        impc.newImprint(addSuffix(n.path_ , imprint_suffix));
+        impc.newImprint(addSuffix(n.path_ , imprint_suffix()));
     }
 
     if(n.ref_type == REFERENCE_NODE){  // (may return from the inside)
