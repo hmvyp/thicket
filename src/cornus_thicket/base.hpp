@@ -12,6 +12,7 @@
 #include <unordered_map>
 
 #if CORNUS_THICKET_BOOST_FS == 1
+#   define BOOST_FILESYSTEM_VERSION 4
 #   include <boost/filesystem.hpp>
 #   include <boost/utility/string_view.hpp>
 #   include <boost/optional.hpp>
