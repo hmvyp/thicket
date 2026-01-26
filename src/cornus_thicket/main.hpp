@@ -192,7 +192,8 @@ struct ThicketRun {  // templated struct to work around absence of inline variab
         std::cout << "\n"
                 CORNUS_THICKET_APP_NAME
                 " version "
-                CORNUS_THICKET_VERSION " revision hash: " CORNUS_THICKET_REVISION_HASH
+                CORNUS_THICKET_VERSION " revision " CORNUS_THICKET_REVISION_HASH
+                " (__cplusplus = " CORNUS_THICKET_STRINGIZE(__cplusplus) ")"
                 "\n\nCommand line: \n"
                 "\n1st form:\n"
                 "---------\n\n"

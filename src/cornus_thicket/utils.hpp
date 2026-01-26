@@ -17,29 +17,16 @@ namespace cornus_thicket {
 // in a uniform way (regardless of character width used in fs::path::string)
 
 
-//#define THICKET_FS_LITERAL(constname, literal) \
-//template<typename CharT> \
-//inline constexpr const CharT* constname##_initfunc(){ /*returns literal as  byte or wide character C-string */ \
-//    if constexpr (sizeof(CharT) == sizeof(char)) { \
-//        return CORNUS_THICKET_CONCAT( ,literal); \
-//    }else{ \
-//        return CORNUS_THICKET_CONCAT(L, literal);  /*wide character literal*/ \
-//    } \
-//};\
-//\
-//inline const string_t constname = constname##_initfunc<char_t>(); /* declare const variable of type fs::path::string_type */
-
-
 #define THICKET_FS_LITERAL(constname, literal) \
 template<typename CharT>\
 const CharT& constname##_impl();\
 template<>\
-inline const std::string& constname##_impl<std::string>(){ /*returns literal as  byte character C-string */ \
+inline const std::string& constname##_impl<std::string>(){ /*returns literal as ref to std::string*/ \
         static const std::string ret(CORNUS_THICKET_CONCAT( ,literal)); \
         return ret;\
 }\
 template<>\
-inline const std::wstring& constname##_impl<std::wstring>(){ /*returns literal as wide character C-string */ \
+inline const std::wstring& constname##_impl<std::wstring>(){ /*returns literal as ref to std::wstring */ \
         static  const std::wstring ret(CORNUS_THICKET_CONCAT(L, literal));  /*wide character literal*/ \
         return ret;\
 } \
