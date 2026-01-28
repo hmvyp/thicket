@@ -1,2 +1,3 @@
+*.obj
 /prebuilt
 /build/output
