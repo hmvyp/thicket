@@ -1,3 +1,10 @@
+2026-01-29 (commit next to b263111, no release provided)
+═══════════════════════════════════════════════════════
+►  Thicket sources refactored to allow build with C++14 and boost::filesystem. 
+
+
+
+
 What is new in release 2.2.04
 ═════════════════════════════
 ►  Thicket performance improved (up to 2 times). 

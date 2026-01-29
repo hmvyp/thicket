@@ -10,7 +10,6 @@ ODIR="output/$(uname -s)_$(uname -i)"
 mkdir -p "${ODIR}";
 
 export LD_LIBRARY_PATH="$BOOSTDIR/lib"
-# gcc -static -std=c++1y -O3 -DCORNUS_THICKET_BOOST_FS=1 -I../src -Ioutput/include -I$BOOSTDIR/include ../src/cornus_thicket/main.cpp "-o${ODIR}/thicket_b" -L$BOOSTDIR/lib -lstdc++ -lboost_filesystem -lboost_atomic
 
 g++ -static -std=c++1y -O3 -DCORNUS_THICKET_BOOST_FS=1 -I../src -Ioutput/include -I$BOOSTDIR/include ../src/cornus_thicket/main.cpp "-o${ODIR}/thicket_b" -L$BOOSTDIR/lib  -lboost_filesystem -lboost_atomic
 
