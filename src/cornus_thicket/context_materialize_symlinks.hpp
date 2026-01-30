@@ -67,6 +67,17 @@ materializeAsSymlinks(Node& n){
 
                 // else (in case of "foreign" target containing mountpoints)
                 // the target can not be symlinked and shall be materialized below
+            }else if(n.final_targets.size() > 1 && n.node_type == NodeType::FILE_NODE){
+                report_error(
+                        std::string("Ambiguous regular file reference for:\n")
+                            + p2s(n.path_)
+                            + "\n    There are more than one target. The first two targets are: \n1)"
+                            + n.targets[0]->path_as_string_
+                            + "\n2)"
+                            + n.targets[1]->path_as_string_
+                        , SEVERITY_ERROR
+                );
+                return;
             }
         }
 

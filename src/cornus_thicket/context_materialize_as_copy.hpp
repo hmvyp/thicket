@@ -63,7 +63,17 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
                 }else{
                     impc.getImprint()->addArtifact(n, nsCOPY);
                 }
-            } // else: hope the error has been already reported (more than one target for regular file)
+            }else{ // error: more than one target for regular file:
+                report_error(
+                        std::string("Ambiguous regular file reference for:\n")
+                            + p2s(n.path_)
+                            + "\n    There are more than one target. The first two targets are: \n1)"
+                            + n.targets[0]->path_as_string_
+                            + "\n2)"
+                            + n.targets[1]->path_as_string_
+                        , SEVERITY_ERROR
+                );
+            }
         }
     }
 
