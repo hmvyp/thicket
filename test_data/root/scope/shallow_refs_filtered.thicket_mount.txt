@@ -1,0 +1,2 @@
+add: ../importedB/src *2.txt b_src
+add: ../importedB **/*1.txt

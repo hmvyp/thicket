@@ -38,6 +38,15 @@ symlink: from: root/scope/shallow_refs/b_src/importedB_at_root_2.txt to: ../../.
 dir: root/scope/shallow_refs/src
 symlink: from: root/scope/shallow_refs/src/importedB_at_root_1.txt to: ../../../importedB/src/importedB_at_root_1.txt
 symlink: from: root/scope/shallow_refs/src/importedB_at_root_2.txt to: ../../../importedB/src/importedB_at_root_2.txt
+dir: root/scope/shallow_refs_filtered
+file: root/scope/shallow_refs_filtered.thicket_imprint md5: ea9951eca6a3a24e2c16bef94182c54a
+file: root/scope/shallow_refs_filtered.thicket_mount.txt md5: fdcb7bc9f8a0be3bcec4a1d9edaef485
+dir: root/scope/shallow_refs_filtered/b_src
+symlink: from: root/scope/shallow_refs_filtered/b_src/importedB_at_root_2.txt to: ../../../importedB/src/importedB_at_root_2.txt
+dir: root/scope/shallow_refs_filtered/src
+symlink: from: root/scope/shallow_refs_filtered/src/importedB_at_root_1.txt to: ../../../importedB/src/importedB_at_root_1.txt
+dir: root/scope/shallow_refs_filtered/src_all
+symlink: from: root/scope/shallow_refs_filtered/src_all/importedB_at_root_1.txt to: ../../../importedB/src/importedB_at_root_1.txt
 dir: root/scope/src
 dir: root/scope/src/a
 dir: root/scope/src/a/a1
