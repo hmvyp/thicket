@@ -7,94 +7,153 @@
 namespace cornus_thicket {
 
 
-enum DescendantsMatch{
-    DESC_NONE,
-    DESC_POSSIBLE,
-    DESC_ALL
-};
-
 struct FilterMatch
 {
-    bool matches;
-
-    DescendantsMatch desc_match;
+    bool matches; // true on success
+    bool no_recurse; // optimization hint in case of matches == false
 };
 
 
-class FilterBase // just a "concept"
+struct StrFilter
 {
-public:
-    std::string // returns error str
-    setFilter(const std::string& filter_str);
+    virtual std::string // returns error string
+    init(const strview_type& filter_str) = 0;
 
-    FilterMatch
-    match(const char* s);
+    virtual FilterMatch
+    match(
+            // s is a relative path to match against the filter (relative to filtering root).
+            // It starts from a last slash (including the slash!) before wildcards.
+            // For filtering root itself (absolute path until the last slash) s is empty.
+            const strview_type& s,
+            bool is_directory // (additional info)
+    ) = 0;
+
+    virtual ~StrFilter(){}
 };
 
 
-
-// temporary implementation (only recursive universal and shallow universal filters are supported)
-class Filter
-    : public FilterBase
+struct GlobFilter
+: StrFilter
 {
-public:
+    // common pattern form: [**/]pref[*suff]
+    // [...] means optional
+    // pref and suff can be empty
+    virtual std::string // returns error string
+    init(const strview_type& filter_str) override {
+        static std::string recurse_pattern("**/");
+        static std::string universal_pattern("**/*");
+
+        if((strview_type)universal_pattern == filter_str){
+            is_universal = true;
+            return std::string();
+        }
+
+        auto mmres = std::mismatch(
+                recurse_pattern.begin(), recurse_pattern.end(),
+                filter_str.begin(), filter_str.end()
+        );
+
+        size_t start_match_pos = 0;
+
+        if(mmres.first == recurse_pattern.end()) { // if recursive pattern presents
+            start_match_pos = recurse_pattern.size();
+            is_recursive = true;
+        }
+
+        // matching pattern pref[*suff]:
+        strview_type mp = filter_str.substr(start_match_pos);
+
+        size_t ast_pos = mp.find_first_of('*');
+
+        if(ast_pos != strview_type::npos){
+            if(ast_pos != mp.find_last_of('*')) {
+                return std::string("syntax error in glob pattern: extra asterisk found");
+            }
+
+            has_asterisk = true;
+
+            pref = std::string(mp.begin(), mp.begin() + ast_pos);
+            suff = std::string(mp.begin() + ast_pos + 1, mp.end());
+        }else{
+            pref = std::string(mp.begin(), mp.end());
+        }
+
+        if(pref.substr(0,1) != "/"){
+            pref = std::string("/") + pref; // prevent breaking change in "*" filter interpretation
+        }
+
+        return std::string(); // Ok
+    }
+
+    virtual FilterMatch
+    match(
+            const strview_type& sv, // relative path to match against the filter
+            bool is_directory
+    ) override {
+        if(is_universal){
+            return FilterMatch{true};
+        }
+
+        size_t match_start_pos = 0;
+
+        size_t last_slash_pos = sv.find_last_of('/');
+
+        if(is_recursive){
+            if(last_slash_pos != strview_type::npos){ // true except for matching root
+                match_start_pos = last_slash_pos;
+            }
+        }
+
+        if(is_directory){ //ToDo: maybe allow directory matching using patterns trailing with a slash?
+            return FilterMatch{false, (!is_recursive) && !sv.empty()}; // (always allow recursion for filtering root)
+        }
+
+        strview_type to_match = sv.substr(match_start_pos);
+
+        if(
+                pref.size() + suff.size() >  to_match.size()
+                ||
+                to_match.substr(0, pref.size()) != strview_type(pref)
+                ||
+                to_match.substr(to_match.size() - suff.size()) != strview_type(suff)
+        ){
+            return FilterMatch{false, false}; // ToDo: maybe count slashes to calc no_recurse in case of !is_recursive?
+        }
+
+        return FilterMatch{true};
+    }
+
+
+protected:
+    bool is_universal = false;
+    bool is_recursive = false;  // true if "**/" presents
+    bool has_asterisk = false;  // true if "*" (single asterisk) presents
+    std::string pref;   // before asterisk
+    std::string suff;   // after_asterisk
+};
+
+
+// temporary implementation (only glob filters are supported)
+struct Filter
+{
     std::string // returns error str
-    setFilter(const std::string& filter_str);
+    setFilter(const std::string& filter_str){
+        StrFilter* pf = new GlobFilter(); // ToDo: check for regex marker ("***") first
+        auto errstr = pf->init(filter_str);
+        pfilter.reset(pf);
+        return errstr;
+    }
 
     FilterMatch
-    match(const char* s);
+    match(const strview_type& sv, bool is_directory){
+        return pfilter->match(sv, is_directory);
+    }
+
 
 private:
-
-    enum FilterType{FLTTYPE_NONE, U_RECURSIVE, U_SHALLOW};
-
-    FilterType flttype = FLTTYPE_NONE;
+    std::unique_ptr<StrFilter> pfilter;
 };
 
-
-// ........filter implementation (temporary, only universal (**/*) and shallow universal (*):
-
-inline std::string
-Filter::
-setFilter(const std::string& filter_str){
-    if(filter_str == "**/*"){
-        flttype = U_RECURSIVE;
-    }else if(filter_str == "*") {
-        flttype = U_SHALLOW;
-    }else{
-        return std::string("Filter pattern ") + filter_str + " is not supported (only * and **/*)";
-    }
-
-    return std::string(); // Ok
-};
-
-
-inline FilterMatch
-Filter::
-match(const char* s){
-    switch(flttype){
-    case U_RECURSIVE:
-    {
-        FilterMatch ret = {true, DESC_ALL};
-        return ret;
-    }
-    case U_SHALLOW:
-    {
-        if(s[0] == 0){ // empty string
-            FilterMatch ret = {true, DESC_POSSIBLE};
-            return ret;
-        }else{
-            FilterMatch ret = {true, DESC_NONE}; // stop recursion
-            return ret;
-        }
-    }
-    case FLTTYPE_NONE: ;// calm compiler
-    } // switch
-
-    //default: (hope impossible, invalid filter case):
-    FilterMatch ret = {false, DESC_NONE};
-    return ret;
-}
 
 } // namespace
 

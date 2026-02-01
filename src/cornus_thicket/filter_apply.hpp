@@ -37,51 +37,62 @@ apply_filter(
 
     };
 
-    FilterMatch fm = flt.match(cur_target_node.path_as_string_.c_str() + start_filtering_from);
-    if(!fm.matches) {
+    strview_type string_to_filter(cur_target_node.path_as_string_.c_str() + start_filtering_from);
+
+    FilterMatch fm = flt.match(
+            string_to_filter,
+            cur_target_node.node_type == NodeType::DIR_NODE
+    );
+
+
+    if(fm.matches) {
+        if(
+                cur_target_node.node_type == NodeType::DIR_NODE
+                && cur_target_node.children.empty()
+                && !string_to_filter.empty() // prevent "unresolved error" for filtering root
+        ){
+            return nullptr; // do not create empty directories (except for filtering root)
+        }
+
+        cur()->targets.push_back(&cur_target_node); // (leave  cur()->has_own_content_ untouched)
+        return cur();
+    }
+
+    // match failed. try to recurse:
+    if(fm.no_recurse || cur_target_node.node_type == FILE_NODE){
         return nullptr;
     }
 
-    if(fm.desc_match == DESC_ALL){
-        cur()->has_own_content_  = false;
-        cur()->targets.push_back(&cur_target_node);
-        return cur();
-    }else if(fm.desc_match == DESC_POSSIBLE){
-        size_t count = 0;
-        for(auto& trg_ch_entry : cur_target_node.children){
-            Node* trg_ch = trg_ch_entry.second;
-            Node* chn = apply_filter(
-                    *trg_ch, // hope not null
-                    start_filtering_from,
-                    cur_path(),
-                    nullptr,
-                    flt
-            );
+    // else (if directory)
 
-            if (chn == nullptr) {
-                continue;
-            }
+    size_t count = 0;
+    for(auto& trg_ch_entry : cur_target_node.children){
+        Node* trg_ch = trg_ch_entry.second;
+        Node* chn = apply_filter(
+                *trg_ch, // hope not null
+                start_filtering_from,
+                cur_path(),
+                nullptr,
+                flt
+        );
 
-            ++count;
-            cur()->children[trg_ch_entry.first] = chn;
+        if (chn == nullptr) {
+            continue;
         }
 
-        if(count == 0 && cur_target_node.node_type != FILE_NODE){
-            if(cur_node){
-                cur_node->has_own_content_  = true; // if cur_node passed as parameter
-            }
-            return nullptr; // do not create empty directories;
-        }
-    }else{ // DESC_NONE
-        if(cur_target_node.node_type != FILE_NODE){ // if a directory
-            if(cur_node){
-                cur_node->has_own_content_  = true; // if cur_node passed as parameter
-            }
-            return nullptr; // do not create empty directories;
-        }
+        ++count;
+        cur()->children[trg_ch_entry.first] = chn;
     }
 
-    cur()->has_own_content_  = cur_target_node.node_type != FILE_NODE; // filtered! (if a directory)
+    if(count == 0){
+        if(cur_node){
+            cur_node->has_own_content_  = true; // if cur_node passed as parameter
+        }
+        return nullptr; // do not create empty directories;
+    }
+
+
+    cur()->has_own_content_  = true; // filtered!
     cur()->targets.push_back(&cur_target_node);
     return cur();
 }

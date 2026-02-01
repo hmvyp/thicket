@@ -39,19 +39,16 @@ inline const string_t& constname(){ return constname##_impl<string_t>(); }
 inline string_t
 string2path_string(const std::string& s){
     return nowide::utf::convert_string<string_t::value_type, std::string::value_type>(s);
-    //return string2some_string<string_t>(s);
 }
 
 
 //....... convert a string in native filesystem::path encoding to utf-8 string:
 inline
 std::string
-//p2s(const string_t& s){ // duck!!!
 p2s(const fs::path& p){
     std::string tmp = nowide::utf::convert_string<std::string::value_type, string_t::value_type>(p.native());
 
     if(fs::path::preferred_separator != '/'){
-                // = some_string2string<string_t>(s);
         std::replace(tmp.begin(), tmp.end(), '\\', '/');
         return tmp;
     }
@@ -80,28 +77,6 @@ filepath_has_suffix(
     }else{
         return false;
     }
-
-
-#   if 0
-    //.........................
-    auto fn = p.filename();
-    auto s = fn.native();
-    size_t len = s.length();
-    if(len <= suff.length()){
-        return false;
-    }
-
-
-    if(s.substr(len - suff.length(), suff.length()) == suff){
-        if(path_wo_suffix != nullptr){
-            *path_wo_suffix = p;
-            path_wo_suffix->replace_filename(s.substr(0, len - suff.length()));
-        }
-        return true;
-    }else{
-        return false;
-    }
-#   endif
 }
 
 
