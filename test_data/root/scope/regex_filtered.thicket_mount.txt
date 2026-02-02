@@ -1,0 +1,3 @@
+add: src_all a/***.*(1|2).* subdir12
+add: src_all/a ***.*tx[.].* subdir_tx
+

@@ -170,7 +170,8 @@ struct RegexFilter
             return FilterMatch{false};
         }
 
-        return FilterMatch{regex_match(s.begin(), s.end(), rgx)};
+        bool res =regex_match(s.begin(), s.end(), rgx);
+        return FilterMatch{res};
     }
 
 protected:

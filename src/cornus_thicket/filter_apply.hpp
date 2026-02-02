@@ -84,7 +84,10 @@ apply_filter(
         cur()->children[trg_ch_entry.first] = chn;
     }
 
-    if(count == 0){
+    if(
+            count == 0 // result directory node is empty
+            && string_to_filter.size() != 0 // except for filtering root (avoid unresolved mountpoint  records)
+    ){
         if(cur_node){
             cur_node->has_own_content_  = true; // if cur_node passed as parameter
         }
