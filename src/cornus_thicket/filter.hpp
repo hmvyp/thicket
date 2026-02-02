@@ -2,6 +2,7 @@
 #define cornus_thicket_filter_hpp
 
 #include <string>
+#include <regex>
 
 
 namespace cornus_thicket {
@@ -40,8 +41,8 @@ struct GlobFilter
     // pref and suff can be empty
     virtual std::string // returns error string
     init(const strview_type& filter_str) override {
-        static std::string recurse_pattern("**/");
-        static std::string universal_pattern("**/*");
+        static const std::string recurse_pattern("**/");
+        static const std::string universal_pattern("**/*");
 
         if((strview_type)universal_pattern == filter_str){
             is_universal = true;
@@ -133,15 +134,80 @@ protected:
 };
 
 
-// temporary implementation (only glob filters are supported)
+struct RegexFilter
+        : public StrFilter
+{
+    virtual std::string // returns error string
+    init(const strview_type& filter_str) override {
+        rgx_text = std::string(filter_str.begin(), filter_str.end());
+
+        try{
+            rgx.assign(
+                    rgx_text,
+                    std::regex::extended // syntax closer to re2 as potential replacement for std:regex
+                    | std::regex::nosubs
+                    | std::regex::optimize
+            );
+        }catch(...){
+            return std::string("exception while constructing regular expression: ") + rgx_text;
+        }
+
+        valid = true;
+
+        return std::string(); // ok
+    }
+
+    virtual FilterMatch
+    match(
+            const strview_type& s,
+            bool is_directory
+    ) override {
+        if(!valid){
+            return FilterMatch{false, true};
+        }
+
+        if(is_directory){
+            return FilterMatch{false};
+        }
+
+        return FilterMatch{regex_match(s.begin(), s.end(), rgx)};
+    }
+
+protected:
+    bool valid = false;
+    std::string rgx_text;
+    std::regex rgx; //(".*(a|xayy)", std::regex::extended); // POSIX
+};
+
+
+
+
 struct Filter
 {
     std::string // returns error str
     setFilter(const std::string& filter_str){
-        StrFilter* pf = new GlobFilter(); // ToDo: check for regex marker ("***") first
-        auto errstr = pf->init(filter_str);
-        pfilter.reset(pf);
-        return errstr;
+        static const std::string rgx_marker("***");
+
+        auto mmres = std::mismatch(
+                rgx_marker.begin(), rgx_marker.end(),
+                filter_str.begin(), filter_str.end()
+        );
+
+        if(mmres.first == rgx_marker.end()){ // regex case
+            StrFilter* pf = new RegexFilter();
+            auto errstr = pf->init(
+                    strview_type(
+                            filter_str.c_str() + rgx_marker.size()
+                    )
+            );
+            pfilter.reset(pf);
+            return errstr;
+        }else{ // Glob case
+            StrFilter* pf = new GlobFilter();
+            auto errstr = pf->init(filter_str);
+            pfilter.reset(pf);
+            return errstr;
+        }
     }
 
     FilterMatch
