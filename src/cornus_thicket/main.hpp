@@ -6,7 +6,7 @@
 #include <array>
 
 #define CORNUS_THICKET_APP_NAME "Thicket source tree resolver"
-#define CORNUS_THICKET_VERSION "2.2.04"
+#define CORNUS_THICKET_VERSION "2.2.05"
 #if defined __has_include
 #   if __has_include (<cornus_thicket/rev_hash.h>)
 #       include <cornus_thicket/rev_hash.h>

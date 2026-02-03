@@ -12,7 +12,8 @@ mk_symlink(Node& n, const Node& to){
     // create symlink:
     fs::path base = n.path_.parent_path();
     fs::path link_target_canon = to.path_ ; // n.final_targets.begin()->second->path_;
-    fs::path link_target = fs::relative(link_target_canon, base);
+    //fs::path link_target = fs::relative(link_target_canon, base); // commented out to avoid link resolution
+    fs::path link_target = link_target_canon.lexically_relative(base); // (do not resolve symlinks)
 
     fs_errcode er;
 

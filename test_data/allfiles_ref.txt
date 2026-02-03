@@ -35,16 +35,16 @@ file: root/scope/regex_filtered.thicket_mount.txt md5: afb33824218cde7777a0c14f1
 dir: root/scope/regex_filtered/subdir12
 dir: root/scope/regex_filtered/subdir12/a
 dir: root/scope/regex_filtered/subdir12/a/a1
-symlink: from: root/scope/regex_filtered/subdir12/a/a1/a1tx.txt to: ../../../../src/a/a1/a1tx.txt
-symlink: from: root/scope/regex_filtered/subdir12/a/a1/a1txx.txt to: ../../../../src/a/a1/a1txx.txt
+symlink: from: root/scope/regex_filtered/subdir12/a/a1/a1tx.txt to: ../../../../src_all/a/a1/a1tx.txt
+symlink: from: root/scope/regex_filtered/subdir12/a/a1/a1txx.txt to: ../../../../src_all/a/a1/a1txx.txt
 dir: root/scope/regex_filtered/subdir12/a/a2
-symlink: from: root/scope/regex_filtered/subdir12/a/a2/a2_tx.txt to: ../../../../src/a/a2/a2_tx.txt
+symlink: from: root/scope/regex_filtered/subdir12/a/a2/a2_tx.txt to: ../../../../src_all/a/a2/a2_tx.txt
 dir: root/scope/regex_filtered/subdir_tx
 dir: root/scope/regex_filtered/subdir_tx/a1
-symlink: from: root/scope/regex_filtered/subdir_tx/a1/a1tx.txt to: ../../../src/a/a1/a1tx.txt
+symlink: from: root/scope/regex_filtered/subdir_tx/a1/a1tx.txt to: ../../../src_all/a/a1/a1tx.txt
 dir: root/scope/regex_filtered/subdir_tx/a2
-symlink: from: root/scope/regex_filtered/subdir_tx/a2/a2_tx.txt to: ../../../src/a/a2/a2_tx.txt
-symlink: from: root/scope/regex_filtered/subdir_tx/a_tx.txt to: ../../src/a/a_tx.txt
+symlink: from: root/scope/regex_filtered/subdir_tx/a2/a2_tx.txt to: ../../../src_all/a/a2/a2_tx.txt
+symlink: from: root/scope/regex_filtered/subdir_tx/a_tx.txt to: ../../src_all/a/a_tx.txt
 dir: root/scope/shallow_refs
 file: root/scope/shallow_refs.thicket_imprint md5: b6e5caa335c335b3d08ceff050fbd99d
 file: root/scope/shallow_refs.thicket_mount.txt md5: 29e7d72fc5a5fdd90c0b3a72bbf5e3ae

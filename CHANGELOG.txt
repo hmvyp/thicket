@@ -1,3 +1,30 @@
+What is new in release 2.2.05
+═════════════════════════════
+►  nontrivial glob filter implemented (like **/prefix*suffix, etc.)
+►  regex filter implemented (extended posix dialect).
+
+Regex filter syntax: ***rgx[,opion1,option2]:regex_pattern
+
+examples:
+add: take/from something/***rgx:[123aA]
+add: take/from something/***rgx,i:[123a]
+add: take/from ***rgx,match,i:/something/.*[123a].*
+
+all 3 examples are effectively equivalent.
+Options (if any) shall be prefixed with comma
+
+Available options:
+
+i - case insensitive
+match - match the whole string (default method is searching inside the string)
+
+The matched string is a trailing part of a path starting after last path component before the pattern.
+In the examples above the matching string starts after take/from/something (and includes a slash after "something")
+
+Let us note that all nontrivial filters (except for universal one **/*) produce symlinks to regular files,
+so all intermediate directories are created as Thicket artifacts.
+
+
 2026-01-29 (commit next to b263111, no release provided)
 ═══════════════════════════════════════════════════════
 ►  Thicket sources refactored to allow build with C++14 and boost::filesystem. 
