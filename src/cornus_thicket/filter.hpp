@@ -137,9 +137,18 @@ protected:
 struct RegexFilter
         : public StrFilter
 {
+    enum Method{
+        RegexSEARCH,
+        RegexMATCH
+    };
+
+
     virtual std::string // returns error string
     init(const strview_type& filter_str) override {
-        rgx_text = std::string(filter_str.begin(), filter_str.end());
+        std::string errstr = parse_options(filter_str); // assigns rgx_text on success
+        if(!errstr.empty()){
+            return errstr;
+        }
 
         try{
             rgx.assign(
@@ -147,6 +156,7 @@ struct RegexFilter
                     std::regex::extended // syntax closer to re2 as potential replacement for std:regex
                     | std::regex::nosubs
                     | std::regex::optimize
+                    | (case_insensitive? std::regex::icase : (std::regex_constants::syntax_option_type)0)
             );
         }catch(...){
             return std::string("exception while constructing regular expression: ") + rgx_text;
@@ -170,14 +180,61 @@ struct RegexFilter
             return FilterMatch{false};
         }
 
-        bool res =regex_match(s.begin(), s.end(), rgx);
-        return FilterMatch{res};
+        try{
+            bool res = false;
+            switch(method){
+            case Method::RegexMATCH:    res = regex_match(s.begin(), s.end(), rgx);
+                break;
+            case Method::RegexSEARCH:   res = regex_search(s.begin(), s.end(), rgx);
+                break;
+            }
+            return FilterMatch{res};
+        }catch(...){
+            std::string s_as_string(s.begin(), s.end());
+            report_error(
+                std::string("exception while matching ") + s_as_string +
+                    std::string("\n    against pattern: ") + rgx_text,
+                Severity::SEVERITY_ERROR
+            );
+
+            return FilterMatch{false, true};
+        }
     }
 
 protected:
+    // On success the function also assigns rgx_text member
+    std::string // (error string)
+    parse_options(const strview_type& filter_str){
+        size_t opts_end = filter_str.find(':');
+        if(opts_end == strview_type::npos ){
+            return std::string("RegexFilter option parser: can not find ':' before the pattern");
+        }
+
+        strview_type opts = filter_str.substr(0, opts_end);
+        rgx_text = std::string(filter_str.begin() + opts_end + 1, filter_str.end());
+        if(opts.empty()){
+            return std::string(); // ok
+        }
+
+        // some options presents...
+
+        if(opts.find(",match") != strview_type::npos){
+            method = Method::RegexMATCH;
+        }
+
+        if(opts.find(",i") != strview_type::npos){
+            case_insensitive = true;
+        }
+
+        return std::string();
+    }
+
     bool valid = false;
-    std::string rgx_text;
-    std::regex rgx; //(".*(a|xayy)", std::regex::extended); // POSIX
+    std::string rgx_text; // without options, i.e. the regex pattern itself
+    std::regex rgx;
+
+    Method method = Method::RegexSEARCH;
+    bool case_insensitive = false;
 };
 
 
@@ -187,7 +244,7 @@ struct Filter
 {
     std::string // returns error str
     setFilter(const std::string& filter_str){
-        static const std::string rgx_marker("***");
+        static const std::string rgx_marker("***rgx");
 
         auto mmres = std::mismatch(
                 rgx_marker.begin(), rgx_marker.end(),

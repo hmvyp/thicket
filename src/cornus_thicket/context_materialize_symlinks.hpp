@@ -116,7 +116,7 @@ materializeAsSymlinks(Node& n){
                     + p2s(n.path_)
                     + "  shall be a directory, but actually is "
                     + verboseNodeType(n.node_type)
-                    + "\n(This probably is internal Thicket error)"
+                    + "\n(This is likely caused by previous errors)"
                     , SEVERITY_ERROR
             );
         }
