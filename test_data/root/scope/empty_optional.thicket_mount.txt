@@ -1,0 +1,1 @@
+add? ../blabla/does/not/exist **/* nothing/here

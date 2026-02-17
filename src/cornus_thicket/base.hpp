@@ -86,8 +86,17 @@ struct ErrorCounts{
 
         bool shown = false;
 
+        std::string sev_kind("Info");
+
+        switch(sev){
+        case SEVERITY_WARNING: sev_kind = "Warning"; break;
+        case SEVERITY_ERROR: sev_kind = "Error"; break;
+        case SEVERITY_PANIC: sev_kind = "Panic"; break;
+        default: break;
+        }
+
         if(err_order >= max_err_order){
-            auto errs =  std::string("\nError: ") + err  + "\n";
+            auto errs =  std::string("\n") + sev_kind + ": " + err  + "\n";
             std::cerr << errs;
             shown = true;
         }

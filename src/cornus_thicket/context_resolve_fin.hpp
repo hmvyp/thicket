@@ -77,9 +77,11 @@ Context::resolveFilesystemNode(Node& n){
 
             Node* cn = mountpointAt(mountpoint_path);
             if(cn != nullptr){
-                // resolveReferenceNode(*cn, true);  // redundant? mountpointAt() have already resolved the node
-                n.children[mountpoint_path.filename()] = cn;
-                has_ref_descendants = true;
+                if(cn->resolved_ != NODE_FAILED_TO_RESOLVE){
+                    // resolveReferenceNode(*cn, true) is redundant: mountpointAt() have already resolved the node
+                    n.children[mountpoint_path.filename()] = cn;
+                    has_ref_descendants = true;
+                } // else (in case of empty mountpoint or previously reported errors) just do nothing
             }else{
                 report_error(std::string(
                         "Can not create mountpoint at ")

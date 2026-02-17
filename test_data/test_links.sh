@@ -9,6 +9,9 @@ fi
 
 ../build/output/${expath} -root_lev=1 -var=varA:importedA -var=varB:importedB -var=varM:mounted_here -- root/scope
 
+echo "Thicket returned code: $?"
+echo ""
+
 
 # make directory structure description:
 . list_files.sh

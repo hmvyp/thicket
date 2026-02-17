@@ -28,6 +28,8 @@ dir: root/scope/deep_file/very/deep/diving/into/one_file_from_A_trough_B
 symlink: from: root/scope/deep_file/very/deep/diving/into/one_file_from_A_trough_B/importedA_x_tx.txt to: ../../../../../../../importedA/src/x/importedA_x_tx.txt
 dir: root/scope/dir with  spaces
 file: root/scope/dir with  spaces/file with  spaces.txt md5: d41d8cd98f00b204e9800998ecf8427e
+file: root/scope/empty_mount.thicket_mount.txt md5: 8c077e4031c698fdc513a73a9c895c80
+file: root/scope/empty_optional.thicket_mount.txt md5: 8df6d4ca38457e81887bf47cdf758ac7
 file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
 dir: root/scope/regex_filtered
 file: root/scope/regex_filtered.thicket_imprint md5: 8918740150fb3b4cb0b532aa9b1b38fb

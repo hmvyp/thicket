@@ -222,7 +222,8 @@ inline
 std::string // error
 Context::processMountRecord(
         Node* nd,  // mountpoint node
-        MountRecord& mrec
+        MountRecord& mrec,
+        unsigned& records_resolved
 ){
     using std::string;
 
@@ -293,6 +294,8 @@ Context::processMountRecord(
     resolveReferenceNode(*mrec.mp_placeholder, true);
 
     errstr = mergeNodes(nd, mrec.mp_placeholder);
+
+    ++records_resolved;
 
     return errstr;
 }
@@ -374,6 +377,10 @@ Context::readMountpoint(
     }
 
 
+    if(mt.empty()){
+        report_error( std::string("No records in mountpoint file: ") + p2s(pm), SEVERITY_WARNING);
+    }
+
     nd->valid_ = true; // (from here only partial fails are possible)
 
 
@@ -389,6 +396,7 @@ Context::readMountpoint(
 
     // run over mountpoint entries to calculate and resolve targets:
 
+    unsigned records_resolved = 0; // counter
     for(auto& eno : mt){
         MountRecord mount_record(*this, nd);
 
@@ -399,16 +407,20 @@ Context::readMountpoint(
             continue;
         }
 
-        if(!(errstr = processMountRecord(nd, mount_record)).empty()) {
+        if(!(errstr = processMountRecord(nd, mount_record, records_resolved)).empty()) {
             report_error(erprfx(eno) + errstr, SEVERITY_ERROR, 10); // err_order == 10 suppress others
             continue;
         }
     }
 
-    // Reference node is useless being unresolved, so resolve it:
-    resolveReferenceNode(*nd, false); // NODE_RESOLVING is already set, so pass false as 2nd arg
-
-    publishTree(*nd);
+    if(records_resolved  != 0){
+        // Reference node is useless being unresolved, so resolve it:
+        resolveReferenceNode(*nd, false); // NODE_RESOLVING is already set, so pass false as 2nd arg
+        publishTree(*nd);
+    }else{
+        nd->resolved_ = NODE_FAILED_TO_RESOLVE; // not necessary an error, may be just empty mountpoint
+        report_error( std::string("Mountpoint appears empty: ") + p2s(pm), SEVERITY_WARNING);
+    }
 }
 
 }

@@ -283,7 +283,11 @@ public:
         Node* nd = mountpointAt(p);
 
         if(nd) {
-            return nd;
+            if(nd->resolved_ == NODE_FAILED_TO_RESOLVE){ // already reported error or empty mountpoint
+                return nullptr;
+            }else{
+                return nd;
+            }
         }
 
         return existingFileAt(p);
@@ -412,7 +416,8 @@ private:
     std::string // error
     processMountRecord(
             Node* nd,  // mountpoint node
-            MountRecord& mount_record
+            MountRecord& mount_record,
+            unsigned& records_resolved
     );
 
     std::string // error
