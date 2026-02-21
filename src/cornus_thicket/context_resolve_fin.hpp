@@ -118,7 +118,22 @@ Context::resolveFilesystemNode(Node& n){
             continue;
         }
 
-        if(cn->valid_) {
+        if(
+            cn->valid_
+        ) {
+
+            if(cn->path_ == scope_){
+                report_error(
+                    std::string() +
+                        "A parent of scope directory is resolving. "
+                        "\n  It is allowed, but the scope directory itself"
+                        "\n  is excluded from parent's resolution"
+                        " to avoid circular dependency"
+                    , SEVERITY_WARNING
+                );
+                continue;
+            }
+
             resolveFilesystemNode(*cn);
             n.children[cent.p.filename()] = cn; // append existing final node as child
             has_ref_descendants = has_ref_descendants || cn->has_refernces_;

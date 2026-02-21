@@ -30,6 +30,31 @@ dir: root/scope/dir with  spaces
 file: root/scope/dir with  spaces/file with  spaces.txt md5: d41d8cd98f00b204e9800998ecf8427e
 file: root/scope/empty_mount.thicket_mount.txt md5: 8c077e4031c698fdc513a73a9c895c80
 file: root/scope/empty_optional.thicket_mount.txt md5: 8df6d4ca38457e81887bf47cdf758ac7
+dir: root/scope/filtered_from_root
+file: root/scope/filtered_from_root.thicket_imprint md5: af3cb6f93d2ecc46c43f5fa4ac6f88d3
+file: root/scope/filtered_from_root.thicket_mount.txt md5: 73d43edaf3fe1a54dc85d355ad7a7efa
+dir: root/scope/filtered_from_root/importedA
+dir: root/scope/filtered_from_root/importedA/src
+dir: root/scope/filtered_from_root/importedA/src/x
+symlink: from: root/scope/filtered_from_root/importedA/src/x/importedA_x_tx.txt to: ../../../../../importedA/src/x/importedA_x_tx.txt
+dir: root/scope/filtered_from_root/importedB
+dir: root/scope/filtered_from_root/importedB/src
+dir: root/scope/filtered_from_root/importedB/src/x
+symlink: from: root/scope/filtered_from_root/importedB/src/x/importedB_x_tx.txt to: ../../../../../importedB/src/x/importedB_x_tx.txt
+dir: root/scope/filtered_from_root/importedB/src/y
+symlink: from: root/scope/filtered_from_root/importedB/src/y/importedB_y_tx.txt to: ../../../../../importedB/src/y/importedB_y_tx.txt
+dir: root/scope/filtered_from_root/importedB/src_all
+dir: root/scope/filtered_from_root/importedB/src_all/x
+symlink: from: root/scope/filtered_from_root/importedB/src_all/x/importedA_x_tx.txt to: ../../../../../importedA/src/x/importedA_x_tx.txt
+symlink: from: root/scope/filtered_from_root/importedB/src_all/x/importedB_x_tx.txt to: ../../../../../importedB/src/x/importedB_x_tx.txt
+dir: root/scope/filtered_from_root/importedB/src_all/y
+symlink: from: root/scope/filtered_from_root/importedB/src_all/y/importedB_y_tx.txt to: ../../../../../importedB/src/y/importedB_y_tx.txt
+dir: root/scope/filtered_from_root/importedB/src_super
+dir: root/scope/filtered_from_root/importedB/src_super/one_file_from_A
+symlink: from: root/scope/filtered_from_root/importedB/src_super/one_file_from_A/importedA_x_tx.txt to: ../../../../../importedA/src/x/importedA_x_tx.txt
+dir: root/scope/filtered_from_root/importedB/src_super/src
+dir: root/scope/filtered_from_root/importedB/src_super/src/x
+symlink: from: root/scope/filtered_from_root/importedB/src_super/src/x/importedA_x_tx.txt to: ../../../../../../importedA/src/x/importedA_x_tx.txt
 file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
 dir: root/scope/regex_filtered
 file: root/scope/regex_filtered.thicket_imprint md5: 8918740150fb3b4cb0b532aa9b1b38fb
