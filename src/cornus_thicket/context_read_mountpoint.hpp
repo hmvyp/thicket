@@ -113,7 +113,11 @@ struct MountRecord {
             // (1) append filter_path to the target and (2) append filter_path to the mount_path
             // such transformation also allow to resolve more specific target instead of broad one
 
-            target.append(1,'/').append(filter_path);
+            if(target == "/"){
+                target.append(filter_path);
+            }else{
+                target.append(1,'/').append(filter_path);
+            }
 
             if(mount_path.empty()){
                 mount_path = filter_path;
@@ -180,20 +184,24 @@ Context::resolveMountpointTarget(
         en.erase(0,1); // remove "absolute" mark
     }
 
+    bool tgpath_empty = en.empty();
+
     auto pas = string2path_string(en); // entry as relative native string
     auto prt = fs::path(pas); // the entry as fs:path
 
+    /*// duck!!!
     if(prt.empty()){
         errstr = "results in empty path";
         return nullptr;
     }
+    */
 
     fs::path pt;  // target path
 
     if(from_root) {
-        pt = this->root_ / prt;
+        pt = tgpath_empty? this->root_ : this->root_ / prt;
     }else{
-        pt = mountpoint_path.parent_path() / prt;
+        pt = tgpath_empty? mountpoint_path.parent_path() : mountpoint_path.parent_path() / prt;
     }
 
     fs_errcode err;
