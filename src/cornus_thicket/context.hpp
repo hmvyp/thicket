@@ -209,6 +209,9 @@ public:
         Node* nd = createNode(p);
         nd->ref_type = REFERENCE_NODE;
         nd->is_mountpoint = true;
+        if(filepath_has_suffix(pm, mirage_suffix())){
+            nd->is_mirage = true;
+        }
         nodes[p] = nd;
 
         this->readMountpoint(nd, pm);

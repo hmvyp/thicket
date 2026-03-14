@@ -28,20 +28,24 @@ is_thicket_mountpoint(
         const fs::path& p,  // input parameter (path to possible mountpoint)
         fs::path* mountpoint_descr_path // output parameter (path to mountpoint description file)
 ){
-    fs::path pm = p;  // will be a path to mountpoint description file
+    const fs::path::string_type* suffixes[] = {&mountpoint_suffix(), &mirage_suffix(), nullptr};
 
-    pm.replace_filename(p.filename().native() + mountpoint_suffix());
+    for(const fs::path::string_type** psuff = suffixes; *psuff != nullptr; ++psuff){
+        fs::path pm = p;  // will be a path to mountpoint description file
 
-    fs::file_status fstat = symlink_status(pm);
+        pm.replace_filename(p.filename().native() + (**psuff));
 
-    if(fs::exists(fstat) && fs::is_regular_file(fstat)) {
-        if(mountpoint_descr_path != nullptr){
-            *mountpoint_descr_path = std::move(pm);
+        fs::file_status fstat = symlink_status(pm);
+
+        if(fs::exists(fstat) && fs::is_regular_file(fstat)) {
+            if(mountpoint_descr_path != nullptr){
+                *mountpoint_descr_path = std::move(pm);
+            }
+            return true;
         }
-        return true;
-    }else{
-        return false; // it is not a mountpoint (not necessary an error)
     }
+
+    return false; // it is not a mountpoint (not necessary an error)
 }
 
 
