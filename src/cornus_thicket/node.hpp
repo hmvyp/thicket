@@ -55,7 +55,7 @@ struct Node
     NodeType node_type = UNKNOWN_NODE_TYPE;
     ReferenceType ref_type = UNKNOWN_REFTYPE;
     bool is_mountpoint = false;
-    bool is_mirage = false; // special case of mountpoint
+    bool is_mirage = false; // special case of mountpoint and its descendants (never materialized)
 
     Node(Node&&) = delete; // do not move/copy
 

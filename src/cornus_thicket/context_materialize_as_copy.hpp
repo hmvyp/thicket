@@ -18,7 +18,11 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
 
     if(n.ref_type == REFERENCE_NODE){
         if(symlinks_inside) {  // (may return from the inside)
-            if(n.targets.size() == 1 && path_in_scope(n.targets[0]->path_)){ // if a single immediate target is in scope
+            if(
+                n.targets.size() == 1
+                && path_in_scope(n.targets[0]->path_)
+                && !n.targets[0]->is_mirage
+            ){ // if a single immediate target is in scope
                 mk_symlink(n, *n.targets[0]); // the target shall be resolved, so just make symlink to it
                 return; // do not recurse further, link is enough
             }else if(n.final_targets.size() == 1) {// if exactly one final target

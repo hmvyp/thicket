@@ -52,7 +52,11 @@ materializeAsSymlinks(Node& n){
 
     if(n.ref_type == REFERENCE_NODE){  // (may return from the inside)
         if(!n.has_own_content_){
-            if(n.targets.size() == 1 && path_in_scope(n.targets[0]->path_)){
+            if(
+                    n.targets.size() == 1
+                    && path_in_scope(n.targets[0]->path_)
+                    && !n.targets[0]->is_mirage
+            ){
                 mk_symlink(n, *n.targets[0]); // the target shall be resolved, so just make symlink to it
                 return; // do not recurse further, link is enough
             }else if(n.final_targets.size() == 1) {// if exactly one final target

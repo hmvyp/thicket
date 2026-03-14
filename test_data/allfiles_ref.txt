@@ -55,6 +55,12 @@ symlink: from: root/scope/filtered_from_root/importedB/src_super/one_file_from_A
 dir: root/scope/filtered_from_root/importedB/src_super/src
 dir: root/scope/filtered_from_root/importedB/src_super/src/x
 symlink: from: root/scope/filtered_from_root/importedB/src_super/src/x/importedA_x_tx.txt to: ../../../../../../importedA/src/x/importedA_x_tx.txt
+dir: root/scope/from_mirage
+file: root/scope/from_mirage.thicket_imprint md5: a7ebabb41a14073b0775d3fc13c58348
+file: root/scope/from_mirage.thicket_mount.txt md5: be3af2117b9b5ae883cf379d9614c453
+symlink: from: root/scope/from_mirage/a to: ../src/a
+symlink: from: root/scope/from_mirage/b to: ../src/b
+symlink: from: root/scope/from_mirage/x to: ../../importedA/src/x
 dir: root/scope/from_root
 file: root/scope/from_root.thicket_imprint md5: 0ee04b69c769433b0f08c5db5ea1a335
 file: root/scope/from_root.thicket_mount.txt md5: 9bb78470e1d86f3083e151808cd3ff3b
@@ -164,6 +170,7 @@ file: root/scope/src_another.thicket_mount.txt md5: 7c57017998424ed37159cd6dae00
 symlink: from: root/scope/src_another/a to: ../src/a
 symlink: from: root/scope/src_another/b to: ../src/b
 symlink: from: root/scope/src_another/x to: ../../importedA/src/x
+file: root/scope/src_another_mirage.thicket_mirage.txt md5: 7c57017998424ed37159cd6dae00def6
 dir: root/scope/src_import1file
 symlink: from: root/scope/src_import1file/file_from_a to: ../../importedA/src/x/importedA_x_tx.txt
 file: root/scope/src_import1file/file_from_a.thicket_imprint md5: 88a3463c2a3e82b71397823975fda46b

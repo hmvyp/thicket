@@ -12,6 +12,7 @@ root/scope/shallow_refs
 root/scope/shallow_refs_filtered
 root/scope/regex_filtered
 root/scope/with_spaces
+/root/scope/from_mirage
 
 outside_root/new_scope/*
 !outside_root/new_scope/all.thicket_mount.txt

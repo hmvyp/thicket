@@ -345,6 +345,7 @@ Context::mergeNodes(
 
     for(auto& chre: from->children){
         Node* ch = ensureChild(nd, chre.first.native());
+        ch->is_mirage = nd->is_mirage;
         mergeNodes(ch, chre.second);
     }
 

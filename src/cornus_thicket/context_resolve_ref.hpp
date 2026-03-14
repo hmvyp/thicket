@@ -127,6 +127,7 @@ Context::collectRefnodeChildren(Node& n){
             my_child->ref_type = REFERENCE_NODE;
             my_child->valid_ = true;
             my_child->targets.push_back(tch_node);
+            my_child->is_mirage = n.is_mirage;
         }
     }
 }
