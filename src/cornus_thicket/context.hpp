@@ -160,21 +160,30 @@ public:
         return nd;
     }
 
-    // also resolves the reference node:
-    Node* mountpointAt(const fs::path& p){
+    Node* mountpointAt(
+            // may be a mountpoint or not
+            // if p represents a mountpoint then the function also resolves it
+            const fs::path& p
+    ){
         if(p.begin() == p.end()){
             return nullptr; // empty path is not a mountpoint
         }
 
-        fs::path pm = p;  // will be path to mountpoint description file
-
-        pm.replace_filename( p.filename().native() + mountpoint_suffix());
-
-        fs::file_status fstat = symlink_status(pm);
-
-        if(!fs::exists(fstat)) { // if mountpoint description does not exist
-            return nullptr; // it is not a mountpoint (not necessary an error)
+        fs::path pm;
+        if(!is_thicket_mountpoint(p, &pm)) {
+            return nullptr;
         }
+
+        // The path represents a mountpoint.
+        // From here, if something goes wrong, it is an error
+
+        return mountpointAt(p, pm);
+    }
+
+    Node* mountpointAt(
+            const fs::path& p, // a mountpoint (surely), will be resolved here
+            const fs::path& pm // the mountpoint description file
+    ){
 
         // The path represents a mountpoint.
         // From here, if something goes wrong, it is an error
@@ -201,16 +210,6 @@ public:
         nd->ref_type = REFERENCE_NODE;
         nd->is_mountpoint = true;
         nodes[p] = nd;
-
-        if(!fs::is_regular_file(fstat)) {
-            report_error(
-                    std::string("A mountpoint description is not a regular file: ")
-                    + p2s(pm), SEVERITY_ERROR
-            );
-
-            nd->resolved_ = NODE_FAILED_TO_RESOLVE; // (also valid == false)
-            return nd;
-        }
 
         this->readMountpoint(nd, pm);
 

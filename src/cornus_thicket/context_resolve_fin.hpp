@@ -8,6 +8,11 @@ namespace cornus_thicket {
 void
 Context::resolveFilesystemNode(Node& n){
 
+    struct MountpointEntry{
+        fs::path mpoint; // mountpoint
+        fs::path mpd; // mountpoint description file
+    };
+
     struct ChildEntry{
         fs::path p;
         fs::file_status symstatus;
@@ -45,7 +50,9 @@ Context::resolveFilesystemNode(Node& n){
 
     bool has_ref_descendants = false;
 
+    std::vector<MountpointEntry> mpoints;
     std::vector<ChildEntry> files; // to process as final nodes
+
     std::set<fs::path> exclude_files; // thicket artifacts to ignore in files
 
     for (auto const& de : fs::directory_iterator{n.path_}){
@@ -73,41 +80,55 @@ Context::resolveFilesystemNode(Node& n){
                 && is_thicket_mountpoint_description(p, &mountpoint_path)
         ){
             // mountpoint case:
-            exclude_files.emplace(mountpoint_path);
+            exclude_files.emplace(mountpoint_path); // (possible mountpoint artifact)
 
-            Node* cn = mountpointAt(mountpoint_path);
-            if(cn != nullptr){
-                if(cn->resolved_ != NODE_FAILED_TO_RESOLVE){
-                    // resolveReferenceNode(*cn, true) is redundant: mountpointAt() have already resolved the node
-                    n.children[mountpoint_path.filename()] = cn;
-                    has_ref_descendants = true;
-                } // else (in case of empty mountpoint or previously reported errors) just do nothing
-            }else{
-                report_error(std::string(
-                        "Can not create mountpoint at ")
-                            + p2s(mountpoint_path),
-                            SEVERITY_ERROR
-                );
-            }
+            MountpointEntry mpe{mountpoint_path, p};
+            mpoints.push_back(std::move(mpe));
 
             continue;
         }
 
-        fs::path imprint_artifact;
         if(
-                fs::is_regular_file(symstat)
-                && is_thicket_imprint(p, &imprint_artifact)
+            fs::is_regular_file(symstat)
         ){
-            exclude_files.emplace(imprint_artifact);
+            fs::path imprint_artifact;
+            if(is_thicket_imprint(p, &imprint_artifact)){
+                exclude_files.emplace(imprint_artifact);
+                continue;  // ignore possible imprint file
+            }
 
-            continue;  // ignore possible imprint file
+            fs::path mountpoint_path;
+            if(is_thicket_mountpoint_description(p, &mountpoint_path)){
+                exclude_files.emplace(mountpoint_path);
+                continue;  // ignore possible imprint file
+            }
         }
 
         files.push_back(ChildEntry{p, symstat}); // to process as final nodes
     }
 
 
-    for(auto& cent : files){ // over final subnodes...
+    for(auto& mpe : mpoints){ // resolve mountpoints...
+        Node* cn = mountpointAt(mpe.mpoint, mpe.mpd);
+        if(cn != nullptr){
+            if(cn->resolved_ != NODE_FAILED_TO_RESOLVE){
+                // resolveReferenceNode(*cn, true) is redundant: mountpointAt() have already resolved the node
+                if(!n.is_mirage){
+                    n.children[mpe.mpoint.filename()] = cn;
+                    has_ref_descendants = true;
+                } // else the mirage is not recognized by its parent
+            } // else (in case of empty mountpoint or previously reported errors) just do nothing
+        }else{
+            report_error(std::string(
+                    "Can not create mountpoint at ")
+                        + p2s(mpe.mpoint),
+                        SEVERITY_ERROR
+            );
+        }
+    }
+
+
+    for(auto& cent : files){ // resolve final subnodes...
         if(exclude_files.find(cent.p) != exclude_files.end()){
             continue;
         }
