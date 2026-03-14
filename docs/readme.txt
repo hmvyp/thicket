@@ -13,9 +13,9 @@ Disclaimer. This readme file explains only the main idea and concepts. There are
 
 Thicket is a file tree merging system that allows to build a single directory as a result of merging several other directories. It was conceived as a tool for assembling a single C/C++ source tree from multiple software components, but it may also be used for other programming languages or even for any purpose unrelated to programming.
 
-Programming and building applications become significantly more comfortable if all project source files are organized in a single source tree. However, it is usually impossible since a typical software project (even at source level) consists of several components stored in separate locations in the filesystem. Thicket creates the illusion of a single source tree that combines all files from all components. By default, Thicket uses symlinks wherever possible, so a user deals with real files in their real locations. To tell Thicket what source components shall be merged, the user writes a simple «mountpoint description» text file that just lists paths to the merged source trees. After running Thicket, a resulting directory (merge result) is created nearby.
+Programming and building applications become significantly more comfortable if all project source files are organized in a single source tree. However, it is usually impossible since a typical software project (even at source level) consists of several components stored in separate locations in the filesystem. Thicket creates an illusion of a single source tree that combines all files from all components. By default, Thicket uses symlinks wherever possible, so the user deals with real files in their real locations. To tell Thicket what source components shall be merged, the user writes a simple «mountpoint description» text file that just lists paths to the merged source trees. After running Thicket, a resulting directory (merge result) is created nearby.
 
-Thicket is transitive. If some component declares its dependencies in the same manner, Thicket brings to the end user «dependencies of dependencies» and so on. In other words, any path in the mountpoint description file may refer to a real filesystem object or another mountpoint. Dependencies forming a «diamond» graph are also handled properly (common dependencies are not duplicated). 
+Thicket is transitive. If some component declares its dependencies in the same manner, Thicket brings to end user «dependencies of dependencies» and so on. In other words, any path in the mountpoint description file may refer to a real filesystem object or another mountpoint. Dependencies forming a «diamond» graph are also handled properly (common dependencies are not duplicated). 
 
 The main idea of Thicket is quite similar to «union» or «overlay»  filesystems, but there are also some differences. In case of union fs a regular file in the foreground fs just hides the same regular file in the background fs. In contrast, Thicket prohibits any discrepancy: all regular file «versions» shall point to the same «final source» file.
 
@@ -63,7 +63,7 @@ Mountpoint and mountpoint description are the core Thicket concepts. Mountpoint 
 
 To eleborate the concepts we need to clarify terminology.
 
-While constructing the abstract result tree we distinguish between «real» filesystem nodes (we call them «final» nodes) and «virtual» or «reference» nodes. Virtual (reference, «imaginary») node does not pre-exist before Thicket invocation. It generally represents a merge result. In particular,  there may be only one merge source, so such a virtual node represents just a reference to another node (that explains the term «reference node»).
+While constructing the abstract result tree we distinguish between «real» filesystem nforodes (we call them «final» nodes) and «virtual» or «reference» nodes. Virtual (reference, «imaginary») node does not pre-exist before Thicket invocation. It generally represents a merge result. In particular,  there may be only one merge source, so such a virtual node represents just a reference to another node (that explains the term «reference node»).
 
 A virtual node can have only virtual descendants, so virtual nodes forms one or more «pure virtual» hierarchies (subtrees). The root of any «virtual» hierarchy is a mountpoint node. Mountpoint node is always located in some «real» directory pre-existing in the file system.
 
@@ -79,15 +79,15 @@ A target subtree specified in every record may be a final (real) node or may be 
 
 Note that we use the term «target» as a shortcut for «reference target» (i.e. referent). At the same time, the «target" may also be  treated as one of the «sources» used while building (merging) the resulting «big» tree. Interchangeable use of terms «target» and «source» may be confusing, but in the current context, the two terms just represent different aspects of the same thing.
 
-Mountpoint description allows comments starting with #.
+Mountpoint description allows comments: a comment line has "#" symbol in its first position (only the whole line may be a comment).
 
 Let's consider an example mountpoint file named my_point.thicket_mount.txt with the following content:
 
-║
-║  # The two source trees will be merged here:
-║  ../first/source/tree
-║  ../second/source/tree
-║
+
+# The two source trees will be merged here:
+../first/source/tree
+../second/source/tree
+
 
 The two records (except for the comment) represent the source trees to be merged.
 The relative paths are relative to the directory where the mountpoin description file resides.
@@ -160,7 +160,7 @@ Available options (for both forms):
 
 -c clean only (delete all artifacts from previous invocation)
 -f force (do not ask before artifacts deletion)
--q quiet (implies force; does not output anything to console except of errors)
+-q quiet (implies force; does not output anything to console except for errors)
 -m=method materialization method. Available methods: 
     symlinks (default)
     copy
