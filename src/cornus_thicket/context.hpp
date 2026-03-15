@@ -452,6 +452,7 @@ private:
 
     static void clean_using_mounts(const fs::path& p, std::map<fs::path, bool>& to_delete);
 
+    bool toBeMaterialized(Node& n);
     void mk_symlink(Node& n, const Node& to);
     void materializeAsSymlinks(Node& n);
     void materializeAsCopy(Node& n, bool symlinks_inside);

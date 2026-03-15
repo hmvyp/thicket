@@ -10,6 +10,10 @@ namespace cornus_thicket {
 
 inline void
 Context::materializeAsCopy(Node& n, bool symlinks_inside){
+    if(n.is_mirage) {
+        return;
+    }
+
     ImprintControl impc(imprint_wrap_);
     if(n.is_mountpoint){
         impc.newImprint(addSuffix(n.path_ , imprint_suffix()));
@@ -20,14 +24,13 @@ Context::materializeAsCopy(Node& n, bool symlinks_inside){
         if(symlinks_inside) {  // (may return from the inside)
             if(
                 n.targets.size() == 1
-                && path_in_scope(n.targets[0]->path_)
-                && !n.targets[0]->is_mirage
+                && toBeMaterialized(*n.targets[0])
             ){ // if a single immediate target is in scope
                 mk_symlink(n, *n.targets[0]); // the target shall be resolved, so just make symlink to it
                 return; // do not recurse further, link is enough
             }else if(n.final_targets.size() == 1) {// if exactly one final target
                 Node* ft =  n.final_targets.begin()->second;
-                if(path_in_scope(ft->path_))
+                if(toBeMaterialized(*ft))
                 {
                     mk_symlink(n, *ft);
                     return; // do not recurse further, link is enough

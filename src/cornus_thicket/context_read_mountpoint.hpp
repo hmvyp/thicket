@@ -189,13 +189,6 @@ Context::resolveMountpointTarget(
     auto pas = string2path_string(en); // entry as relative native string
     auto prt = fs::path(pas); // the entry as fs:path
 
-    /*// duck!!!
-    if(prt.empty()){
-        errstr = "results in empty path";
-        return nullptr;
-    }
-    */
-
     fs::path pt;  // target path
 
     if(from_root) {

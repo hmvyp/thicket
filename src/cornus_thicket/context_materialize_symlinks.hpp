@@ -5,6 +5,13 @@
 
 namespace cornus_thicket {
 
+inline bool
+Context::
+toBeMaterialized(Node& n) {
+    return path_in_scope(n.path_) && !n.is_mirage;
+}
+
+
 inline void
 Context::
 mk_symlink(Node& n, const Node& to){
@@ -45,6 +52,10 @@ mk_symlink(Node& n, const Node& to){
 inline void
 Context::
 materializeAsSymlinks(Node& n){
+    if(n.is_mirage) {
+        return;
+    }
+
     ImprintControl impc(imprint_wrap_);
     if(n.is_mountpoint){
         impc.newImprint(addSuffix(n.path_ , imprint_suffix()));
@@ -54,8 +65,7 @@ materializeAsSymlinks(Node& n){
         if(!n.has_own_content_){
             if(
                     n.targets.size() == 1
-                    && path_in_scope(n.targets[0]->path_)
-                    && !n.targets[0]->is_mirage
+                    && toBeMaterialized(*n.targets[0])
             ){
                 mk_symlink(n, *n.targets[0]); // the target shall be resolved, so just make symlink to it
                 return; // do not recurse further, link is enough

@@ -100,7 +100,7 @@ Context::resolveFilesystemNode(Node& n){
             fs::path mountpoint_path;
             if(is_thicket_mountpoint_description(p, &mountpoint_path)){
                 exclude_files.emplace(mountpoint_path);
-                continue;  // ignore possible imprint file
+                continue;  // ignore possible mountpoint artifact
             }
         }
 
@@ -113,10 +113,8 @@ Context::resolveFilesystemNode(Node& n){
         if(cn != nullptr){
             if(cn->resolved_ != NODE_FAILED_TO_RESOLVE){
                 // resolveReferenceNode(*cn, true) is redundant: mountpointAt() have already resolved the node
-                if(!cn->is_mirage){
                     n.children[mpe.mpoint.filename()] = cn;
                     has_ref_descendants = true;
-                } // else the mirage is not recognized by its parent (not included into children)
             } // else (in case of empty mountpoint or previously reported errors) just do nothing
         }else{
             report_error(std::string(
