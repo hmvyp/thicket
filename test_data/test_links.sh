@@ -8,8 +8,11 @@ else
 fi
 
 ../build/output/${expath} -root_lev=1 -var=varA:importedA -var=varB:importedB -var=varM:mounted_here -- root/scope
-
-echo "Thicket returned code: $?"
+RETCODE=$?
+echo "Thicket returned code: $RETCODE"
+if [[ $RETCODE != 0 ]]; then
+  echo "(test failed)"
+fi
 echo ""
 
 
@@ -17,9 +20,10 @@ echo ""
 . list_files.sh
 
 echo comparing directory structure with the reference one...
-
-if diff allfiles.txt allfiles_ref.txt ; then
-    echo test passed
+diff allfiles.txt allfiles_ref.txt
+DIFFRETCODE=$?
+if [[ $DIFFRETCODE != 0 || $RETCODE != 0 ]] ; then
+    echo test FAILED
 else
-    echo test failed
+    echo test passed
 fi

@@ -64,6 +64,9 @@ public:
         fs::path root = scope_;
 
         for(unsigned i =  root_level; i != 0; i--){
+            if(root.root_path() == root) { // stop on fs root
+                break; // (work around boost parent_path() behavior)
+            }
             root = root.parent_path();
         }
 
@@ -85,7 +88,7 @@ private:
 
     void setScope(const fs::path& scope){
         fs_errcode err;
-        scope_ =  fs::canonical(scope, err);
+        scope_ =  fs::weakly_canonical(scope, err);
 
         if(err){
             report_error(
