@@ -61,6 +61,10 @@ file: root/scope/from_mirage.thicket_mount.txt md5: be3af2117b9b5ae883cf379d9614
 symlink: from: root/scope/from_mirage/a to: ../src/a
 symlink: from: root/scope/from_mirage/b to: ../src/b
 symlink: from: root/scope/from_mirage/x to: ../../importedA/src/x
+dir: root/scope/from_mirage_part
+file: root/scope/from_mirage_part.thicket_imprint md5: 1bae554d1a42476c6173dda10376536d
+file: root/scope/from_mirage_part.thicket_mount.txt md5: dcab22cf0d802d64b35a95edfd6ca58a
+symlink: from: root/scope/from_mirage_part/a to: ../src/a
 dir: root/scope/from_root
 file: root/scope/from_root.thicket_imprint md5: 0ee04b69c769433b0f08c5db5ea1a335
 file: root/scope/from_root.thicket_mount.txt md5: 9bb78470e1d86f3083e151808cd3ff3b
