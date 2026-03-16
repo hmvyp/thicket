@@ -52,6 +52,29 @@ public:
 
     static
     unsigned // error count
+    addImprintForMount(const fs::path& pmount, const ImprintProps& improps, std::list<Imprint>& imprints)
+    {
+        auto p = pmount.native() + imprint_suffix();
+
+        Imprint imp;
+
+        switch(imp.readImprint(p)){
+        case Imprint_READ_NOFILE:
+            return 0; // no imprint found (that's ok)
+        case Imprint_READ_ERROR: // (already reported inside readImprint() )
+            return 1;
+        case Imprint_READ_OK: // go further
+            ;
+        }
+
+        imp.setImprintFilePath(p);
+        imp.improps_ = improps;
+        imprints.push_back(std::move(imp));
+        return 0;
+    }
+
+    static
+    unsigned // error count
     collectImprintsInside(const fs::path& cur_dir, const ImprintProps& improps, std::list<Imprint>& imprints){
         unsigned errcount = 0;
 

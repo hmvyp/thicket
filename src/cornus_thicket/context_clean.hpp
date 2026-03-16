@@ -6,7 +6,27 @@
 namespace cornus_thicket {
 
 inline void
+Context::clean_one_for_mount(const fs::path& p, std::map<fs::path, bool>& to_delete){
+    int ftyp = (int)fs::symlink_status(p).type();
+    if(ftyp != (int)FileTypesEnum::directory && ftyp != (int)FileTypesEnum::regular){
+        return; // nothing to delete
+    }
+
+    fs::path::string_type mnt_descr = p.native() + mountpoint_suffix();
+    if((int)fs::symlink_status(mnt_descr).type() != (int)FileTypesEnum::regular){
+        return; // no mountpoint description found
+    }
+
+    to_delete[p] = true;
+}
+
+inline void
 Context::clean_using_mounts(const fs::path& p, std::map<fs::path, bool>& to_delete){
+    if(this->scope_is_mountpoint) {
+        clean_one_for_mount(this->scope_, to_delete);
+        return;
+    }
+
     if((int)fs::symlink_status(p).type() != (int)FileTypesEnum::directory){
         return;
     }

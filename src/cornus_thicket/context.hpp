@@ -25,6 +25,8 @@ class Context
     fs::path root_;  // converted to canonical
     fs::path scope_; // converted to canonical
 
+    bool scope_is_mountpoint = false;
+
     std::unordered_map<fs::path, Node*,  FsHashFunc> nodes{50000};
 
     VarPool varpool;
@@ -103,8 +105,15 @@ private:
             report_error("cornus_thicket::Context: Invalid root path", SEVERITY_PANIC);
         }
 
-        if(existingFileAt(scope_) == nullptr){
-            report_error("cornus_thicket::Context: Invalid scope path", SEVERITY_PANIC);
+        is_thicket_mountpoint(scope_, nullptr);
+
+        if(is_thicket_mountpoint(scope_, nullptr)){
+            scope_is_mountpoint = true;
+        }else if(existingFileAt(scope_) == nullptr){
+            report_error(
+                    "cornus_thicket::Context: Invalid scope path (not a directory nor mountpoint)",
+                    SEVERITY_PANIC
+            );
         }
     }
 
@@ -359,7 +368,7 @@ public:
     }
 
     // cleaning methods:
-
+    void clean_one_for_mount(const fs::path& p, std::map<fs::path, bool>& to_delete);
     void clean_using_mounts(); // cleans all under the scope using mountpoint description files
 
     unsigned // errors count
@@ -371,7 +380,11 @@ public:
         // return imprint.deleteArtifacts();
 
         std::list<Imprint> imprints;
-        errcount += Imprint::collectImprintsInside(this->scope_, improps, imprints);
+        if(this->scope_is_mountpoint){
+            errcount += Imprint::addImprintForMount(this->scope_, improps, imprints);
+        }else{
+            errcount += Imprint::collectImprintsInside(this->scope_, improps, imprints);
+        }
 
         if(errcount) return errcount;
 
@@ -380,7 +393,7 @@ public:
             if(ec) return ec;
         }
 
-        return errcount; // ==0
+        return errcount; // == 0
     }
 
     // materialization methods:
@@ -453,7 +466,7 @@ private:
 
     void collectRefnodeChildren(Node& n);
 
-    static void clean_using_mounts(const fs::path& p, std::map<fs::path, bool>& to_delete);
+    void clean_using_mounts(const fs::path& p, std::map<fs::path, bool>& to_delete);
 
     bool toBeMaterialized(Node& n);
     void mk_symlink(Node& n, const Node& to);
