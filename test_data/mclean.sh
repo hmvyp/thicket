@@ -1,11 +1,8 @@
-if [[ $1 == "w"  ]] ; then
-    # (expecting WSL environment here)
-    echo running Thicket as Windows executable...
-    expath=/windows/thicket.exe
-else
-    echo running Thicket as linux executable on x86_64 platform...
-    expath=Linux_x86_64/thicket
-fi
+echo clean all:
+THICKET_PARAMS='-f -c -em=mounts -root_lev=1 root/scope'
+REFERENCE_FILES='clean_ref.txt'
+. run1test.sh
 
-../build/output/${expath} -f -c -em=mounts -root_lev=1 root/scope
+echo ""
+echo "...cleaning succesful"
 

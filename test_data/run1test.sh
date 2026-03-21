@@ -1,4 +1,7 @@
-if [[ $1 == "w"  ]] ; then
+echo '=================================== Thicket parameters:'
+echo "${THICKET_PARAMS}"
+
+if command -v wslinfo &> /dev/null; then
     # (expecting WSL environment here)
     echo running Thicket as Windows executable...
     expath=/windows/thicket.exe
@@ -7,11 +10,14 @@ else
     expath="$(uname -s)_$(uname -i)/thicket"
 fi
 
-../build/output/${expath} -root_lev=2 -var=varA:importedA -var=varB:importedB -var=varM:mounted_here -- root/scope/src_all
+
+../build/output/${expath} ${THICKET_PARAMS}
+
 RETCODE=$?
 echo "Thicket returned code: $RETCODE"
 if [[ $RETCODE != 0 ]]; then
-  echo "(test failed)"
+    echo "test FAILED (Thicket return code ==  $RETCODE)"
+    exit 1
 fi
 echo ""
 
@@ -20,10 +26,16 @@ echo ""
 . list_files.sh
 
 echo comparing directory structure with the reference one...
-diff allfiles.txt allfiles_ref.txt
+#diff allfiles.txt allfiles_ref.txt
+diff allfiles.txt ${REFERENCE_FILES}
 DIFFRETCODE=$?
 if [[ $DIFFRETCODE != 0 || $RETCODE != 0 ]] ; then
     echo test FAILED
+    exit 1
 else
-    echo test passed
+    echo '...comparison ok'
+    echo ''
+    echo ''
+    echo ''
 fi
+

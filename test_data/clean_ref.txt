@@ -1,0 +1,49 @@
+dir: root
+dir: root/importedA
+file: root/importedA/.gitignore md5: de78e150efd9d6fd2413750748bd0611
+file: root/importedA/loop.thicket_mount_error.txt md5: f76237478c89990a6d24f1dd5aaec228
+dir: root/importedA/src
+dir: root/importedA/src/x
+file: root/importedA/src/x/importedA_x_tx.txt md5: d41d8cd98f00b204e9800998ecf8427e
+dir: root/importedB
+file: root/importedB/.gitignore md5: 556d3988271ef28257e08f4582f7d422
+dir: root/importedB/src
+file: root/importedB/src/importedB_at_root_1.txt md5: 713a3c50eb14a22fa85280243af9df91
+file: root/importedB/src/importedB_at_root_2.txt md5: 9c16cafc1a0226d72a92c233eb99ad94
+dir: root/importedB/src/x
+file: root/importedB/src/x/importedB_x_tx.txt md5: d41d8cd98f00b204e9800998ecf8427e
+dir: root/importedB/src/y
+file: root/importedB/src/y/importedB_y_tx.txt md5: d41d8cd98f00b204e9800998ecf8427e
+file: root/importedB/src_all.thicket_mount.txt md5: a6ad4225fab1fbb148acb1080040d085
+file: root/importedB/src_super.thicket_mount.txt md5: 5bac93b14b68413bb80d47d41e76d668
+dir: root/scope
+file: root/scope/deep_file.thicket_mount.txt md5: d47295567ed5b81ef46c85893fe9947d
+dir: root/scope/dir with  spaces
+file: root/scope/dir with  spaces/file with  spaces.txt md5: d41d8cd98f00b204e9800998ecf8427e
+file: root/scope/empty_mount.thicket_mount.txt md5: 8c077e4031c698fdc513a73a9c895c80
+file: root/scope/empty_optional.thicket_mount.txt md5: 8df6d4ca38457e81887bf47cdf758ac7
+file: root/scope/filtered_from_root.thicket_mount.txt md5: 73d43edaf3fe1a54dc85d355ad7a7efa
+file: root/scope/from_mirage.thicket_mount.txt md5: be3af2117b9b5ae883cf379d9614c453
+file: root/scope/from_mirage_part.thicket_mount.txt md5: dcab22cf0d802d64b35a95edfd6ca58a
+file: root/scope/from_root.thicket_mount.txt md5: 9bb78470e1d86f3083e151808cd3ff3b
+file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
+file: root/scope/regex_filtered.thicket_mount.txt md5: afb33824218cde7777a0c14f10bc2078
+file: root/scope/shallow_refs.thicket_mount.txt md5: 29e7d72fc5a5fdd90c0b3a72bbf5e3ae
+file: root/scope/shallow_refs_filtered.thicket_mount.txt md5: fdcb7bc9f8a0be3bcec4a1d9edaef485
+dir: root/scope/src
+dir: root/scope/src/a
+dir: root/scope/src/a/a1
+file: root/scope/src/a/a1/a1tx.txt md5: d41d8cd98f00b204e9800998ecf8427e
+file: root/scope/src/a/a1/a1txx.txt md5: d41d8cd98f00b204e9800998ecf8427e
+dir: root/scope/src/a/a2
+file: root/scope/src/a/a2/a2_tx.txt md5: d41d8cd98f00b204e9800998ecf8427e
+file: root/scope/src/a/a_tx.txt md5: d41d8cd98f00b204e9800998ecf8427e
+dir: root/scope/src/b
+file: root/scope/src/b/A_b_sometext.txt md5: d41d8cd98f00b204e9800998ecf8427e
+file: root/scope/src_all.thicket_mount.txt md5: 61ab59b82171e89fa956f5f6f5752ee5
+file: root/scope/src_another.thicket_mount.txt md5: 7c57017998424ed37159cd6dae00def6
+file: root/scope/src_another_mirage.thicket_mirage.txt md5: 7c57017998424ed37159cd6dae00def6
+dir: root/scope/src_import1file
+file: root/scope/src_import1file/file_from_a.thicket_mount.txt md5: 9cd9aaa20691006185927d6cd7ad10cf
+file: root/scope/src_vars.thicket_mount.txt md5: 418bd9fb4671763635cd3d4a25a39433
+file: root/scope/with_spaces.thicket_mount.txt md5: eed0f448195e617fc159a89f496c4c83

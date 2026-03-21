@@ -4,7 +4,7 @@
 #
 # No test really performed, you can just see the resulting artifacts before cleaning up
  
-if [[ $1 == "w"  ]] ; then
+if command -v wslinfo &> /dev/null; then
     # (expecting WSL environment here)
     echo running Thicket as Windows executable...
     expath=/windows/thicket.exe
