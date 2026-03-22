@@ -1,3 +1,46 @@
+What is new in release 2.2.06
+═════════════════════════════
+
+New features:
+
+► Materialization scope can now refer to a single mountpoint 
+  (in previous Thicket versions the scope shall point to a real filesystem directory only).
+
+► Mirage mountpoints. A mountpoint can be described in a file with .thicket_mirage.txt extension
+  (instead of.thicket_mount.txt). Such «mirage» mountpoint is never materialized, 
+  but other mountpoints may refer to it.
+
+► Resolution of scope's parent directory is now allowed without «circular dependency» error.
+  However, the scope directory itself is excluded from parent's resolution to avoid circular dependency.
+  In this case only a warning is generated. 
+  Resolution of scope's parent directory may apper if the parent directory is filtered with nontrivial filters
+  (that may be sometimes useful)
+    
+► Empty mountpoint is not treated as error (however, nothing is materialized or resolved). 
+  Empty mountpoint may appear if mountpoint description file is empty or contain only
+  optional records (starting with "add?") which all fail to resolve.
+  In case of empty mountpoint a warning is generated.
+   
+► Detached scope" (it is not actually a new feature, but was not known previously). 
+  Materialization scope can be located outside the root («universe») directory.
+  All mountpoints in the «detached» scope shall contain only records 
+  with «absolute» paths (starting with "/", i.e. from the universe).
+  Relative paths will cause «out of root» error (as expected).
+
+
+Bugfixes:
+
+► command line option -root_lev now works correctly with boost::filesystem even with large values 
+  (beyond the filesystem root). Actually such large level points to filesystem root.
+  The bug was specific for Thicket built with boost::filesystem instead of std::filesystem.
+
+► in mountpoint record a single slash "/" can be used as target path (i.e. as "from" part of add: syntax).
+  Let us remind a path starting with "/" means «from root (universe)», not from the filesystem root.
+  So a single slash refers to the root (universe) itself.
+
+
+
+
 What is new in release 2.2.05
 ═════════════════════════════
 ►  nontrivial glob filter implemented (like **/prefix*suffix, etc.)
