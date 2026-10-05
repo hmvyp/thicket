@@ -40,14 +40,24 @@ struct GlobFilter
     // [...] means optional
     // pref and suff can be empty
     virtual std::string // returns error string
-    init(const strview_type& filter_str) override {
+    init(
+            const strview_type& filter_str_full // may end with '/' for directory matching
+    ) override {
         static const std::string recurse_pattern("**/");
         static const std::string universal_pattern("**/*");
 
-        if((strview_type)universal_pattern == filter_str){
+        if((strview_type)universal_pattern == filter_str_full){
             is_universal = true;
             return std::string();
         }
+
+        // allow directory matching using patterns ended with a slash:
+        dir_match = !filter_str_full.empty() && (filter_str_full.back() == '/');
+
+        const strview_type filter_str = dir_match
+                ?  filter_str_full.substr(0, filter_str_full.size() - 1) // drop final '/'
+                :  filter_str_full; // else as is
+
 
         auto mmres = std::mismatch(
                 recurse_pattern.begin(), recurse_pattern.end(),
@@ -105,9 +115,18 @@ struct GlobFilter
             }
         }
 
-        if(is_directory){ //ToDo: maybe allow directory matching using patterns trailing with a slash?
-            return FilterMatch{false, (!is_recursive) && !sv.empty()}; // (always allow recursion for filtering root)
+        if(is_directory){
+            if(!dir_match){
+                return FilterMatch{false, (!is_recursive) && !sv.empty()}; // (always allow recursion for filtering root)
+            }
+        }else{ // if regular file
+            if(dir_match){
+                return FilterMatch{false, true}; // reject, do not recurse into regular file
+            }
         }
+
+        // try to match...
+
 
         strview_type to_match = sv.substr(match_start_pos);
 
@@ -118,7 +137,8 @@ struct GlobFilter
                 ||
                 to_match.substr(to_match.size() - suff.size()) != strview_type(suff)
         ){
-            return FilterMatch{false, false}; // ToDo: maybe count slashes to calc no_recurse in case of !is_recursive?
+            //return FilterMatch{false, false}; // ToDo: maybe count slashes to calc no_recurse in case of !is_recursive?
+            return FilterMatch{false, !is_directory || ((!is_recursive) && !sv.empty())};
         }
 
         return FilterMatch{true};
@@ -126,6 +146,7 @@ struct GlobFilter
 
 
 protected:
+    bool dir_match = false;
     bool is_universal = false;
     bool is_recursive = false;  // true if "**/" presents
     bool has_asterisk = false;  // true if "*" (single asterisk) presents
