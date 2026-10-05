@@ -84,6 +84,21 @@ symlink: from: root/scope/from_root/importedB/src_super/loop.thicket_mount_error
 dir: root/scope/from_root/importedB/src_super/one_file_from_A
 symlink: from: root/scope/from_root/importedB/src_super/one_file_from_A/importedA_x_tx.txt to: ../../../../../importedA/src/x/importedA_x_tx.txt
 symlink: from: root/scope/from_root/importedB/src_super/src to: ../../../../importedA/src
+dir: root/scope/glob_dirs
+file: root/scope/glob_dirs.thicket_imprint md5: 73ce952ede278d35ab21d3506373fe9e
+file: root/scope/glob_dirs.thicket_mount.txt md5: bdb8b59e9dddb7c5eea3b84fb973cd2c
+dir: root/scope/glob_dirs/glob_dirs_from_A_deep
+symlink: from: root/scope/glob_dirs/glob_dirs_from_A_deep/src to: ../../../importedA/src
+dir: root/scope/glob_dirs/glob_dirs_from_B_src_deep
+symlink: from: root/scope/glob_dirs/glob_dirs_from_B_src_deep/x to: ../../../importedB/src/x
+symlink: from: root/scope/glob_dirs/glob_dirs_from_B_src_deep/y to: ../../../importedB/src/y
+dir: root/scope/glob_dirs/glob_dirs_from_B_src_shallow
+symlink: from: root/scope/glob_dirs/glob_dirs_from_B_src_shallow/x to: ../../../importedB/src/x
+symlink: from: root/scope/glob_dirs/glob_dirs_from_B_src_shallow/y to: ../../../importedB/src/y
+dir: root/scope/glob_dirs/glob_dirs_from_B_src_x
+symlink: from: root/scope/glob_dirs/glob_dirs_from_B_src_x/x to: ../../../importedB/src/x
+dir: root/scope/glob_dirs/glob_dirs_from_B_src_y
+symlink: from: root/scope/glob_dirs/glob_dirs_from_B_src_y/y to: ../../../importedB/src/y
 file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
 dir: root/scope/regex_filtered
 file: root/scope/regex_filtered.thicket_imprint md5: 8918740150fb3b4cb0b532aa9b1b38fb

@@ -26,6 +26,7 @@ file: root/scope/filtered_from_root.thicket_mount.txt md5: 73d43edaf3fe1a54dc85d
 file: root/scope/from_mirage.thicket_mount.txt md5: be3af2117b9b5ae883cf379d9614c453
 file: root/scope/from_mirage_part.thicket_mount.txt md5: dcab22cf0d802d64b35a95edfd6ca58a
 file: root/scope/from_root.thicket_mount.txt md5: 9bb78470e1d86f3083e151808cd3ff3b
+file: root/scope/glob_dirs.thicket_mount.txt md5: bdb8b59e9dddb7c5eea3b84fb973cd2c
 file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
 file: root/scope/regex_filtered.thicket_mount.txt md5: afb33824218cde7777a0c14f10bc2078
 file: root/scope/shallow_refs.thicket_mount.txt md5: 29e7d72fc5a5fdd90c0b3a72bbf5e3ae

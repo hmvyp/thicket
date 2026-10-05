@@ -1,0 +1,6 @@
+add: ../importedB/src */ glob_dirs_from_B_src_shallow
+add: ../importedB/src **/*/ glob_dirs_from_B_src_deep
+add: ../importedB/src **/x/ glob_dirs_from_B_src_x
+add: ../importedB/src **/y/ glob_dirs_from_B_src_y
+add: ../importedA **/*/ glob_dirs_from_A_deep
+
