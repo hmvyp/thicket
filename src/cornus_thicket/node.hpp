@@ -90,7 +90,17 @@ struct Node
 
 
     const fs::path path_ ; // canonical
-    const std::string path_as_string_;
+    const std::string path_as_string_; // as utf8 string
+
+    std::string dir_path_as_string_; // = path_as_string_ + "/" (for directories only, created by demand, used in filters)
+
+    std::string& dir_path_as_string(){
+        if(this->node_type == DIR_NODE && dir_path_as_string_.empty()){
+            dir_path_as_string_ = path_as_string_ + "/";
+        }
+
+        return dir_path_as_string_;
+    }
 
     //std::map<string_t, Node*> children;
 

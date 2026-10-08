@@ -25,8 +25,8 @@ struct StrFilter
             // s is a relative path to match against the filter (relative to filtering root).
             // It starts from a last slash (including the slash!) before wildcards.
             // For filtering root itself (absolute path until the last slash) s is empty.
-            const strview_type& s,
-            bool is_directory // (additional info)
+            const strview_type& s
+            // ,bool is_directory // (additional info)
     ) = 0;
 
     virtual ~StrFilter(){}
@@ -98,11 +98,25 @@ struct GlobFilter
 
     virtual FilterMatch
     match(
-            const strview_type& sv, // relative path to match against the filter
-            bool is_directory
+            const strview_type& sv_to_match // relative path to match against the filter
     ) override {
         if(is_universal){
             return FilterMatch{true};
+        }
+
+        bool is_directory = (sv_to_match.size() > 0) && (sv_to_match.back() == '/');
+
+        strview_type sv = sv_to_match;
+
+        if(is_directory){
+            sv = sv_to_match.substr(0, sv_to_match.size() -1); // drop last '/' for directory path
+            if(!dir_match){
+                return FilterMatch{false, (!is_recursive) && !sv.empty()}; // (always allow recursion for filtering root)
+            }
+        }else{ // if regular file
+            if(dir_match){
+                return FilterMatch{false, true}; // reject, do not recurse into regular file
+            }
         }
 
         size_t match_start_pos = 0;
@@ -112,16 +126,6 @@ struct GlobFilter
         if(is_recursive){
             if(last_slash_pos != strview_type::npos){ // true except for matching root
                 match_start_pos = last_slash_pos;
-            }
-        }
-
-        if(is_directory){
-            if(!dir_match){
-                return FilterMatch{false, (!is_recursive) && !sv.empty()}; // (always allow recursion for filtering root)
-            }
-        }else{ // if regular file
-            if(dir_match){
-                return FilterMatch{false, true}; // reject, do not recurse into regular file
             }
         }
 
@@ -190,12 +194,13 @@ struct RegexFilter
 
     virtual FilterMatch
     match(
-            const strview_type& s,
-            bool is_directory
+            const strview_type& s
     ) override {
         if(!valid){
             return FilterMatch{false, true};
         }
+
+        bool is_directory = (s.size() > 0) && (s.back() == '/');
 
         if(is_directory){
             return FilterMatch{false};
@@ -290,8 +295,8 @@ struct Filter
     }
 
     FilterMatch
-    match(const strview_type& sv, bool is_directory){
-        return pfilter->match(sv, is_directory);
+    match(const strview_type& sv){
+        return pfilter->match(sv);
     }
 
 

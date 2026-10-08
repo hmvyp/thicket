@@ -37,19 +37,22 @@ apply_filter(
 
     };
 
-    strview_type string_to_filter(cur_target_node.path_as_string_.c_str() + start_filtering_from);
-
-    FilterMatch fm = flt.match(
-            string_to_filter,
-            cur_target_node.node_type == NodeType::DIR_NODE
+    strview_type string_to_filter(
+        (
+            (cur_target_node.node_type == NodeType::DIR_NODE)
+            ? cur_target_node.dir_path_as_string().c_str()  // i.e. path appended with '/'
+            : cur_target_node.path_as_string_.c_str()  // path as is (for regular files)
+        ) + start_filtering_from
     );
 
+    FilterMatch fm = flt.match(string_to_filter);
 
     if(fm.matches) {
         if(
                 cur_target_node.node_type == NodeType::DIR_NODE
                 && cur_target_node.children.empty()
-                && !string_to_filter.empty() // prevent "unresolved error" for filtering root
+                //&& !string_to_filter.empty() // prevent "unresolved error" for filtering root // duck!!!
+                && (cur_target_node.path_as_string_.size() == start_filtering_from) // prevent "unresolved error" for filtering root
         ){
             return nullptr; // do not create empty directories (except for filtering root)
         }
