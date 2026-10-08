@@ -101,15 +101,12 @@ dir: root/scope/glob_dirs/glob_dirs_from_B_src_y
 symlink: from: root/scope/glob_dirs/glob_dirs_from_B_src_y/y to: ../../../importedB/src/y
 file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
 dir: root/scope/regex_filtered
-file: root/scope/regex_filtered.thicket_imprint md5: 8918740150fb3b4cb0b532aa9b1b38fb
+file: root/scope/regex_filtered.thicket_imprint md5: 7d34e0b78082a9a96f867f91f0acd343
 file: root/scope/regex_filtered.thicket_mount.txt md5: afb33824218cde7777a0c14f10bc2078
 dir: root/scope/regex_filtered/subdir12
 dir: root/scope/regex_filtered/subdir12/a
-dir: root/scope/regex_filtered/subdir12/a/a1
-symlink: from: root/scope/regex_filtered/subdir12/a/a1/a1tx.txt to: ../../../../src_all/a/a1/a1tx.txt
-symlink: from: root/scope/regex_filtered/subdir12/a/a1/a1txx.txt to: ../../../../src_all/a/a1/a1txx.txt
-dir: root/scope/regex_filtered/subdir12/a/a2
-symlink: from: root/scope/regex_filtered/subdir12/a/a2/a2_tx.txt to: ../../../../src_all/a/a2/a2_tx.txt
+symlink: from: root/scope/regex_filtered/subdir12/a/a1 to: ../../../src_all/a/a1
+symlink: from: root/scope/regex_filtered/subdir12/a/a2 to: ../../../src_all/a/a2
 dir: root/scope/regex_filtered/subdir_tx
 dir: root/scope/regex_filtered/subdir_tx/a1
 symlink: from: root/scope/regex_filtered/subdir_tx/a1/a1tx.txt to: ../../../src_all/a/a1/a1tx.txt

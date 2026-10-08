@@ -200,12 +200,6 @@ struct RegexFilter
             return FilterMatch{false, true};
         }
 
-        bool is_directory = (s.size() > 0) && (s.back() == '/');
-
-        if(is_directory){
-            return FilterMatch{false};
-        }
-
         try{
             bool res = false;
             switch(method){
@@ -214,7 +208,9 @@ struct RegexFilter
             case Method::RegexSEARCH:   res = regex_search(s.begin(), s.end(), rgx);
                 break;
             }
+
             return FilterMatch{res};
+
         }catch(...){
             std::string s_as_string(s.begin(), s.end());
             report_error(

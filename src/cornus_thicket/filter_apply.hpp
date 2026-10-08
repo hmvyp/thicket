@@ -51,7 +51,6 @@ apply_filter(
         if(
                 cur_target_node.node_type == NodeType::DIR_NODE
                 && cur_target_node.children.empty()
-                //&& !string_to_filter.empty() // prevent "unresolved error" for filtering root // duck!!!
                 && (cur_target_node.path_as_string_.size() == start_filtering_from) // prevent "unresolved error" for filtering root
         ){
             return nullptr; // do not create empty directories (except for filtering root)
