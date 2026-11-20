@@ -1,3 +1,17 @@
+What is new in release 2.2.07
+═════════════════════════════
+
+New features:
+
+► Regex and glob filters can now match against directories, not just regular files. 
+If a glob filter ends with a slash, it matches only directories, not regular files.
+Otherwise, it matches only regular files.
+For regex filters every directory path is passed to the filter with a trailing slash (/). 
+If the regex pattern matches this path, the entire directory is accepted without further recursion. 
+Note that in rare circumstances, regex filters may behave differently than in older versions of Thicket, making it a breaking change.
+
+
+
 What is new in release 2.2.06
 ═════════════════════════════
 
@@ -5,6 +19,9 @@ New features:
 
 ► Materialization scope can now refer to a single mountpoint 
   (in previous Thicket versions the scope shall point to a real filesystem directory only).
+  Note that in second form of of Thicket command (with -root_lev option) such a mountpoint scope
+  shall always be specified with a directory prefix 
+  (e.g. with "./" if the mountpoint is located in the current working directory)
 
 ► Mirage mountpoints. A mountpoint can be described in a file with .thicket_mirage.txt extension
   (instead of.thicket_mount.txt). Such «mirage» mountpoint is never materialized, 

@@ -1,12 +1,16 @@
 echo '=================================== Thicket parameters:'
 echo "${THICKET_PARAMS}"
+echo ""
+echo "Reference file list:  ${REFERENCE_FILES}"
+echo ""
+
 
 if command -v wslinfo &> /dev/null; then
     # (expecting WSL environment here)
-    echo running Thicket as Windows executable...
+    echo Running Thicket as Windows executable...
     expath=/windows/thicket.exe
 else
-    echo running Thicket as linux executable...
+    echo Running Thicket as linux executable...
     expath="$(uname -s)_$(uname -i)/thicket"
 fi
 
@@ -31,7 +35,10 @@ diff allfiles.txt ${REFERENCE_FILES}
 DIFFRETCODE=$?
 if [[ $DIFFRETCODE != 0 || $RETCODE != 0 ]] ; then
     echo test FAILED
-    exit 1
+    ERRORS=$((ERRORS + 1))
+    if [ "$OPT" != "ignore" ] ; then 
+      exit 1
+    fi  
 else
     echo '...comparison ok'
     echo ''

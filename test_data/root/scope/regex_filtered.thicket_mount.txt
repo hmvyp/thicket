@@ -1,3 +1,5 @@
 add: src_all a/***rgx,match:.*(1|2).* subdir12
 add: src_all/a ***rgx:tx[.] subdir_tx
+add: src_all ***rgx.match:.+/ src_all_dirs
+add: src_all ***rgx.match:(x|y)/ src_all_xy
 

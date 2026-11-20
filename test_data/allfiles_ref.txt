@@ -101,8 +101,34 @@ dir: root/scope/glob_dirs/glob_dirs_from_B_src_y
 symlink: from: root/scope/glob_dirs/glob_dirs_from_B_src_y/y to: ../../../importedB/src/y
 file: root/scope/looop.thicket_mount_error.txt md5: 7e3efff5e4a83ae5ae4868ce492261ea
 dir: root/scope/regex_filtered
-file: root/scope/regex_filtered.thicket_imprint md5: 7d34e0b78082a9a96f867f91f0acd343
-file: root/scope/regex_filtered.thicket_mount.txt md5: afb33824218cde7777a0c14f10bc2078
+file: root/scope/regex_filtered.thicket_imprint md5: 7a874ffe7d3257ffcdeec6a99b05438d
+file: root/scope/regex_filtered.thicket_mount.txt md5: e31d177abfd32a2f689e4a852f4eb953
+dir: root/scope/regex_filtered/src_all_dirs
+symlink: from: root/scope/regex_filtered/src_all_dirs/a to: ../../src_all/a
+symlink: from: root/scope/regex_filtered/src_all_dirs/b to: ../../src_all/b
+symlink: from: root/scope/regex_filtered/src_all_dirs/hide to: ../../src_all/hide
+symlink: from: root/scope/regex_filtered/src_all_dirs/optional_resolved to: ../../src_all/optional_resolved
+symlink: from: root/scope/regex_filtered/src_all_dirs/x to: ../../src_all/x
+symlink: from: root/scope/regex_filtered/src_all_dirs/y to: ../../src_all/y
+dir: root/scope/regex_filtered/src_all_xy
+dir: root/scope/regex_filtered/src_all_xy/hide
+dir: root/scope/regex_filtered/src_all_xy/hide/here
+symlink: from: root/scope/regex_filtered/src_all_xy/hide/here/x to: ../../../../src_all/hide/here/x
+symlink: from: root/scope/regex_filtered/src_all_xy/hide/here/y to: ../../../../src_all/hide/here/y
+dir: root/scope/regex_filtered/src_all_xy/hide/there
+dir: root/scope/regex_filtered/src_all_xy/hide/there/src
+symlink: from: root/scope/regex_filtered/src_all_xy/hide/there/src/x to: ../../../../../src_all/hide/there/src/x
+dir: root/scope/regex_filtered/src_all_xy/hide/there/src_all
+symlink: from: root/scope/regex_filtered/src_all_xy/hide/there/src_all/x to: ../../../../../src_all/hide/there/src_all/x
+symlink: from: root/scope/regex_filtered/src_all_xy/hide/there/src_all/y to: ../../../../../src_all/hide/there/src_all/y
+symlink: from: root/scope/regex_filtered/src_all_xy/hide/there/x to: ../../../../src_all/hide/there/x
+symlink: from: root/scope/regex_filtered/src_all_xy/hide/there/y to: ../../../../src_all/hide/there/y
+dir: root/scope/regex_filtered/src_all_xy/optional_resolved
+dir: root/scope/regex_filtered/src_all_xy/optional_resolved/src_all
+symlink: from: root/scope/regex_filtered/src_all_xy/optional_resolved/src_all/x to: ../../../../src_all/optional_resolved/src_all/x
+symlink: from: root/scope/regex_filtered/src_all_xy/optional_resolved/src_all/y to: ../../../../src_all/optional_resolved/src_all/y
+symlink: from: root/scope/regex_filtered/src_all_xy/x to: ../../src_all/x
+symlink: from: root/scope/regex_filtered/src_all_xy/y to: ../../src_all/y
 dir: root/scope/regex_filtered/subdir12
 dir: root/scope/regex_filtered/subdir12/a
 symlink: from: root/scope/regex_filtered/subdir12/a/a1 to: ../../../src_all/a/a1

@@ -1,3 +1,6 @@
+OPT="$1"
+ERRORS=0
+
 echo clean all:
 THICKET_PARAMS='-f -c -root_lev=1 root/scope'
 REFERENCE_FILES='clean_ref.txt'
@@ -19,4 +22,9 @@ REFERENCE_FILES='allfiles_ref.txt'
 . run1test.sh
 
 echo ""
-echo "...all tests passed"
+
+if ((ERRORS == 0)) ; then
+  echo "...all tests passed"
+else
+  echo "$ERRORS tests FAILED"
+fi
