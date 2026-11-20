@@ -4,11 +4,13 @@ What is new in release 2.2.07
 New features:
 
 ► Regex and glob filters can now match against directories, not just regular files. 
+If a directory matches the filter then the entire directory is accepted without further recursion.
 If a glob filter ends with a slash, it matches only directories, not regular files.
 Otherwise, it matches only regular files.
-For regex filters every directory path is passed to the filter with a trailing slash (/). 
-If the regex pattern matches this path, the entire directory is accepted without further recursion. 
-Note that in rare circumstances, regex filters may behave differently than in older versions of Thicket, making it a breaking change.
+For regex filters every directory path is passed to the filter with a trailing slash (/)
+and the resulting string just matches against the regex. 
+Note that in rare circumstances, regex filters may behave differently than in older versions of Thicket, 
+making it a breaking change.
 
 
 
