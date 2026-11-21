@@ -315,7 +315,12 @@ private:
         fs_errcode err_exists;
 
         if(!fs::exists(imprint_path, err_exists)){
-            if(err_exists){
+            if(
+                    err_exists
+                    // work around boost::filesystem::exists() quasi-errors:
+                    && err_exists != fs_errc::no_such_file_or_directory
+                    && err_exists != fs_errc::not_a_directory
+            ){
                 report_error( std::string("Error while checking imprint file existence. File:  " )
                         + p2s(imprint_path)
                         , SEVERITY_ERROR

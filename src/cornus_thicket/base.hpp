@@ -29,6 +29,7 @@ namespace cornus_thicket {
 #if CORNUS_THICKET_BOOST_FS == 1
     namespace fs = ::boost::filesystem;
     using fs_errcode = ::boost::system::error_code;
+    namespace fs_errc = ::boost::system::errc;
     using strview_type = boost::string_view;
 
     enum FileTypesEnum{
@@ -47,6 +48,7 @@ namespace cornus_thicket {
 #else
     namespace fs = ::std::filesystem;
     using fs_errcode = ::std::error_code;
+    using fs_errc = ::std::errc;
     using strview_type = std::string_view;
 
     using FileTypesEnum = std::filesystem::file_type;
